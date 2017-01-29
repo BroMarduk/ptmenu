@@ -25,7 +25,7 @@ There are a few different menu systems out there for the different TFT Displays.
 4. [Adafruit Learning System](https://learn.adafruit.com/)
 
   It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also, a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
-i
+
 ## Requirements
 
 In order to use the PTMenu, the following requirements are necessary:
