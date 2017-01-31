@@ -50,12 +50,13 @@
 ##################################################################################
 # IMPORTS
 ##################################################################################
-import pygame
-import pygame.freetype
-import pygame.display
 import sys
-import tfttemplates
+
+import pygame.display
+import pygame.freetype
 from pygame.locals import *
+
+import tfttemplates
 from tftbuttons import *
 from tftutility import *
 
@@ -1172,7 +1173,16 @@ class Header(object):
                 self.text.text = time.strftime(self.data)
         elif self.type == HeadFootType.HostName:
             host_name = run_cmd("hostname")
-            self.text.text = host_name[:-1]
+            if self.text.text:
+                self.text.text = self.text.text.format(host_name[:-1])
+            else:
+                self.text.text =  host_name[:-1]
+        elif self.type == HeadFootType.IpAddress:
+            ip_address = get_ip_address()
+            if self.text.text:
+                self.text.text = self.text.text.format(ip_address)
+            else:
+                self.text.text = ip_address
         elif self.type == HeadFootType.UserFunction:
             if self.data is not None:
                 self.text.text = unicode(self.data(self))

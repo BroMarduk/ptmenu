@@ -4,28 +4,28 @@
 ##################################################################################
 # The "from tftmenu import *" and "from tfttemplates import *" items need to be
 # present in all display applicaitons.
-from tfttemplates import *
 from tftmenu import *
+from tfttemplates import *
 
 
 ##################################################################################
 # DISPLAY_PI_TEMP CUSTOM HEADER FUNCTION
 ##################################################################################
 def display_pi_temp(header=None):
-    res = os.popen('vcgencmd measure_temp').readline()
-    deg = u'\N{DEGREE SIGN}'
+    result = os.popen('vcgencmd measure_temp').readline()
+    degree_symbol = u'\N{DEGREE SIGN}'
     if isinstance(header, Header):
-        temp = res.replace("temp=", "").replace("'C\n", "")
+        temp = result.replace("temp=", "").replace("'C\n", "")
         val = float(temp)
         if val < 0:
-            header.text.fontColor = Color.Blue
+            header.text.font_color = Color.Blue
         elif val < 80.0:  # Pi turns on processor throttling
-            header.text.fontColor = Color.Green
+            header.text.font_color = Color.Green
         elif val < 85.0:  # Pi turns on processor and cpu throttling
-            header.text.fontColor = Color.Yellow
+            header.text.font_color = Color.Yellow
         else:
-            header.text.fontColor = Color.Red
-    return res.replace("temp=", "Pi Temp: ").replace("'", deg).replace("\n", "")
+            header.text.font_color = Color.Red
+    return result.replace("temp=", "Pi Temp: ").replace("'", degree_symbol).replace("\n", "")
 
 
 ##################################################################################
@@ -59,9 +59,9 @@ mainMenuButtons = get_buttons(ButtonTemplate.FullScreen3x4, border_color=Color.B
                                      "Time (24 Hour)",
                                      "Date/Time (US)",
                                      "Date/Time (Intl)",
-                                     "Custom Date 12",
-                                     "Custom Date 24",
+                                     "Custom Date",
                                      "Host Name",
+                                     "IP Address",
                                      "User Text ",
                                      "User Function",
                                      "Exit"],
@@ -71,9 +71,9 @@ mainMenuButtons = get_buttons(ButtonTemplate.FullScreen3x4, border_color=Color.B
                                        Action(DisplayAction.Display, "menuTime24"),
                                        Action(DisplayAction.Display, "menuDateTime12"),
                                        Action(DisplayAction.Display, "menuDateTime24"),
-                                       Action(DisplayAction.Display, "menuDateCust1"),
-                                       Action(DisplayAction.Display, "menuDateCust2"),
+                                       Action(DisplayAction.Display, "menuDateCustom"),
                                        Action(DisplayAction.Display, "menuHostName"),
+                                       Action(DisplayAction.Display, "menuIpAddress"),
                                        Action(DisplayAction.Display, "menuUserText"),
                                        Action(DisplayAction.Display, "menuUserFunc"),
                                        Action(DisplayAction.Exit)])
@@ -122,23 +122,15 @@ if header_date_time_24 is not None:
     menu_header_date_time_24 = Menu(timeout=90, buttons=header_date_time_24,
                                     header=Header(type=HeadFootType.DateTime24))
     Displays.menus["menuDateTime24"] = menu_header_date_time_24
-header_date_cust_1 = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Magenta)
-if header_date_cust_1 is not None:
-    header_date_cust_1[len(header_date_cust_1) - 1].text = "Back"
-    header_date_cust_1[len(header_date_cust_1) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_header_date_cust_1 = Menu(timeout=90, buttons=header_date_cust_1,
+header_date_custom = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Magenta)
+if header_date_custom is not None:
+    header_date_custom[len(header_date_custom) - 1].text = "Back"
+    header_date_custom[len(header_date_custom) - 1].action = Action(DisplayAction.Display, "Main")
+    menu_header_date_custom = Menu(timeout=90, buttons=header_date_custom,
                                    header=Header(type=HeadFootType.DateTimeCustom,
                                                  data="%-I:%M:%S %p",
                                                  refresh=DisplayHeaderRefresh.Second))
-    Displays.menus["menuDateCust1"] = menu_header_date_cust_1
-header_date_cust_2 = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Magenta)
-if header_date_cust_2 is not None:
-    header_date_cust_2[len(header_date_cust_2) - 1].text = "Back"
-    header_date_cust_2[len(header_date_cust_2) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_header_date_cust_2 = Menu(timeout=90, buttons=header_date_cust_2,
-                                   header=Header(type=HeadFootType.DateTimeCustom, data="%H:%M:%S",
-                                                 refresh=DisplayHeaderRefresh.Second))
-    Displays.menus["menuDateCust2"] = menu_header_date_cust_2
+    Displays.menus["menuDateCustom"] = menu_header_date_custom
 header_host_name = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Purple)
 if header_host_name is not None:
     header_host_name[len(header_host_name) - 1].text = "Back"
@@ -146,6 +138,14 @@ if header_host_name is not None:
     menu_header_host_name = Menu(timeout=90, buttons=header_host_name,
                                  header=Header(type=HeadFootType.HostName))
     Displays.menus["menuHostName"] = menu_header_host_name
+header_date_ip_address = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Purple)
+if header_date_ip_address is not None:
+    header_date_ip_address[len(header_date_ip_address) - 1].text = "Back"
+    header_date_ip_address[len(header_date_ip_address) - 1].action = Action(DisplayAction.Display, "Main")
+    menu_header_date_ip_address = Menu(timeout=90, buttons=header_date_ip_address,
+                                       header=Header(type=HeadFootType.IpAddress,
+                                                     text=HeadFootLine(text="My IP: {0}")))
+    Displays.menus["menuIpAddress"] = menu_header_date_ip_address
 header_user_text = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Cyan)
 if header_user_text is not None:
     header_user_text[len(header_user_text) - 1].text = "Back"
@@ -153,7 +153,7 @@ if header_user_text is not None:
     menu_header_user_text = Menu(timeout=90, buttons=header_user_text,
                                  header=Header(type=HeadFootType.UserText,
                                                text=HeadFootLine(text="Custom User Text",
-                                                                 font_size=32, font_color=Color.Cyan,
+                                                                 font_size=26, font_color=Color.Cyan,
                                                                  font_h_align=TextHAlign.Left)))
     Displays.menus["menuUserText"] = menu_header_user_text
 header_user_func = get_buttons(ButtonTemplate.Header2x3, border_color=Color.White)

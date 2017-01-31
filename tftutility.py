@@ -2,15 +2,13 @@
 ##################################################################################
 # IMPORTS
 ##################################################################################
-import fcntl
-import logging
 import argparse
-import pygame
-import subprocess
-import sys
+import logging
 import os
-from operator import attrgetter
+import socket
+import subprocess
 
+import pygame
 
 ##################################################################################
 # CONFIGURE LOGGING
@@ -27,14 +25,15 @@ parser.add_argument("--log", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRIT
 try:
     args = parser.parse_args()
     logging_level = getattr(logging, args.log.upper(), None)
-except e:
+except AttributeError, e:
     logger.WARNING("Invalid command line attribute passed in.  Setting console logging level to WARNING")
     logging_level = getattr(logging, "WARNING", None)
 # create console handler with a higher log level
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging_level)
 # create formatter and add it to the handlers
-formatter = logging.Formatter("%(levelname)-8s %(asctime)s.%(msecs)-003d %(module)s:%(lineno)d - %(message)s", "%Y/%m/%d %H:%M:%S")
+formatter = logging.Formatter("%(levelname)-8s %(asctime)s.%(msecs)-003d %(module)s:%(lineno)d - %(message)s",
+                              "%Y/%m/%d %H:%M:%S")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(formatter)
 # add the handlers to the logger
@@ -262,8 +261,9 @@ class HeadFootType():
     DateTime24     = 5
     DateTimeCustom = 6
     HostName       = 7
-    UserText       = 8
-    UserFunction   = 9
+    IpAddress      = 8
+    UserText       = 9
+    UserFunction   = 10
 
 
 ##################################################################################
@@ -662,6 +662,22 @@ def array_single_none(item, no_coerce_none=False):
 def remove_duplicates(sequence):
     uniques = set()
     return [item for item in sequence if item not in uniques and not uniques.add(item)]
+
+
+##################################################################################
+# GET_IP_ADDRESS METHOD
+##################################################################################
+# Used to return the primary local IP address
+def get_ip_address():
+    local_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        local_socket.connect(('10.0.0.0', 0))
+        ip = local_socket.getsockname()[0]
+    except:
+        ip = '127.0.0.1'
+    finally:
+        local_socket.close()
+    return ip
 
 
 ##################################################################################
