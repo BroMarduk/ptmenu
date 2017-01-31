@@ -5,19 +5,18 @@
 import argparse
 import logging
 import os
+import pygame
 import socket
 import subprocess
 
-import pygame
 
 ##################################################################################
 # CONFIGURE LOGGING
 ##################################################################################
-logger = None
-# create logger with 'spam_application'
+# Create Logger with 'tftmenu' name.
 logger = logging.getLogger("tftmenu")
 logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
+# Create File Handler which logs all messages
 file_handler = logging.FileHandler("tftmenu.log")
 file_handler.setLevel(logging.DEBUG)
 parser = argparse.ArgumentParser()
@@ -28,15 +27,16 @@ try:
 except AttributeError, e:
     logger.WARNING("Invalid command line attribute passed in.  Setting console logging level to WARNING")
     logging_level = getattr(logging, "WARNING", None)
-# create console handler with a higher log level
+# Create Console Handler with the level set to WARNING or that passed in from the
+# command-line given.
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging_level)
-# create formatter and add it to the handlers
+# Create Formatter and add it to the Handlers
 formatter = logging.Formatter("%(levelname)-8s %(asctime)s.%(msecs)-003d %(module)s:%(lineno)d - %(message)s",
                               "%Y/%m/%d %H:%M:%S")
 file_handler.setFormatter(formatter)
 stream_handler.setFormatter(formatter)
-# add the handlers to the logger
+# Add the Handlers to the Logger
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
@@ -83,7 +83,7 @@ DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
 ##################################################################################
 # SCREEN CONSTANTS
 ##################################################################################
-class Screen():
+class Screen:
     Tty         = "tty{0}".format(run_cmd("fgconsole")[:-1])
     WakeCommand = "printf \033[13]"
     WakePipe    = "sudo tee /dev/{0} > /dev/null".format(Tty)
@@ -92,7 +92,7 @@ class Screen():
 ##################################################################################
 # COMMAND CLASS CONSTANTS
 ##################################################################################
-class Command():
+class Command:
     Shutdown   = "sudo shutdown -h now"
     Reboot     = "sudo shutdown -r now"
     StartXHdmi = "FRAMEBUFFER=/dev/fb0 startx"
@@ -102,7 +102,7 @@ class Command():
 ##################################################################################
 # SHUTDOWN CLASS CONSTANTS
 ##################################################################################
-class Shutdown():
+class Shutdown:
     Normal    = 0
     Error     = 1
     Terminate = 2
@@ -114,7 +114,7 @@ class Shutdown():
 ##################################################################################
 # DIALOGBUTTONTEXT CLASS CONSTANTS
 ##################################################################################
-class DialogButtonText():
+class DialogButtonText:
     Yes    = "Yes"
     No     = "No"
     OK     = "OK"
@@ -124,7 +124,7 @@ class DialogButtonText():
 ##################################################################################
 # ATTRIBUTES CLASS CONSTANTS
 ##################################################################################
-class Attributes():
+class Attributes:
     Header = "header"
     Footer = "footer"
 
@@ -132,7 +132,7 @@ class Attributes():
 ##################################################################################
 # COLOR DEFINITIONS
 ##################################################################################
-class Color():
+class Color:
     # Color     R    G    B
     White   = (255, 255, 255)
     Red     = (255, 0, 0)
@@ -156,7 +156,7 @@ class Color():
 ##################################################################################
 # BUTTON TEMPLATE CONSTANTS
 ##################################################################################
-class ButtonTemplate():
+class ButtonTemplate:
     Header2x3          = 0
     HeaderFooter2x2    = 1
     Header3x3          = 2
@@ -175,7 +175,7 @@ class ButtonTemplate():
 ##################################################################################
 # BUTTON DIRECTION CONSTANTS
 ##################################################################################
-class ButtonDirection():
+class ButtonDirection:
     LeftRightTopBottom = 0
     LeftRightBottomTop = 1
     RightLeftTopBottom = 2
@@ -188,7 +188,7 @@ class ButtonDirection():
 ##################################################################################
 # BUTTON TUPLE CONSTANTS
 ##################################################################################
-class ButtonTuple():
+class ButtonTuple:
     Columns        = 0
     Rows           = 1
     ColumnsStart   = 2
@@ -200,7 +200,7 @@ class ButtonTuple():
 
 
 # Tweakable Parameters.  Should be good but can be changed if needed
-class Times():
+class Times:
     SleepLoop    = 0.05
     SleepShort   = 0.25
     SleepLong    = 1
@@ -213,7 +213,7 @@ class Times():
 ##################################################################################
 # Backlight Method to use.  Which one to use depends on what you want to do with
 # the backlight and what version of Raspian is being used.
-class BacklightMethod():
+class BacklightMethod:
     NoBacklight = 0
     Pwm         = 1
     PwmBinary   = 2
@@ -225,7 +225,7 @@ class BacklightMethod():
 ##################################################################################
 # DISPLAY RESOLUTION CONSTANTS
 ##################################################################################
-class DisplayResolution():
+class DisplayResolution:
     Small320x240 = 0
     Large480x320 = 1
 
@@ -233,7 +233,7 @@ class DisplayResolution():
 ##################################################################################
 # DISPLAY ACTION CONSTANTS
 ##################################################################################
-class DisplayAction():
+class DisplayAction:
     NoAction  = 0
     Display   = 1
     Back      = 2
@@ -252,7 +252,7 @@ class DisplayAction():
 ##################################################################################
 # MENU HEADER CONSTANTS
 ##################################################################################
-class HeadFootType():
+class HeadFootType:
     NoDisplay      = 0
     Date           = 1
     Time12         = 2
@@ -269,7 +269,7 @@ class HeadFootType():
 ##################################################################################
 # MENU HEADER CONSTANTS
 ##################################################################################
-class HeadFootLocation():
+class HeadFootLocation:
     Top    = 0
     Bottom = 1
 
@@ -277,7 +277,7 @@ class HeadFootLocation():
 ##################################################################################
 # DISPLAY HEADER REFRESH CLASS CONSTANTS
 ##################################################################################
-class DisplayHeaderRefresh():
+class DisplayHeaderRefresh:
     NoRefresh = 0
     Day       = 1
     Hour      = 2
@@ -288,7 +288,7 @@ class DisplayHeaderRefresh():
 ##################################################################################
 # BUILT-IN SPLASH SCREENS
 ##################################################################################
-class SplashBuiltIn():
+class SplashBuiltIn:
     Blank   = "Blank"
     Exit    = "Exit"
     Info    = "Info"
@@ -300,7 +300,7 @@ class SplashBuiltIn():
 ##################################################################################
 # DATE/TIME STRUCT CONSTANTS
 ##################################################################################
-class TimeStruct():
+class TimeStruct:
     Year      = 0
     Month     = 1
     MonthDay  = 2
@@ -315,7 +315,7 @@ class TimeStruct():
 ##################################################################################
 # HORIZONTAL TEXT ALIGNMENT CONSTANTS
 ##################################################################################
-class TextHAlign():
+class TextHAlign:
     Left   = 0
     Center = 1
     Right  = 2
@@ -324,16 +324,16 @@ class TextHAlign():
 ##################################################################################
 # VERTICAL TEXT ALIGNMENT CONSTANTS
 ##################################################################################
-class TextVAlign():
-    Top   = 0
+class TextVAlign:
+    Top    = 0
     Middle = 1
-    Bottom  = 2
+    Bottom = 2
 
 
 ##################################################################################
 # TEXT TUPLE CONSTANTS
 ##################################################################################
-class TextTuple():
+class TextTuple:
     Surface  = 0
     Width    = 1
     Height   = 2
@@ -345,7 +345,7 @@ class TextTuple():
 ##################################################################################
 # DIALOGSTYLE CONSTANTS
 ##################################################################################
-class DialogStyle():
+class DialogStyle:
     Ok           = 0
     OkLeft       = 1
     OkRight      = 2
@@ -358,18 +358,17 @@ class DialogStyle():
 
 
 ##################################################################################
-# MOUSEBUTTON CONSTANTS
+# MOUSE BUTTON CONSTANTS
 ##################################################################################
-class MouseButton():
+class MouseButton:
     Left   = 1
     Middle = 2
     Right  = 3
 
-
 ##################################################################################
 # DEFAULTS CLASS
 ##################################################################################
-class Defaults():
+class Defaults:
     ##################################################################################
     # DEFAULTS DEFAULT CONSTANTS
     ##################################################################################
@@ -630,9 +629,9 @@ class Defaults():
 ##################################################################################
 # MERGE METHOD
 ##################################################################################
-def merge(*args):
+def merge(*arguments):
     output = []
-    for arg in args:
+    for arg in arguments:
         if arg is not None:
             if isinstance(arg, list):
                 output += arg
@@ -673,7 +672,7 @@ def get_ip_address():
     try:
         local_socket.connect(('10.0.0.0', 0))
         ip = local_socket.getsockname()[0]
-    except:
+    except IOError:
         ip = '127.0.0.1'
     finally:
         local_socket.close()
@@ -719,7 +718,7 @@ def draw_true_rect(screen, color, x, y, width, height, border_width):
 # contains each text line along with the text, height (should be the same) and
 # width of each.
 ##################################################################################
-def wrap_text(font, text, width):
+def wrap_text_line(font, text, width):
     text_lines = []
     text_height = []
     text_width = []
@@ -779,30 +778,30 @@ def get_buttons_end_height(buttons):
 # SEND WAKE COMMAND METHOD
 ##################################################################################
 # Function to 'wake' the screen should the built-in screen blanking functionality
-# be active.   This is done by executing a command similary to the following:
+# be active.   This is done by executing a command similarly to the following:
 # $ printf \033[13] | sudo tee /dev/tty1 > /dev/null.
 ##################################################################################
 def send_wake_command():
     process = subprocess.Popen(Screen.WakeCommand.split(), stdout=subprocess.PIPE)
-    pipe = subprocess.Popen(Screen.WakePipe.split(), stdin=process.stdout, stdout=subprocess.PIPE)
+    subprocess.Popen(Screen.WakePipe.split(), stdin=process.stdout, stdout=subprocess.PIPE)
 
 
 ##################################################################################
-# ALREADYINITIALIZED EXCEPTION
+# ALREADY INITIALIZED EXCEPTION
 ##################################################################################
 class AlreadyInitializedException(Exception):
     pass
 
 
 ##################################################################################
-# NOTINITIALIZED EXCEPTION
+# NOT INITIALIZED EXCEPTION
 ##################################################################################
 class NotInitializedException(Exception):
     pass
 
 
 ##################################################################################
-# NOTINITIALIZED EXCEPTION
+# BACKLIGHT NOT ENABLED EXCEPTION
 ##################################################################################
 class BacklightNotEnabled(Exception):
     pass

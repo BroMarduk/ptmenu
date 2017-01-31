@@ -148,21 +148,21 @@ class Timer:
     ##################################################################################
     @classmethod
     def abort(cls):
-        __abort = True;
+        cls.__abort = True
 
 
     ##################################################################################
     # TIMER SLEEP METHOD
     ##################################################################################
     @classmethod
-    def sleep(cls, args):
-        print ("Buttons - In Sleep Thread:", args)
-        for delay in range(args):
+    def sleep(cls, arguments):
+        print ("Buttons - In Sleep Thread:", arguments)
+        for delay in range(arguments):
             time.sleep(Times.SleepLong)
             if cls.__abort:
                 break
 
-        print ("Buttons - Exiting Sleep Thread:", args)
+        print ("Buttons - Exiting Sleep Thread:", arguments)
 
 
 ##################################################################################
@@ -204,7 +204,6 @@ class Backlight:
             cls.default = cls.steps
         subprocess.call(GPIO_BACKLIGHT_PWMC_SET.format(GPIO_BACKLIGHT_PWM_FREQUENCY).split())
         if cls.method != BacklightMethod.NoBacklight:
-            initial_value = GPIO_BACKLIGHT_OFF
             # If using PWM non-binary method, we need to get exact backlight values
             if cls.method == BacklightMethod.Pwm:
                 # Determine the number of steps for the backlight_up/BacklightDown buttons
@@ -246,8 +245,8 @@ class Backlight:
                 # If STMPE path exists, make sure backlight is on.
                 if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
                     subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
-                # Set PWM Mode on GPIO 18, which controlls the backlight and set the brightness
-                # to default if present, or maxiumum brightness if no default
+                # Set PWM Mode on GPIO 18, which controls the backlight and set the brightness
+                # to default if present, or maximum brightness if no default
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT, GPIO_BACKLIGHT_PWM_MODE).split())
                 subprocess.call(GPIO_BACKLIGHT_PWM_SET.format(GPIO_PWM_BACKLIGHT, initial_value).split())
             if cls.method == BacklightMethod.PwmBinary:
@@ -256,13 +255,13 @@ class Backlight:
                     subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT,
                                                                    GPIO_BACKLIGHT_PWM_BINARY_MODE).split())
-                # Set PWM Mode on GPIO 18, which controlls the backlight and set the brightness
-                # to default if present, or maxiumum brightness if no default
+                # Set PWM Mode on GPIO 18, which controls the backlight and set the brightness
+                # to default if present, or maximum brightness if no default
                 subprocess.call(GPIO_BACKLIGHT_PWM_BINARY_SET.format(GPIO_PWM_BACKLIGHT, initial_value).split())
             elif cls.method == BacklightMethod.Stmpe:
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(initial_value)])
             elif (cls.method == BacklightMethod.Echo) or (cls.method == BacklightMethod.Echo252):
-                # Create the device link to the GPIO 508 pin.  On real old kernels, this is 252 (incase
+                # Create the device link to the GPIO 508 pin.  On real old kernels, this is 252 (in case
                 # someone is still running a pre-2014 kernel) and can be changed by setting the
                 # method to BacklightMethod.Echo252
                 backlight_pin = GPIO_ECHO_BACKLIGHT
@@ -411,7 +410,6 @@ class Backlight:
         # Set backlight to off if it is not already
         if not cls.is_screen_sleeping():
             cls.set_backlight(GPIO_BACKLIGHT_OFF)
-
         cls.call_button_press()
 
 
@@ -501,7 +499,7 @@ class Buttons(object):
                  backlight_default=None, backlight_restore_last=False, button_callback=None,
                  power_gpio=DEFAULT_POWER_GPIO, battery_gpio=DEFAULT_PI_BATTERY_GPIO):
         if Buttons.is_initialized():
-            raise AlreadyInitializedException("TftButtions Class has already been initialized as required.")
+            raise AlreadyInitializedException("TftButtons Class has already been initialized as required.")
         Buttons.initialize(True)
         #Buttons.initialized(True)
         self.tft_type     = tft_type

@@ -24,7 +24,7 @@ There are a few different menu systems out there for the different TFT Displays.
    Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
 4. [Adafruit Learning System](https://learn.adafruit.com/)
 
-   It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
+   It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](http://learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
 
 ## Requirements
 
@@ -89,17 +89,17 @@ Once in the ptmenu directory, there are 5 example projects in the directory that
 
 Supported Display Identifiers (any Method or the Value will work):
 
-|  Method 1  |  Method 2  |  Method 3  | Value | GPIOs (Backlight)           |
-|------------|------------|------------|:------|-----------------------------|
-| DISP22NT   | AF_2315    | NONE22     | 1     | GPIOs 17,22,23,27,(18)      |
-| DISP24R    | AF_2455    | RES24      | 2     | GPIOs 16,13,12,6,5,(18)     |
-| DISP28R    | AF_1601    | RES28      | 3     | GPIOs 23,22,21/27,18,(None) |
-| DISP28C    | AF_1983    | CAP28      | 4     | GPIOs 23,22,21/27,17,(18)   |
-| DISP28RP   | AF_2298    | RES28P     | 5     | GPIOs 17,22,23,27,(18)      |
-| DISP28CP   | AF_2423    | CAP28P     | 6     | GPIOs 17,22,23,27,(18)      |
-| DISP32RP   | AF_2626    | RES32P     | 7     | GPIOs 22,23,17,27,(18)      |
-| DISP35R    | AF_2097    | RES35      | 8     | GPIOs (18)                  |
-| DISP35RP   | AF_2441    | RES35P     | 9     | GPIOs (18)                  |
+|  Method 1  |  Method 2  |  Method 3  | Value | GPIOs (Backlight)     |
+|------------|------------|------------|:-----:|-----------------------|
+| DISP22NT   | AF_2315    | NONE22     | 1     | 17,22,23,27,(18)      |
+| DISP24R    | AF_2455    | RES24      | 2     | 16,13,12,6,5,(18)     |
+| DISP28R    | AF_1601    | RES28      | 3     | 23,22,21/27,18,(None) |
+| DISP28C    | AF_1983    | CAP28      | 4     | 23,22,21/27,17,(18)   |
+| DISP28RP   | AF_2298    | RES28P     | 5     | 17,22,23,27,(18)      |
+| DISP28CP   | AF_2423    | CAP28P     | 6     | 17,22,23,27,(18)      |
+| DISP32RP   | AF_2626    | RES32P     | 7     | 22,23,17,27,(18)      |
+| DISP35R    | AF_2097    | RES35      | 8     | (18)                  |
+| DISP35RP   | AF_2441    | RES35P     | 9     | (18)                  |
 
 + <b>sudo python tftmenu-example1.py</b>
 

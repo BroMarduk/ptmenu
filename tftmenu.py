@@ -102,18 +102,19 @@ class Displays:
     @classmethod
     def show(cls, item, data=None):
         # If item to show is already a menu, then just render and set.
+        display = None
         if isinstance(item, Display):
             display = item
         # If not a menu, attempt to find a menu with the same name
         elif item in cls.menus:
             display = cls.menus[item]
-        if cls.current is None or display is not cls.current.last:
-            display.last = cls.current
-            if display.is_core:
-                Displays.last = display
-        display.render(data)
-        cls.current = display
-
+        if display is not None:
+            if cls.current is None or display is not cls.current.last:
+                display.last = cls.current
+                if display.is_core:
+                    Displays.last = display
+            display.render(data)
+            cls.current = display
 
     ##################################################################################
     # DISPLAYS TIMEOUT_SLEEP METHOD
@@ -282,17 +283,13 @@ class Displays:
     ##################################################################################
     @classmethod
     def start(cls, initial_menu, backlight_method=None, backlight_steps=None, backlight_default=None,
-              backlight_restore_last=False, button_callback=None, confirm_exit=False,
-              power_gpio=None, battery_gpio=None):
+              backlight_restore_last=False, button_callback=None, power_gpio=None, battery_gpio=None):
         # Make sure start process has not already started.
         if cls.started:
             return
         cls.started = True
-        shutdown = False
         down_button = 0
         down_time = None
-        exit_splash = None
-        error_message = "No Errors"
         # Make sure initialization has been run
         if not cls.initialized or Defaults.tft_type is None:
             cls.started = False
@@ -387,7 +384,7 @@ class Displays:
                                 Displays.restore()
                 if tft_buttons.is_low_battery():
                     exit_splash = SplashBuiltIn.Battery
-                    cls.shutdown(Shutdown.Shutdown)
+                    cls.shutdown(Shutdown.Shutdown, exit_splash)
                 # Sleep for a bit
                 time.sleep(Times.SleepLoop)
             cls.shutdown(Shutdown.Normal)
@@ -396,10 +393,10 @@ class Displays:
             # Keeps error from displaying when CTL-C is pressed
             print(""),
         # Catch other Error
-        except Exception, e:
+        except Exception, ex:
             # If we have an error,
             exit_splash = SplashBuiltIn.Error
-            error_message = unicode(e)
+            error_message = unicode(ex)
             splash_data = [SplashLine("ERROR", Defaults.default_splash_font_size_title),
                            SplashLine(error_message, Defaults.default_splash_font_size, wrap_text=True)]
             cls.shutdown(Shutdown.Normal, exit_splash, splash_data)
@@ -456,13 +453,14 @@ class BaseLine(object):
         if not self.wrap_text:
             return self.font.render(self.text if self.text is not None else "", fgcolor=self.font_color)
         else:
+            wrapped_text = ""
             try:
-                wrapped_text = wrap_text(self.font, self.text if self.text is not None else "",
+                wrapped_text = wrap_text_line(self.font, self.text if self.text is not None else "",
                                         Defaults.tft_width - (self.font_h_padding * 2)
                                         if not hasattr(Displays.current, "border_width")
                                         else Defaults.tft_width - ((Displays.current.border_width +
-                                                                    self.font_h_padding)* 2) )
-            except Exception, e:
+                                                                    self.font_h_padding)* 2))
+            except Exception, ex:
                 Displays.shutdown(Shutdown.Error, SplashBuiltIn.Error)
             if len(wrapped_text[0]) is 1:
                 return self.font.render(wrapped_text[0][0] if wrapped_text[0][0] is not None else "",
@@ -484,19 +482,19 @@ class BaseLine(object):
                         left = (surface_width / 2) - (wrapped_text[2][index] / 2)
                     try:
                         self.font.render_to(text_surface, (left, top), wrapped_text[0][index], fgcolor=self.font_color)
-                    except Exception, e:
+                    except Exception, ex:
                         pass
                     text_top += wrapped_text[1][index] + self.font_v_padding
                 return text_surface, text_surface.get_rect()
 
 
 ##################################################################################
-# TFTMENU TEXTLINE CLASS
+# TFTMENU TEXT LINE CLASS
 ##################################################################################
 class TextLine(BaseLine):
 
     ##################################################################################
-    # TEXTLINE INIT METHOD
+    # TEXT LINE INIT METHOD
     ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
@@ -745,7 +743,7 @@ class Display(object):
         count = 0
         for menuButton in self.buttons:
             count += 1
-            if x >= menuButton.x and x <= menuButton.x + menuButton.width and\
+            if menuButton.x <= x <= menuButton.x + menuButton.width and\
                     (y >= menuButton.y and (y <= menuButton.y + menuButton.height)):
                 hit = count
                 break
@@ -761,9 +759,9 @@ class Display(object):
         button = self.buttons[button_index - 1]
         if button is not None:
             if not (isinstance(Displays.current, Dialog) and Displays.current.dialog_type is DialogStyle.FullScreenOk):
-                buttonRect = button.render(True)
-                if buttonRect:
-                    pygame.display.update(buttonRect)
+                button_rect = button.render(True)
+                if button_rect:
+                    pygame.display.update(button_rect)
             return button_index
         else:
             return 0
@@ -777,9 +775,9 @@ class Display(object):
             return
         button = self.buttons[button_index - 1]
         if button is not None:
-            buttonRect = button.render()
-        if buttonRect:
-            pygame.display.update(buttonRect)
+            button_rect = button.render()
+            if button_rect:
+                pygame.display.update(button_rect)
 
 
     ##################################################################################
@@ -789,7 +787,7 @@ class Display(object):
         if button_index == 0:
             return self, None
         button = self.buttons[button_index - 1]
-        if (button.action_right is None or button_type == MouseButton.Left):
+        if button.action_right is None or button_type == MouseButton.Left:
             action = button.action.action
             action_data = button.action.data
             action_render_data = button.action.render_data
@@ -915,10 +913,9 @@ class Splash(Display):
         if render_text:
             splash_text_tuples = []
             splash_text_height = 0
-            last_text_height = 0
             text_v_align = None
             for text_item in render_text:
-                if (text_item.text is None):
+                if text_item.text is None:
                     text_item.text = ""
                 if text_v_align is None:
                     text_v_align = text_item.font_v_align
@@ -971,9 +968,11 @@ class Dialog(Display):
     # DIALOG INIT METHOD
     ##################################################################################
     def __init__(self, text=None, dialog_type=DialogStyle.Ok, background_color=Defaults.default_dialog_background_color,
-                 border_color=Defaults.default_dialog_border_color, border_width=None,
-                 actions=None, buttons=None, timeout=Defaults.default_dialog_timeout, timeout_function=None,
-                 use_menu_timeout=False, use_menu_colors=False):
+                 border_color=Defaults.default_dialog_border_color, border_width=None, actions=None, buttons=None,
+                 timeout=Defaults.default_dialog_timeout, timeout_function=None, use_menu_timeout=False,
+                 use_menu_colors=False):
+        super(Dialog, self).__init__(background_color, border_color, border_width, buttons, actions, timeout,
+                                     timeout_function)
         self.text = array_single_none(text)
         self.dialog_type = dialog_type
         self.background_color = background_color
@@ -1057,7 +1056,7 @@ class Dialog(Display):
         draw_true_rect(Displays.screen, display_border_color, 0, 0, Defaults.tft_width - 1, Defaults.tft_height - 1,
                        display_border_width)
         if not self.buttons or self.dialog_type == DialogStyle.FullScreenOk:
-            dialog_text_area_height = (Defaults.tft_height) - display_border_width
+            dialog_text_area_height = Defaults.tft_height - display_border_width
         else:
             button_pos = get_buttons_start_height(self.buttons)
             if button_pos > Defaults.tft_height - (display_border_width * 2):
@@ -1072,10 +1071,9 @@ class Dialog(Display):
         if render_text:
             dialog_text_tuples = []
             dialog_text_height = 0
-            last_text_height = 0
             text_v_align = None
             for text_item in render_text:
-                if (text_item.text is None):
+                if text_item.text is None:
                     text_item.text = ""
                 elif text_v_align is None:
                     text_v_align = text_item.font_v_align
@@ -1208,7 +1206,6 @@ class Header(object):
         headfoot_surface, headfoot_font_rect = self.text.render(display.background_color)
         headfoot_text_width = headfoot_font_rect.width
         headfoot_text_height = headfoot_font_rect.height
-        headfoot_top = 0
         if self.height is None:
             if self.location is HeadFootLocation.Bottom:
                 button_pos = get_buttons_end_height(display.buttons)
@@ -1224,7 +1221,7 @@ class Header(object):
                     true_headfoot_height = button_pos - display.border_width
         else:
             true_headfoot_height = self.height
-
+            button_pos = 0
         if self.location is HeadFootLocation.Top:
             headfoot_offset = display.border_width
         else:
@@ -1264,33 +1261,32 @@ class Header(object):
     def update(self, display):
         if self.refresh == DisplayHeaderRefresh.NoRefresh:
             return
-        curTime = int(time.time())
-        localTime = time.localtime(curTime)
-        useTwoSecondRange = False
+        cur_time = int(time.time())
+        local_time = time.localtime(cur_time)
         # Set Header Refresh if Date/Time is used
         if self.refresh == DisplayHeaderRefresh.Day:
-            if localTime[TimeStruct.Hour] != 0 or localTime[TimeStruct.Minute] != 0 or\
-                            localTime[TimeStruct.Second] != 0:
+            if local_time[TimeStruct.Hour] != 0 or local_time[TimeStruct.Minute] != 0 or\
+                            local_time[TimeStruct.Second] != 0:
                 return
-            useTwoSecondRange = True
+            use_two_second_range = True
         elif self.refresh == DisplayHeaderRefresh.Hour:
-            if localTime[TimeStruct.Minute] != 0 or localTime[TimeStruct.Second] != 0:
+            if local_time[TimeStruct.Minute] != 0 or local_time[TimeStruct.Second] != 0:
                 return
-            useTwoSecondRange = True
+            use_two_second_range = True
         elif self.refresh == DisplayHeaderRefresh.Minute:
-            if localTime[TimeStruct.Second] != 0:
+            if local_time[TimeStruct.Second] != 0:
                 return
-            useTwoSecondRange = True
+            use_two_second_range = True
         else:
-            useTwoSecondRange = False
-        if useTwoSecondRange:
-            if self.last_update == curTime or self.last_update == curTime - 1:
+            use_two_second_range = False
+        if use_two_second_range:
+            if self.last_update == cur_time or self.last_update == cur_time - 1:
                 return
         else:
-            if self.last_update == curTime:
+            if self.last_update == cur_time:
                 return
         self.render(display, True)
-        self.last_update = curTime
+        self.last_update = cur_time
 
 
 ##################################################################################
@@ -1344,6 +1340,7 @@ class Button(object):
         self.border_color = border_color
         self.border_width = border_width
         self.action = action
+        self.action_right = action_right
         if self.width is None:
             self.width = Defaults.default_button_width
         if self.height is None:
@@ -1376,19 +1373,19 @@ class Button(object):
         button_text_height = button_font_rect.height
         # Handle horizontal alignment
         if self.text.font_h_align == TextHAlign.Left:
-            buttonTextLeft = self.x + self.border_width + self.text.font_h_padding
+            button_text_left = self.x + self.border_width + self.text.font_h_padding
         elif self.text.font_h_align == TextHAlign.Right:
-            buttonTextLeft = (self.x + self.width) - self.border_width - button_text_width - self.text.font_h_padding
+            button_text_left = (self.x + self.width) - self.border_width - button_text_width - self.text.font_h_padding
         else:
-            buttonTextLeft = (self.x + (self.width / 2)) - (button_text_width / 2)
+            button_text_left = (self.x + (self.width / 2)) - (button_text_width / 2)
         # Handle vertical alignment
         if self.text.font_v_align == TextVAlign.Top:
-            buttonTextTop = self.y + self.border_width + self.text.font_v_padding
+            button_text_top = self.y + self.border_width + self.text.font_v_padding
         elif self.text.font_v_align == TextVAlign.Bottom:
-            buttonTextTop = (self.y + self.height) - self.border_width - button_text_height - self.text.font_v_padding
+            button_text_top = (self.y + self.height) - self.border_width - button_text_height - self.text.font_v_padding
         else:
-            buttonTextTop = (self.y + (self.height / 2)) - (button_text_height / 2)
-        buttonTextRect = button_surface.get_rect(left=buttonTextLeft, top=buttonTextTop)
+            button_text_top = (self.y + (self.height / 2)) - (button_text_height / 2)
+        button_text_rect = button_surface.get_rect(left=button_text_left, top=button_text_top)
         # Blit the text on the screen
-        Displays.screen.blit(button_surface, buttonTextRect)
+        Displays.screen.blit(button_surface, button_text_rect)
         return button_rect
