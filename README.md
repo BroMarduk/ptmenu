@@ -15,16 +15,16 @@ There are a few different menu systems out there for the different TFT Displays.
 
 1. [garthvh's pitftmenu](https://github.com/garthvh/pitftmenu)
 
-  Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.
+   Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.
 2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
   
-  Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
+   Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
 3. [pygame Documentation and Examples](http://www.pygame.org/docs/)
   
-  Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
+   Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
 4. [Adafruit Learning System](https://learn.adafruit.com/)
 
-  It's one thing to support the products you sell and another to provide explicit tutorials on just about everyting you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
+   It's one thing to support the products you sell and another to provide explicit tutorials on just about everyting you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
 
 ## Requirements
 
@@ -32,21 +32,23 @@ In order to use the PTMenu, the following requirements are necessary:
 
 1. A Raspberry Pi
   
-  Any version, including the Zero should work.  Tested on an original Raspberry Pi, a Raspberry Pi 2 and a Raspberry Pi 3.  Once I solder the header into my Zero, I will test it as well.
+   Any version, including the Zero should work.  Tested on an original Raspberry Pi, a Raspberry Pi 2 and a Raspberry Pi 3.  Once I solder the header into my Zero, I will test it as well.
 2. An Adafruit PiTFT plugged into the header on the Raspberry Pi.
   
-  All Adafruit PiTFTs are supported, but note that the 2.2" PiTFT is non-touch and would require a mouse to use.
+   All Adafruit PiTFTs are supported, but note that the 2.2" PiTFT is non-touch and would require a mouse to use.
 3. Raspian Jessie or Wheezy installed.   
   
-  Other flavors that support the Adafruit PiTFTs, such as Kali, should also work, although I have not tested on anything but Jessie.
+   Other flavors that support the Adafruit PiTFTs, such as Kali, should also work, although I have not tested on anything but Jessie.
 4. Python 2.7 installed as a package.
-  Python 2.7 should be installed on most Raspberry Pi's by default.  If for some reason it was not or was removed that it will need to be reinstalled. 
-5. Pygame installed as a package
-  Pygame can be installed by running the following two commands:
-  
-  <b>sudo apt-get install python-pip</b>
 
-  <b>sudo apt-get install python-pygame</b>
+   Python 2.7 should be installed on most Raspberry Pi's by default.  If for some reason it was not or was removed that it will need to be reinstalled. 
+5. Pygame installed as a package
+
+   Pygame can be installed by running the following two commands:
+  
+   <b>sudo apt-get install python-pip</b>
+
+   <b>sudo apt-get install python-pygame</b>
 6. libsdl1.2-15-5
 
   If running Jessie on the Raspberry Pi, the touch screen support in libsdl 1.2 has been broken for pygame.  To make it work, you need to revert to the last version from Wheezy (libsdl1.2-15-5).  Instructions to do this can be found on the [pitftmenu site](https://github.com/garthvh/pitftmenu).  Instructions and a script can be found on the [Adafruit site](https://learn.adafruit.com/adafruit-pitft-28-inch-resistive-touchscreen-display-raspberry-pi/pitft-pygame-tips).  I could get mine working by using the Adafruit script, but it does seem to need to be run again after doing an upgrade to the Raspberry Pi.
