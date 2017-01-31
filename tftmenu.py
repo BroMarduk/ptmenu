@@ -76,6 +76,7 @@ except IOError:
     logger.critical("Only one instance of the applicaiton can run at a time.")
     sys.exit()
 
+
 ##################################################################################
 # TFTMENUS DISPLAYS CLASS
 ##################################################################################

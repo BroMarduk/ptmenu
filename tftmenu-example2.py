@@ -65,6 +65,7 @@ Defaults.default_dialog_font_color = Color.Silver
 Defaults.default_button_font_color = Color.Silver
 Defaults.default_button_font_size = 24
 
+
 ##################################################################################
 # MENU TEMPLATES
 ##################################################################################

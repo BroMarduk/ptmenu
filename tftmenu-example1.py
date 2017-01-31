@@ -4,8 +4,8 @@
 ##################################################################################
 # The "from tftmenu import *" and "from tfttemplates import *" items need to be
 # present in all display applicaitons.
-from tfttemplates import *
 from tftmenu import *
+from tfttemplates import *
 
 ##################################################################################
 # DISPLAY INITIALIZATION
@@ -31,7 +31,6 @@ Displays.initialize(DISP28CP)
 ##################################################################################
 # MENU TEMPLATES
 ##################################################################################
-
 # Create buttons for menu using a template (BUTTONS_2X1_BOTTOM) that adds two
 # buttons.  The first says "Hello" and the second says "Goodbye".  Actions are set
 # to show a "Hello!" message using and add actions to show a message using the
