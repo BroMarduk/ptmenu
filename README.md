@@ -15,15 +15,16 @@ There are a few different menu systems out there for the different TFT Displays.
 
 1. [garthvh's pitftmenu](https://github.com/garthvh/pitftmenu)
 
-  Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
+  Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.
+2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
   
   Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
 3. [pygame Documentation and Examples](http://www.pygame.org/docs/)
   
   Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
- 4. [Adafruit Learning System](https://learn.adafruit.com/)
+4. [Adafruit Learning System](https://learn.adafruit.com/)
 
-  It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also, a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
+  It's one thing to support the products you sell and another to provide explicit tutorials on just about everyting you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
 
 ## Requirements
 
@@ -52,26 +53,28 @@ In order to use the PTMenu, the following requirements are necessary:
 
 ## Features
 
-While the main functionality of the application is to display a screen with buttons that respond to actions (and it is the main function!), I built this to handle other features that I wanted or thought would make the 
-1. Powerful and configurable when customizations are needed
-2. Multiple Display screen (Meus, Dialogs, Splash) types.
-3. Support for built-in screen blanking (customizable for each display)
-4. Wake up on touch or hardware button press (including from system screen blank)
-5. Controllable backlight support for PWM, ECHO and STMPE methods
-6. Support for PiTFT's with hardware buttons
-7. Adjustable dimming when using PWM for backlight
-8. On/Off backlight support when using PWM for sound playback
-9. Support for Adafruit's Power Button GPIO with detection
-10. Built in soft button templates for 13 soft button configurations
-11. Displays built on a 320x480 screen will work on a 240x320 screen
-12. Customizable button render order (multiple combinations of left-right and top-bottom)
-13. Shell support without having to exit menu
-14. Multiple text alignments for buttons/text/headers (left, center, right, top, middle, bottom)
-15. Support for right-clicking buttons.
-16. Full color support for borders, backgrounds and button borders
-17. Button "down" visual indications.
-18. Ability to call custom functions on button presses and refresh events
-19. Built in support for date, time, host name in headers and footers
+While the main functionality of the application is to display a screen with buttons that respond to actions (and it is the main function!), I built this to handle other features that I wanted or thought would make the menu system flexible enough to customize to meet future needs as well as leverage features of the Adafruit hardware.
+
++ Powerful and configurable when customizations are needed
++ Multiple Display screen (Meus, Dialogs, Splash) types.
++ Support for built-in screen blanking (customizable for each display)
++ Wake up on touch or hardware button press (including from system screen blank)
++ Controllable backlight support for PWM, ECHO and STMPE methods
++ Support for PiTFT's with hardware buttons
++ Adjustable dimming when using PWM for backlight
++ On/Off backlight support when using PWM for sound playback
++ Support for Adafruit's Power Button GPIO with detection
++ Built in soft button templates for 13 soft button configurations
++ Displays built on a 320x480 screen will work on a 240x320 screen
++ Customizable button render order (multiple combinations of left-right and top-bottom)
++ Shell support without having to exit menu
++ Multiple text alignments for buttons/text/headers (left, center, right, top, middle, bottom)
++ Support for right-clicking buttons.
++ Full color support for borders, backgrounds and button borders
++ Button "down" visual indications.
++ Ability to call custom functions on button presses and refresh events
++ Built in support for date, time, host name in headers and footers
++ Ability to start x in either an attached monitor or on the PiTFT
 
 ## Installing
 + cd ~
@@ -112,10 +115,10 @@ This is my first Python project I have ever done.  I'm sure there are lots of pl
 
 In addition, I plan to go back and re-add comments and logging back in.   I stripped most of these areas out so I could get the project posted until I could go back and address my overly cryptic comments and logging into something that someone could possibly understand.
 
-1. Re-add understandable comments to source code. (20% complete)
-2. Add more (configurable) splash items for warnings, errors, information etc.
-3. Add more logging for operation and debugging
-4. Move the GPIO Buttons into a template similar to the Display Buttons templates.
-4. Make header/footer types and their functionality into tokens that can be used in text.
-5. Add images/icons to buttons
-6. Move internal text to resources for use with gettext and improve globalization.
++ Re-add understandable comments to source code. (20% complete)
++ Add more (configurable) splash items for warnings, errors, information etc.
++ Add more logging for operation and debugging
++ Move the GPIO Buttons into a template similar to the Display Buttons templates.
++ Make header/footer types and their functionality into tokens that can be used in text.
++ Add images/icons to buttons
++ Move internal text to resources for use with gettext and improve globalization.
