@@ -166,14 +166,23 @@ class Displays:
 
     @classmethod
     def shell(cls):
+        # To shell, pygame display is quit, but then we reinitialize to get touch events.
         pygame.display.quit()
         pygame.init()
+        # Set loop_mode_shelled which puts our event loop in shelled mode where
+        # only a long touch is detected
         cls.loop_mode_shelled = True
 
 
     @classmethod
     def start_x(cls, hdmi=False):
+        # Check if x is already running
+        if run_cmd(["pidof", "x"]) <= 0:
+            # if so, don't start it again
+            return False
+        # Make sure StartX exists.  It will not on Lite versions of Raspian
         if os.path.isfile(START_X_FILE):
+            # Determine which FRAMEBUFFER to start it on.
             if hdmi:
                 subprocess.call(Command.StartXHdmi)
             else:

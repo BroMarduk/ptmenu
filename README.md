@@ -15,7 +15,7 @@ There are a few different menu systems out there for the different TFT Displays.
 
 1. [garthvh's pitftmenu](https://github.com/garthvh/pitftmenu)
 
-   Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.
+   Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python, start X and to implement code to handle system shutdown on a low battery.
 2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
   
    Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
@@ -32,7 +32,7 @@ In order to use the PTMenu, the following requirements are necessary:
 
 1. A Raspberry Pi
   
-   Any version, including the Zero should work.  Tested on an original Raspberry Pi, a Raspberry Pi 2 and a Raspberry Pi 3.  Once I solder the header into my Zero, I will test it as well.
+   Any version, including the Zero should work.  Tested on an original Raspberry Pi, a Raspberry Pi 2 and a Raspberry Pi 3.  Once I solder the header on my Raspberry Pi Zero, I will test it as well.
 2. An Adafruit PiTFT plugged into the header on the Raspberry Pi.
   
    All Adafruit PiTFTs are supported, but note that the 2.2" PiTFT is non-touch and would require a mouse to use.
@@ -83,25 +83,41 @@ While the main functionality of the application is to display a screen with butt
 + git clone https://github.com/BroMarduk/ptmenu
 + cd ptmenu
 
-Once in the ptmenu directory, there are 5 example projects in the directory that can be run with python.  The Displays.initialize() function needs to be changed to the actual Adafruit PiTFT device present and attached to the Raspberry Pi.  The list of devices is in each example above the Displays.intialize() line with multiple formats to make it easy to select the correct device.  This should be the only change necessary to run the program, assuming all of the requirements are met.
+## Examples
 
-+ sudo python tftmenu-example1.py
+Once in the ptmenu directory, there are 5 example projects in the directory that can be run with python.  The <b>Displays.initialize()</b> function needs to be changed in each one to the actual Adafruit PiTFT device present and attached to the Raspberry Pi.  The list of devices is in each example above the <b>Displays.initialize()</b> line with multiple formats to make it easy to select the correct device.  This should be the only change necessary to run the program, assuming all of the requirements are met.
+
+Supported Display Identifiers (any Method or the Value will work):
+
+|  Method 1  |  Method 2  |  Method 3  | Value | GPIOs (Backlight)           |
+|------------|------------|------------|:------|-----------------------------|
+| DISP22NT   | AF_2315    | NONE22     | 1     | GPIOs 17,22,23,27,(18)      |
+| DISP24R    | AF_2455    | RES24      | 2     | GPIOs 16,13,12,6,5,(18)     |
+| DISP28R    | AF_1601    | RES28      | 3     | GPIOs 23,22,21/27,18,(None) |
+| DISP28C    | AF_1983    | CAP28      | 4     | GPIOs 23,22,21/27,17,(18)   |
+| DISP28RP   | AF_2298    | RES28P     | 5     | GPIOs 17,22,23,27,(18)      |
+| DISP28CP   | AF_2423    | CAP28P     | 6     | GPIOs 17,22,23,27,(18)      |
+| DISP32RP   | AF_2626    | RES32P     | 7     | GPIOs 22,23,17,27,(18)      |
+| DISP35R    | AF_2097    | RES35      | 8     | GPIOs (18)                  |
+| DISP35RP   | AF_2441    | RES35P     | 9     | GPIOs (18)                  |
+
++ <b>sudo python tftmenu-example1.py</b>
 
   Hello Menu! Example - Demonstrates a simple two button menu.  The "Hello" button demonstrates a splash display and the "Goodbye" button exits the menu.
   
-+ sudo python tftmenu-example2.py
++ <b>sudo python tftmenu-example2.py</b>
 
   Advanced Menu Example - Demonstrates a majority of the features of the menu
   
-+ sudo python tftmenu-example3.py
++ <b>sudo python tftmenu-example3.py</b>
 
   Demonstrates the different button order combinations visually.  L indicating Left, R indicating Right, T indicating Top and B indicating Bottom.  So "R-L / T-B" would indicate an order of Right to Left, then Top to Bottom.   All 8 possible combinations can be viewed.
   
-+ sudo python tftmenu-example4.py
++ <b>sudo python tftmenu-example4.py</b>
 
   Demonstrates the thirteen included button templates.   Additional templates can be created or in some cases where the template has blank space, additional buttons can be added.
   
-+ sudo python tftmenu-example5.py
++ <b>sudo python tftmenu-example5.py</b>
 
   Demonstrates some of the possible menu headers (can also be used in footers) that can be displayed.  In addition to the built-in headers, a custom function can also be provided.  This example uses a function called display_pi_temp(), which will show the current temperature of the pi, color coded to be green if below 80 degrees Celsius, Yellow if between 80 and 85 degrees Celsius, and Red if over 85 degrees.  (Also uses Blue if below 0 degrees Celsius, just in case it’s winter and you have the Pi outside).
  
@@ -113,11 +129,11 @@ Once in the ptmenu directory, there are 5 example projects in the directory that
 
 ## Planned Enhancements
 
-This is my first Python project I have ever done.  I'm sure there are lots of places where my old C# habits kicked in that would make a Pythonista cringe.  For that I am sorry.  If anyone using this finds any of those snippets, feel free to point those places out to me and once I understand the underlying reasons, I'll happily improve them.  Especially for a performance boost.  That said, there is also additional functionally in the planning stages that is documented below.  This list is somewhat prioritized, but subject to change based on any feedback I get.
+While I have been writting code for a while, this is my first Python project.  I'm sure there are lots of places where my old C# habits kicked in that would make a Pythonista cringe.  For that I am sorry.  If anyone using this finds any of those snippets, feel free to point those places out to me and once I understand the underlying reasons, I'll happily improve them.  Especially for a performance boost.  That said, there is also additional functionally in the planning stages that is documented below.  This list is somewhat prioritized, but subject to change based on any feedback I get.
 
 In addition, I plan to go back and re-add comments and logging back in.   I stripped most of these areas out so I could get the project posted until I could go back and address my overly cryptic comments and logging into something that someone could possibly understand.
 
-+ Re-add understandable comments to source code. (20% complete)
++ Re-add understandable comments to source code.
 + Add more (configurable) splash items for warnings, errors, information etc.
 + Add more logging for operation and debugging
 + Move the GPIO Buttons into a template similar to the Display Buttons templates.
