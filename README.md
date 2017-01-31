@@ -24,7 +24,7 @@ There are a few different menu systems out there for the different TFT Displays.
    Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
 4. [Adafruit Learning System](https://learn.adafruit.com/)
 
-   It's one thing to support the products you sell and another to provide explicit tutorials on just about everyting you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
+   It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
 
 ## Requirements
 
@@ -129,7 +129,7 @@ Supported Display Identifiers (any Method or the Value will work):
 
 ## Planned Enhancements
 
-While I have been writting code for a while, this is my first Python project.  I'm sure there are lots of places where my old C# habits kicked in that would make a Pythonista cringe.  For that I am sorry.  If anyone using this finds any of those snippets, feel free to point those places out to me and once I understand the underlying reasons, I'll happily improve them.  Especially for a performance boost.  That said, there is also additional functionally in the planning stages that is documented below.  This list is somewhat prioritized, but subject to change based on any feedback I get.
+While I have been writing code for a while, this is my first Python project.  I'm sure there are lots of places where my old C# habits kicked in that would make a Pythonista cringe.  For that I am sorry.  If anyone using this finds any of those snippets, feel free to point those places out to me and once I understand the underlying reasons, I'll happily improve them.  Especially for a performance boost.  That said, there is also additional functionally in the planning stages that is documented below.  This list is somewhat prioritized, but subject to change based on any feedback I get.
 
 In addition, I plan to go back and re-add comments and logging back in.   I stripped most of these areas out so I could get the project posted until I could go back and address my overly cryptic comments and logging into something that someone could possibly understand.
 
