@@ -50,6 +50,7 @@
 ##################################################################################
 # IMPORTS
 ##################################################################################
+import fcntl
 import sys
 
 import pygame.display
@@ -61,6 +62,20 @@ from tftbuttons import *
 from tftutility import *
 
 START_X_FILE = "/usr/bin/startx"
+
+# Make sure application is running as root.
+if not is_root():
+    logger.critical("Application must be run as root (with sudo)")
+    sys.exit()
+# Write out file with lock to ensure only one instance of application can run
+lock_file = 'tftmenu.lock'
+file = open(lock_file, 'w')
+try:
+    fcntl.lockf(file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except IOError:
+    logger.critical("Only one instance of the applicaiton can run at a time.")
+    sys.exit()
+
 ##################################################################################
 # TFTMENUS DISPLAYS CLASS
 ##################################################################################
@@ -207,18 +222,7 @@ class Displays:
     def initialize(cls, tft_type, global_background_color=None, global_border_width=None, global_border_color=None,
                    global_font=None, global_font_size=None, global_font_color=None, global_font_h_padding=None,
                    global_font_v_padding=None, global_font_h_align=None, global_font_v_align=None):
-        # Make sure application is running as root.
-        if not is_root():
-            Logging.logger.critical("Application must be run as root (with sudo)")
-            sys.exit(0)
-        # Write out file with lock to ensure only one instance of application can run
-        lock_file = 'tftmenu.lock'
-        file = open(lock_file, 'w')
-        try:
-            fcntl.lockf(file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except IOError:
-            Logging.logger.critical("Only one instance of the applicaiton can run at a time.")
-            sys.exit(0)
+
         # Set the defaults based on the resolution of the display.  Fonts are scaled
         # using the font resolutions setting which provides similar sized fonts for
         # both the small and large displays.
@@ -795,7 +799,7 @@ class Display(object):
                 if Displays.initial is not None:
                     new_menu = Displays.initial
                 else:
-                    cls.shutdown(Shutdown.Normal)
+                    Displays.shutdown(Shutdown.Normal)
         elif action == DisplayAction.Exit:
             Displays.loop = False
         elif action == DisplayAction.Function:

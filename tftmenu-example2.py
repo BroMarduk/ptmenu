@@ -6,14 +6,11 @@
 # is not normally needed.   The "from tftmenu import *" and "from tfttemplates
 # import *" items need to be present in all display applicaitons.
 import random
+
 from tftmenu import *
 from tfttemplates import *
 
-x = run_cmd(["pidof", "x"])
-if x > 0:
-    print "X Not Running"
-else:
-    print "X Running"
+
 ##################################################################################
 # RANDOM BUTTON CALLBACK FUNCTION
 ##################################################################################
