@@ -15,14 +15,13 @@ There are a few different menu systems out there for the different TFT Displays.
 
 1. [garthvh's pitftmenu](https://github.com/garthvh/pitftmenu)
 
-  Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.
-2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
+  Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python and to implement code to handle system shutdown on a low battery.2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
   
   Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
 3. [pygame Documentation and Examples](http://www.pygame.org/docs/)
   
   Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
-4. [Adafruit Learning System](https://learn.adafruit.com/)
+ 4. [Adafruit Learning System](https://learn.adafruit.com/)
 
   It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also, a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
 
@@ -45,7 +44,7 @@ In order to use the PTMenu, the following requirements are necessary:
   Pygame can be installed by running the following two commands:
   
   <b>sudo apt-get install python-pip</b>
-  
+
   <b>sudo apt-get install python-pygame</b>
 6. libsdl1.2-15-5
 
@@ -75,8 +74,32 @@ While the main functionality of the application is to display a screen with butt
 19. Built in support for date, time, host name in headers and footers
 
 ## Installing
-[Coming Soon]
++ cd ~
++ git clone https://github.com/BroMarduk/ptmenu
++ cd ptmenu
 
+Once in the ptmenu directory, there are 5 example projects in the directory that can be run with python.  The Displays.initialize() function needs to be changed to the actual Adafruit PiTFT device present and attached to the Raspberry Pi.  The list of devices is in each example above the Displays.intialize() line with multiple formats to make it easy to select the correct device.  This should be the only change necessary to run the program, assuming all of the requirements are met.
+
++ sudo python tftmenu-example1.py
+
+  Hello Menu! Example - Demonstrates a simple two button menu.  The "Hello" button demonstrates a splash display and the "Goodbye" button exits the menu.
+  
++ sudo python tftmenu-example2.py
+
+  Advanced Menu Example - Demonstrates a majority of the features of the menu
+  
++ sudo python tftmenu-example3.py
+
+  Demonstrates the different button order combinations visually.  L indicating Left, R indicating Right, T indicating Top and B indicating Bottom.  So "R-L / T-B" would indicate an order of Right to Left, then Top to Bottom.   All 8 possible combinations can be viewed.
+  
++ sudo python tftmenu-example4.py
+
+  Demonstrates the thirteen included button templates.   Additional templates can be created or in some cases where the template has blank space, additional buttons can be added.
+  
++ sudo python tftmenu-example5.py
+
+  Demonstrates some of the possible menu headers (can also be used in footers) that can be displayed.  In addition to the built-in headers, a custom function can also be provided.  This example uses a function called display_pi_temp(), which will show the current temperature of the pi, color coded to be green if below 80 degrees Celsius, Yellow if between 80 and 85 degrees Celsius, and Red if over 85 degrees.  (Also uses Blue if below 0 degrees Celsius, just in case it’s winter and you have the Pi outside).
+ 
 ## Creating First Display
 [Coming Soon]
 
