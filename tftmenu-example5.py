@@ -85,49 +85,49 @@ if header_none is not None:
     header_none[len(header_none) - 1].text = "Back"
     header_none[len(header_none) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_none = Menu(timeout=90, buttons=header_none,
-                            header=Header(type=HeadFootType.NoDisplay))
+                            header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuNone"] = menu_header_none
 header_date = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Yellow)
 if header_date is not None:
     header_date[len(header_date) - 1].text = "Back"
     header_date[len(header_date) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_date = Menu(timeout=90, buttons=header_date,
-                            header=Header(type=HeadFootType.Date))
+                            header=Header(mode=HeadFootType.Date))
     Displays.menus["menuDate"] = menu_header_date
 header_time_12 = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Red)
 if header_time_12 is not None:
     header_time_12[len(header_time_12) - 1].text = "Back"
     header_time_12[len(header_time_12) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_time_12 = Menu(timeout=90, buttons=header_time_12,
-                               header=Header(type=HeadFootType.Time12))
+                               header=Header(mode=HeadFootType.Time12))
     Displays.menus["menuTime12"] = menu_header_time_12
 header_time_24 = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Red)
 if header_time_24 is not None:
     header_time_24[len(header_time_24) - 1].text = "Back"
     header_time_24[len(header_time_24) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_time_24 = Menu(timeout=90, buttons=header_time_24,
-                               header=Header(type=HeadFootType.Time24))
+                               header=Header(mode=HeadFootType.Time24))
     Displays.menus["menuTime24"] = menu_header_time_24
 header_date_time_12 = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Green)
 if header_date_time_12 is not None:
     header_date_time_12[len(header_date_time_12) - 1].text = "Back"
     header_date_time_12[len(header_date_time_12) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_date_time_12 = Menu(timeout=90, buttons=header_date_time_12,
-                                    header=Header(type=HeadFootType.DateTime12))
+                                    header=Header(mode=HeadFootType.DateTime12))
     Displays.menus["menuDateTime12"] = menu_header_date_time_12
 header_date_time_24 = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Green)
 if header_date_time_24 is not None:
     header_date_time_24[len(header_date_time_24) - 1].text = "Back"
     header_date_time_24[len(header_date_time_24) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_date_time_24 = Menu(timeout=90, buttons=header_date_time_24,
-                                    header=Header(type=HeadFootType.DateTime24))
+                                    header=Header(mode=HeadFootType.DateTime24))
     Displays.menus["menuDateTime24"] = menu_header_date_time_24
 header_date_custom = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Magenta)
 if header_date_custom is not None:
     header_date_custom[len(header_date_custom) - 1].text = "Back"
     header_date_custom[len(header_date_custom) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_date_custom = Menu(timeout=90, buttons=header_date_custom,
-                                   header=Header(type=HeadFootType.DateTimeCustom,
+                                   header=Header(mode=HeadFootType.DateTimeCustom,
                                                  data="%-I:%M:%S %p",
                                                  refresh=DisplayHeaderRefresh.Second))
     Displays.menus["menuDateCustom"] = menu_header_date_custom
@@ -136,14 +136,14 @@ if header_host_name is not None:
     header_host_name[len(header_host_name) - 1].text = "Back"
     header_host_name[len(header_host_name) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_host_name = Menu(timeout=90, buttons=header_host_name,
-                                 header=Header(type=HeadFootType.HostName))
+                                 header=Header(mode=HeadFootType.HostName))
     Displays.menus["menuHostName"] = menu_header_host_name
 header_date_ip_address = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Purple)
 if header_date_ip_address is not None:
     header_date_ip_address[len(header_date_ip_address) - 1].text = "Back"
     header_date_ip_address[len(header_date_ip_address) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_date_ip_address = Menu(timeout=90, buttons=header_date_ip_address,
-                                       header=Header(type=HeadFootType.IpAddress,
+                                       header=Header(mode=HeadFootType.IpAddress,
                                                      text=HeadFootLine(text="My IP: {0}")))
     Displays.menus["menuIpAddress"] = menu_header_date_ip_address
 header_user_text = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Cyan)
@@ -151,7 +151,7 @@ if header_user_text is not None:
     header_user_text[len(header_user_text) - 1].text = "Back"
     header_user_text[len(header_user_text) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_user_text = Menu(timeout=90, buttons=header_user_text,
-                                 header=Header(type=HeadFootType.UserText,
+                                 header=Header(mode=HeadFootType.UserText,
                                                text=HeadFootLine(text="Custom User Text",
                                                                  font_size=26, font_color=Color.Cyan,
                                                                  font_h_align=TextHAlign.Left)))
@@ -161,7 +161,7 @@ if header_user_func is not None:
     header_user_func[len(header_user_func) - 1].text = "Back"
     header_user_func[len(header_user_func) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_user_func = Menu(timeout=90, buttons=header_user_func,
-                                 header=Header(type=HeadFootType.UserFunction,
+                                 header=Header(mode=HeadFootType.UserFunction,
                                                data=display_pi_temp, refresh=DisplayHeaderRefresh.Minute))
     Displays.menus["menuUserFunc"] = menu_header_user_func
 Displays.start(initial_menu=Displays.menus["Main"], backlight_method=BacklightMethod.Pwm)

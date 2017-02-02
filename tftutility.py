@@ -5,10 +5,11 @@
 import argparse
 import logging
 import os
-import pygame
 import socket
 import subprocess
 
+import pygame
+import pygame.freetype
 
 ##################################################################################
 # CONFIGURE LOGGING
@@ -25,7 +26,7 @@ try:
     args = parser.parse_args()
     logging_level = getattr(logging, args.log.upper(), None)
 except AttributeError, e:
-    logger.WARNING("Invalid command line attribute passed in.  Setting console logging level to WARNING")
+    logger.warning("Invalid command line attribute passed in.  Setting console logging level to WARNING")
     logging_level = getattr(logging, "WARNING", None)
 # Create Console Handler with the level set to WARNING or that passed in from the
 # command-line given.
@@ -172,6 +173,7 @@ class ButtonTemplate:
     Bottom3x1          = 12
     FullScreenButton   = 13
 
+
 ##################################################################################
 # BUTTON DIRECTION CONSTANTS
 ##################################################################################
@@ -184,6 +186,7 @@ class ButtonDirection:
     TopBottomRightLeft = 5
     BottomTopLeftRight = 6
     BottomTopRightLeft = 7
+
 
 ##################################################################################
 # BUTTON TUPLE CONSTANTS
@@ -234,19 +237,39 @@ class DisplayResolution:
 # DISPLAY ACTION CONSTANTS
 ##################################################################################
 class DisplayAction:
-    NoAction  = 0
-    Display   = 1
-    Back      = 2
-    Exit      = 3
-    Reboot    = 4
-    Shutdown  = 5
-    Function  = 6
-    Sleep     = 7
-    LightUp   = 8
-    LightDown = 9
-    Shell     = 10
-    StartX    = 11
-    Execute   = 12
+    NoAction      = 0
+    Display       = 1
+    Back          = 2
+    Exit          = 3
+    Reboot        = 4
+    Shutdown      = 5
+    Function      = 6
+    ScreenSleep   = 7
+    BacklightUp   = 8
+    BacklightDown = 9
+    Shell         = 10
+    StartX        = 11
+    Execute       = 12
+
+
+##################################################################################
+#  ACTION FUNCTION CONSTANTS
+##################################################################################
+class GpioButtonAction:
+    NoAction      = 0
+    Display       = 1
+    Exit          = 2
+    Reboot        = 3
+    Shutdown      = 4
+    Function      = 5
+    ScreenSleep   = 6
+    ScreenWake    = 7
+    ScreenToggle  = 8
+    BacklightDown = 9
+    BacklightUp   = 10
+    Shell         = 11
+    StartX        = 12
+    Execute       = 13
 
 
 ##################################################################################
@@ -365,6 +388,7 @@ class MouseButton:
     Middle = 2
     Right  = 3
 
+
 ##################################################################################
 # DEFAULTS CLASS
 ##################################################################################
@@ -412,7 +436,6 @@ class Defaults:
     DEFAULT_BUTTON_FONT_VALIGN = TextVAlign.Middle
     DEFAULT_TFT_TYPE = None
 
-
     ##################################################################################
     # DEFAULTS DEFAULT 320x240 CONSTANTS
     ##################################################################################
@@ -436,7 +459,6 @@ class Defaults:
     DEFAULT_HEIGHT_320x240 = 240
     DEFAULT_FONT_RESOLUTION_320x240 = 72
 
-
     ##################################################################################
     # DEFAULTS DEFAULT 480x320 CONSTANTS
     ##################################################################################
@@ -459,7 +481,6 @@ class Defaults:
     DEFAULT_WIDTH_480x320 = 480
     DEFAULT_HEIGHT_480x320 = 320
     DEFAULT_FONT_RESOLUTION_480x320 = 108
-
 
     ##################################################################################
     # DEFAULTS DEFAULT PROPERTIES
@@ -521,12 +542,11 @@ class Defaults:
     tft_resolution                    = DisplayResolution.Small320x240
     tft_size = tft_width, tft_height  = DEFAULT_WIDTH_320x240, DEFAULT_HEIGHT_320x240
 
-
     @classmethod
     def set_defaults(cls, tft_type, global_background_color=None, global_border_width=None,
-                              global_border_color=None, global_font=None, global_font_size=None, global_font_color=None,
-                              global_font_h_padding=None, global_font_v_padding=None,
-                              global_font_h_align=None, global_font_v_align=None):
+                     global_border_color=None, global_font=None, global_font_size=None, global_font_color=None,
+                     global_font_h_padding=None, global_font_v_padding=None,
+                     global_font_h_align=None, global_font_v_align=None):
         cls.tft_type = tft_type
         if (tft_type == DISP35R) or (tft_type == DISP35RP):
             cls.default_border_width              = Defaults.DEFAULT_BORDER_WIDTH_480x320
@@ -550,74 +570,54 @@ class Defaults:
             cls.tft_width                         = Defaults.DEFAULT_WIDTH_480x320
             cls.tft_height                        = Defaults.DEFAULT_HEIGHT_480x320
             cls.tft_size                          = (cls.tft_width, cls.tft_height)
-
-
         if global_background_color is not None:
             cls.default_background_color = global_background_color
             cls.default_splash_background_color = global_background_color
             cls.default_splash_background_color = global_background_color
-        
-        
         if global_border_width is not None:
             cls.default_border_width = global_border_width
             cls.default_dialog_border_width = global_border_width
             cls.default_button_border_width = global_border_width
-        
-
         if global_border_color is not None:
             cls.default_border_color = global_border_color
             cls.default_dialog_border_color = global_border_color
             cls.default_button_border_color = global_border_color
-
-
         if global_font is None or isinstance(global_font, pygame.freetype.Font) or os.path.exists(global_font):
             cls.default_text_line_font = global_font
             cls.default_splash_font = global_font
             cls.default_dialog_font = global_font
             cls.default_header_font = global_font
             cls.default_button_font = global_font
-
-
         if global_font_size is not None:
             cls.default_text_line_font_size = global_font_size
             cls.default_splash_font_size = global_font_size
             cls.default_dialog_font_size = global_font_size
             cls.default_header_font_size = global_font_size
             cls.default_button_font_size = global_font_size
-
-
         if global_font_color is not None:
             cls.default_text_line_font_color = global_font_color
             cls.default_splash_font_color = global_font_color
             cls.default_dialog_font_color = global_font_color
             cls.default_header_font_color = global_font_color
             cls.default_button_font_color = global_font_color
-
-
         if global_font_h_padding is not None:
             cls.default_text_line_font_h_padding = global_font_h_padding
             cls.default_splash_font_h_padding = global_font_h_padding
             cls.default_dialog_font_h_padding = global_font_h_padding
             cls.default_header_font_h_padding = global_font_h_padding
             cls.default_button_font_h_padding = global_font_h_padding
-
-
         if global_font_v_padding is not None:
             cls.default_text_line_v_padding = global_font_v_padding
             cls.default_splash_v_padding = global_font_v_padding
             cls.default_dialog_v_paddingt = global_font_v_padding
             cls.default_header_v_padding = global_font_v_padding
             cls.default_button_v_padding = global_font_v_padding
-       
-        
         if global_font_h_align is not None:
             cls.default_text_line_font_h_align = global_font_h_align
             cls.default_splash_font_h_align = global_font_h_align
             cls.default_dialog_font_h_align = global_font_h_align
             cls.default_header_font_h_align = global_font_h_align
             cls.default_button_font_h_align = global_font_h_align
-
-
         if global_font_v_align is not None:
             cls.default_text_line_v_align = global_font_v_align
             cls.default_splash_v_align = global_font_v_align
@@ -726,14 +726,14 @@ def wrap_text_line(font, text, width):
     max_height = font.get_rect("(TMOg!pqjt[}|/").height
     while text:
         font_rect = font.get_rect(text[:i])
-        while (font_rect.width < width and i < len(text) and not "\n" in text[:i]) or\
-            (" " not in text[:i] and text[:i] is not text):
+        while (font_rect.width < width and i < len(text) and "\n" not in text[:i]) or\
+                (" " not in text[:i] and text[:i] is not text):
             i += 1
             font_rect = font.get_rect(text[:i])
         # if we've wrapped the text, then adjust the wrap to the last word
         if "\n" in text[:i]:
             i = text.find("\n", 0, i) + 1
-        elif i < len(text) :
+        elif i < len(text):
             i = text.rfind(" ", 0, i) + 1
         line_text = text[:i].strip("\n")
         text_rect = font.get_rect(line_text)

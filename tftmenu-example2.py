@@ -22,18 +22,18 @@ from tfttemplates import *
 # it is not rendered on subsequent shows.
 def random_button_color(menu, button):
     if button is not None:
-        color = random.randint(0, 6)
-        if color is 0:
+        button_color = random.randint(0, 6)
+        if button_color is 0:
             button.border_color = Color.Red
-        elif color is 1:
+        elif button_color is 1:
             button.border_color = Color.Orange
-        elif color is 2:
+        elif button_color is 2:
             button.border_color = Color.Yellow
-        elif color is 3:
+        elif button_color is 3:
             button.border_color = Color.Green
-        elif color is 4:
+        elif button_color is 4:
             button.border_color = Color.Blue
-        elif color is 5:
+        elif button_color is 5:
             button.border_color = Color.Indigo
         else:
             button.border_color = Color.Purple
@@ -81,10 +81,10 @@ mainMenuButtons = get_buttons(ButtonTemplate.Header2x3, ButtonDirection.LeftRigh
                               actions=mainMenuActions,
                               border_color=[None, Color.Green, Color.Green, None, Color.Yellow, Color.Red])
 mainMenu = Menu(timeout=90, buttons=mainMenuButtons,
-                header=Header(type=HeadFootType.DateTime12,
+                header=Header(mode=HeadFootType.DateTime12,
                               text=HeadFootLine(font_pad=False)))
 Displays.menus["Main"] = mainMenu
-page2MenuActions = [Action(DisplayAction.Sleep), Action(DisplayAction.Shell),
+page2MenuActions = [Action(DisplayAction.ScreenSleep), Action(DisplayAction.Shell),
                     Action(DisplayAction.Function, random_button_color),
                     Action(DisplayAction.Display, "ScreenButton"), Action(DisplayAction.Display, "Main"),
                     Action(DisplayAction.Display, "YesNoColored")]
@@ -92,7 +92,7 @@ page2MenuButtons = get_buttons(ButtonTemplate.Header2x3, ButtonDirection.LeftRig
                                names=["Sleep", "Shell", "Random", "Full", "Previous", "Exit"], actions=page2MenuActions,
                                border_color=[Color.Red, Color.Green, Color.Cyan, Color.Orange, Color.Yellow])
 page2Menu = Menu(border_color=Color.Red, timeout=10, buttons=page2MenuButtons,
-                 header=Header(type=HeadFootType.UserText, text=HeadFootLine(text="Secondary Menu", font_pad=False)))
+                 header=Header(mode=HeadFootType.UserText, text=HeadFootLine(text="Secondary Menu", font_pad=False)))
 Displays.menus["Page2"] = page2Menu
 
 
@@ -155,4 +155,5 @@ dialogYesNoColored = Dialog(dialogYesNoColoredText, DialogStyle.YesNo, backgroun
 dialogYesNoColored.buttons[0].border_color = Color.Red
 dialogYesNoColored.buttons[1].border_color = Color.Green
 Displays.menus["YesNoColored"] = dialogYesNoColored
-Displays.start(initial_menu="Main", backlight_method=BacklightMethod.Pwm, backlight_restore_last=True)
+Displays.start(initial_menu="Main", backlight_method=BacklightMethod.Pwm, backlight_restore_last=True,
+               backlight_auto=True)

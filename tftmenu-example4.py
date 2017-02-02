@@ -49,7 +49,7 @@ mainMenuButtons = get_buttons(ButtonTemplate.FullScreen2x4, border_color=Color.Y
                                        Action(DisplayAction.Display, "menu4x4Full"),
                                        Action(DisplayAction.Display, "Page2")])
 if mainMenuButtons is not None:
-    mainMenu = Menu(timeout=90, buttons=mainMenuButtons, header=Header(type=HeadFootType.NoDisplay))
+    mainMenu = Menu(timeout=90, buttons=mainMenuButtons, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["Main"] = mainMenu
 page2MenuButtons = get_buttons(ButtonTemplate.FullScreen2x4, border_color=Color.Yellow, font_size=14,
                                names=["1x1 Bottom",
@@ -69,14 +69,14 @@ page2MenuButtons = get_buttons(ButtonTemplate.FullScreen2x4, border_color=Color.
                                         Action(DisplayAction.Display, "Main"),
                                         Action(DisplayAction.Exit)])
 if page2MenuButtons is not None:
-    page2Menu = Menu(timeout=90, buttons=page2MenuButtons, header=Header(type=HeadFootType.NoDisplay))
+    page2Menu = Menu(timeout=90, buttons=page2MenuButtons, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["Page2"] = page2Menu
 buttons_2x3_header = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Red)
 if buttons_2x3_header is not None:
     buttons_2x3_header[-1].text = "Back"
     buttons_2x3_header[-1].action = Action(DisplayAction.Display, "Main")
     menu_2x3_header = Menu(timeout=90, buttons=buttons_2x3_header,
-                           header=Header(type=HeadFootType.UserText,
+                           header=Header(mode=HeadFootType.UserText,
                                          text=HeadFootLine(font_size=20, text="2 Col by 3 Row with Header")))
     Displays.menus["menu2x3Header"] = menu_2x3_header
 buttons_2x2_headfoot = get_buttons(ButtonTemplate.HeaderFooter2x2, border_color=Color.Red)
@@ -84,16 +84,16 @@ if buttons_2x2_headfoot is not None:
     buttons_2x2_headfoot[-1].text = "Back"
     buttons_2x2_headfoot[-1].action = Action(DisplayAction.Display, "Main")
     menu_2x2_headfoot = Menu(timeout=90, buttons=buttons_2x2_headfoot,
-                             header=Header(type=HeadFootType.UserText,
+                             header=Header(mode=HeadFootType.UserText,
                                            text=HeadFootLine(font_size=20, text="2 Col by 3 Row with Head/Foot")),
-                             footer=Footer(type=HeadFootType.DateTime12))
+                             footer=Footer(mode=HeadFootType.DateTime12))
     Displays.menus["menu2x2HeaderFooter"] = menu_2x2_headfoot
 buttons_3x3_header = get_buttons(ButtonTemplate.Header3x3, border_color=Color.Red)
 if buttons_3x3_header is not None:
     buttons_3x3_header[-1].text = "Back"
     buttons_3x3_header[-1].action = Action(DisplayAction.Display, "Main")
     menu_3x3_header = Menu(timeout=90, buttons=buttons_3x3_header,
-                           header=Header(type=HeadFootType.UserText,
+                           header=Header(mode=HeadFootType.UserText,
                                          text=HeadFootLine(font_size=20, text="3 Col by 3 Row with Header")))
     Displays.menus["menu3x3Header"] = menu_3x3_header
 buttons_3x2_headfoot = get_buttons(ButtonTemplate.HeaderFooter2x2, border_color=Color.Red)
@@ -101,9 +101,9 @@ if buttons_3x2_headfoot is not None:
     buttons_3x2_headfoot[-1].text = "Back"
     buttons_3x2_headfoot[-1].action = Action(DisplayAction.Display, "Main")
     menu_3x2_headfoot = Menu(timeout=90, buttons=buttons_3x2_headfoot,
-                             header=Header(type=HeadFootType.UserText,
+                             header=Header(mode=HeadFootType.UserText,
                                            text=HeadFootLine(font_size=20, text="2 Col by 3 Row with Head/Foot")),
-                             footer=Footer(type=HeadFootType.DateTime12)
+                             footer=Footer(mode=HeadFootType.DateTime12)
                              )
     Displays.menus["menu3x2HeaderFooter"] = menu_3x2_headfoot
 buttons_2x4_full_screen = get_buttons(ButtonTemplate.FullScreen2x4, border_color=Color.Green)

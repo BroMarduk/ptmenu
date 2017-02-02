@@ -69,9 +69,9 @@ if not is_root():
     sys.exit()
 # Write out file with lock to ensure only one instance of application can run
 lock_file = 'tftmenu.lock'
-file = open(lock_file, 'w')
+file_open = open(lock_file, 'w')
 try:
-    fcntl.lockf(file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    fcntl.lockf(file_open, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except IOError:
     logger.critical("Only one instance of the applicaiton can run at a time.")
     sys.exit()
@@ -95,7 +95,6 @@ class Displays:
     display_type = None
     initialized = False
 
-
     ##################################################################################
     # DISPLAYS SHOW METHOD
     ##################################################################################
@@ -105,9 +104,9 @@ class Displays:
         display = None
         if isinstance(item, Display):
             display = item
-        # If not a menu, attempt to find a menu with the same name
-        elif item in cls.menus:
-            display = cls.menus[item]
+        else:
+            if item in cls.menus:
+                display = cls.menus[item]
         if display is not None:
             if cls.current is None or display is not cls.current.last:
                 display.last = cls.current
@@ -115,6 +114,8 @@ class Displays:
                     Displays.last = display
             display.render(data)
             cls.current = display
+        else:
+            logger.warning("Unable to get valid dispaly to show.  item={0}, data={1}".format("D","E"))
 
     ##################################################################################
     # DISPLAYS TIMEOUT_SLEEP METHOD
@@ -124,7 +125,6 @@ class Displays:
         # Turn out the backlight after timer expires
         if Backlight.method != BacklightMethod.NoBacklight and not Backlight.is_screen_sleeping():
             Backlight.screen_sleep()
-
 
     ##################################################################################
     # DISPLAYS TIMEOUT_CLOSE METHOD
@@ -143,7 +143,7 @@ class Displays:
             if Defaults.tft_type is not DISP22NT:
                 pygame.mouse.set_visible(False)
             Displays.screen = pygame.display.set_mode(Defaults.tft_size)
-        if  method == Shutdown.Terminate:
+        if method == Shutdown.Terminate:
             draw_true_rect(Displays.screen, Color.Black, 0, 0, Defaults.tft_width, Defaults.tft_height, 0)
             pygame.display.flip()
             if Backlight.method is not BacklightMethod.NoBacklight:
@@ -156,14 +156,12 @@ class Displays:
             pygame.display.flip()
         pygame.quit()
         Timer.abort()
-        #del tft_buttons
         cls.started = False
         if method is Shutdown.Shutdown:
             subprocess.call(Command.Shutdown.split())
         elif method is Shutdown.Reboot:
             subprocess.call(Command.Reboot.split())
         sys.exit()
-
 
     @classmethod
     def shell(cls):
@@ -173,7 +171,6 @@ class Displays:
         # Set loop_mode_shelled which puts our event loop in shelled mode where
         # only a long touch is detected
         cls.loop_mode_shelled = True
-
 
     @classmethod
     def start_x(cls, hdmi=False):
@@ -202,11 +199,10 @@ class Displays:
         Displays.show(return_display)
         cls.loop_mode_shelled = False
 
-
     @classmethod
     def on_shutdown(cls, signum, frame):
+        logger.debug("Shutdown Signal Received.  Signum:{0}, Frame:{1}".format(signum, frame))
         cls.shutdown(Shutdown.Normal if signum is signal.SIGINT else Shutdown.Terminate)
-
 
     ##################################################################################
     # GET_LAST_CORE_DISPLAY
@@ -224,7 +220,6 @@ class Displays:
                 return previous
             previous = previous.last
         return cls.initial
-
 
     ##################################################################################
     # DISPLAYS INITIALIZE METHOD
@@ -277,13 +272,13 @@ class Displays:
         logger.info("Intitialized - %s", "Dan")
         cls.initialized = True
 
-
     ##################################################################################
     # DISPLAYS START METHOD
     ##################################################################################
     @classmethod
     def start(cls, initial_menu, backlight_method=None, backlight_steps=None, backlight_default=None,
-              backlight_restore_last=False, button_callback=None, power_gpio=None, battery_gpio=None):
+              backlight_restore_last=False, backlight_auto=False, button_callback=None,
+              power_gpio=None, battery_gpio=None):
         # Make sure start process has not already started.
         if cls.started:
             return
@@ -302,9 +297,11 @@ class Displays:
         cls.screen = pygame.display.set_mode(Defaults.tft_size)
         try:
             # Create TFTButtons
-            tft_buttons = Buttons(Defaults.tft_type, backlight_method=backlight_method, backlight_steps=backlight_steps,
-                                  backlight_default=backlight_default, backlight_restore_last=backlight_restore_last,
-                                  button_callback=button_callback, power_gpio=power_gpio, battery_gpio=battery_gpio)
+            tft_buttons = GpioButtons(Defaults.tft_type, backlight_method=backlight_method,
+                                      backlight_steps=backlight_steps, backlight_default=backlight_default,
+                                      backlight_restore_last=backlight_restore_last, backlight_auto=backlight_auto,
+                                      button_callback=button_callback,
+                                      power_gpio=power_gpio, battery_gpio=battery_gpio)
             # Show and set initial menu
             Displays.initial = initial_menu
             Displays.show(initial_menu)
@@ -417,7 +414,6 @@ class BaseLine(object):
     font_v_padding = None
     font_pad = None
 
-
     ##################################################################################
     # BASELINE INIT METHOD
     ##################################################################################
@@ -436,11 +432,10 @@ class BaseLine(object):
         self.font_pad = font_pad
         self.wrap_text = wrap_text
 
-
     ##################################################################################
     # BASELINE RENDER METHOD
     ##################################################################################
-    def render(self, background_color = None):
+    def render(self, background_color=None):
         if self.font is None:
             self.font = pygame.freetype.Font(None, self.font_size, resolution=Defaults.default_font_resolution)
         elif isinstance(self.font, pygame.freetype.Font):
@@ -456,11 +451,12 @@ class BaseLine(object):
             wrapped_text = ""
             try:
                 wrapped_text = wrap_text_line(self.font, self.text if self.text is not None else "",
-                                        Defaults.tft_width - (self.font_h_padding * 2)
-                                        if not hasattr(Displays.current, "border_width")
-                                        else Defaults.tft_width - ((Displays.current.border_width +
-                                                                    self.font_h_padding)* 2))
+                                              Defaults.tft_width - (self.font_h_padding * 2)
+                                              if not hasattr(Displays.current, "border_width")
+                                              else Defaults.tft_width - ((Displays.current.border_width +
+                                                                          self.font_h_padding) * 2))
             except Exception, ex:
+                logger.error("Error occured while attempting to wrap text.  {0}".format(ex))
                 Displays.shutdown(Shutdown.Error, SplashBuiltIn.Error)
             if len(wrapped_text[0]) is 1:
                 return self.font.render(wrapped_text[0][0] if wrapped_text[0][0] is not None else "",
@@ -477,13 +473,13 @@ class BaseLine(object):
                     if self.font_h_align == TextHAlign.Left:
                         left = 0
                     elif self.font_h_align == TextHAlign.Right:
-                        left = surface_width - 1 - wrapped_text[2][index]
+                        left = surface_width - 1 - int(wrapped_text[2][index])
                     else:
-                        left = (surface_width / 2) - (wrapped_text[2][index] / 2)
+                        left = (surface_width / 2) - (int(wrapped_text[2][index]) / 2)
                     try:
                         self.font.render_to(text_surface, (left, top), wrapped_text[0][index], fgcolor=self.font_color)
                     except Exception, ex:
-                        pass
+                        logger.error("Error occured while attempting to render wrapped text.  {0}".format(ex))
                     text_top += wrapped_text[1][index] + self.font_v_padding
                 return text_surface, text_surface.get_rect()
 
@@ -531,7 +527,8 @@ class SplashLine(BaseLine):
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
         super(SplashLine, self).__init__(text, font_size, font_color, font, font_style,
-                                       font_h_align, font_h_padding, font_v_align, font_v_padding, font_pad, wrap_text)
+                                         font_h_align, font_h_padding, font_v_align, font_v_padding,
+                                         font_pad, wrap_text)
         if self.font is None:
             self.font = Defaults.default_splash_font
         if self.font_color is None:
@@ -562,7 +559,8 @@ class DialogLine(BaseLine):
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
         super(DialogLine, self).__init__(text, font_size, font_color, font, font_style,
-                                       font_h_align, font_h_padding, font_v_align, font_v_padding, font_pad, wrap_text)
+                                         font_h_align, font_h_padding, font_v_align, font_v_padding,
+                                         font_pad, wrap_text)
         if self.font is None:
             self.font = Defaults.default_dialog_font
         if self.font_color is None:
@@ -593,7 +591,8 @@ class HeadFootLine(BaseLine):
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
         super(HeadFootLine, self).__init__(text, font_size, font_color, font, font_style,
-                                           font_h_align, font_h_padding, font_v_align, font_v_padding, font_pad, wrap_text)
+                                           font_h_align, font_h_padding, font_v_align, font_v_padding,
+                                           font_pad, wrap_text)
         if self.font is None:
             self.font = Defaults.default_header_font
         if self.font_color is None:
@@ -624,7 +623,8 @@ class ButtonLine(BaseLine):
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
         super(ButtonLine, self).__init__(text, font_size, font_color, font, font_style,
-                                       font_h_align, font_h_padding, font_v_align, font_v_padding, font_pad, wrap_text)
+                                         font_h_align, font_h_padding, font_v_align, font_v_padding,
+                                         font_pad, wrap_text)
         if self.font is None:
             self.font = Defaults.default_button_font
         if self.font_color is None:
@@ -674,15 +674,14 @@ class Display(object):
     timeout_function = None
     last = None
     force_refresh = False
-    is_core = False
-
+    is_core = True
 
     ##################################################################################
     # DISPLAY INIT METHOD
     ##################################################################################
     def __init__(self, background_color=Defaults.default_background_color,
                  border_color=Defaults.default_border_color, border_width=None,
-                 buttons=None, actions=None, timeout=Defaults.default_timeout, timeout_function=None):
+                 buttons=None, actions=None, timeout=Defaults.default_timeout, timeout_function=None, is_core=True):
         self.background_color = background_color
         self.border_color = border_color
         self.border_width = border_width
@@ -692,8 +691,7 @@ class Display(object):
         self.timeout_function = merge(Displays.timeout_sleep, timeout_function)
         if self.border_width is None:
             self.border_width = Defaults.default_border_width
-        self.is_core = True
-
+        self.is_core = is_core
 
     ##################################################################################
     # DISPLAY RENDER METHOD
@@ -723,7 +721,6 @@ class Display(object):
         Timer.timeout(self.timeout)
         Backlight.screen_wake()
 
-
     ##################################################################################
     # DISPLAYS RENDER_BUTTONS METHOD
     ##################################################################################
@@ -731,7 +728,6 @@ class Display(object):
         for button in self.buttons:
             if button is not None:
                 button.render()
-
 
     ##################################################################################
     # DISPLAYS PROCESS_LOCATION METHOD
@@ -749,7 +745,6 @@ class Display(object):
                 break
         return hit
 
-
     ##################################################################################
     # DISPLAYS PROCESS_DOWN_BUTTON METHOD
     ##################################################################################
@@ -766,7 +761,6 @@ class Display(object):
         else:
             return 0
 
-
     ##################################################################################
     # DISPLAYS PROCESS_UP_BUTTON METHOD
     ##################################################################################
@@ -778,7 +772,6 @@ class Display(object):
             button_rect = button.render()
             if button_rect:
                 pygame.display.update(button_rect)
-
 
     ##################################################################################
     # DISPLAYS PROCESS_BUTTON METHOD
@@ -799,7 +792,7 @@ class Display(object):
         if action == DisplayAction.NoAction:
             return new_menu, None
         elif action == DisplayAction.Display:
-            if action_data is not None and len(action_data) > 0 and Displays.menus.has_key(action_data):
+            if action_data is not None and len(action_data) > 0 and action_data in Displays.menus:
                 new_menu = Displays.menus[action_data]
         elif action == DisplayAction.Back:
             new_menu = Displays.get_last_core_display()
@@ -816,11 +809,11 @@ class Display(object):
                 if return_val is not None:
                     if isinstance(return_val, Display):
                         new_menu = return_val
-        elif action == DisplayAction.Sleep:
+        elif action == DisplayAction.ScreenSleep:
             Backlight.screen_sleep()
-        elif action == DisplayAction.LightUp:
+        elif action == DisplayAction.BacklightUp:
             Backlight.backlight_up()
-        elif action == DisplayAction.LightDown:
+        elif action == DisplayAction.BacklightDown:
             Backlight.backlight_down()
         elif action == DisplayAction.Shell:
             if Defaults.tft_type is DISP22NT:
@@ -858,16 +851,10 @@ class Menu(Display):
     # MENU INIT METHOD
     ##################################################################################
     def __init__(self, background_color=Defaults.default_background_color,
-                 border_color=Defaults.default_border_color, border_width=None, buttons=None, actions= None,
+                 border_color=Defaults.default_border_color, border_width=None, buttons=None, actions=None,
                  timeout=Defaults.default_timeout, timeout_function=None, header=None, footer=None):
-        self.background_color = background_color
-        self.border_color = border_color
-        self.border_width = border_width
-        self.buttons = array_single_none(buttons)
-        self.actions = array_single_none(actions)
-        self.timeout = timeout
-        self.timeout_function = merge(Displays.timeout_sleep, timeout_function)
-        self.buttons = array_single_none(buttons)
+        super(Menu, self).__init__(background_color, border_color, border_width, buttons, actions,
+                                   timeout, timeout_function, is_core=True)
         if self.border_width is None:
             self.border_width = Defaults.default_border_width
         if header is None:
@@ -878,7 +865,6 @@ class Menu(Display):
             self.footer = Header(HeadFootType.NoDisplay)
         else:
             self.footer = footer
-        self.is_core = True
 
 
 ##################################################################################
@@ -891,11 +877,9 @@ class Splash(Display):
     ##################################################################################
     def __init__(self, text=None, background_color=Defaults.default_splash_background_color,
                  timeout=Defaults.default_splash_timeout):
+        super(Splash, self).__init__(background_color, None, None, None, None,
+                                     timeout, timeout_function=[Displays.timeout_close], is_core=False)
         self.text = array_single_none(text)
-        self.background_color = background_color
-        self.timeout = timeout
-        self.timeout_function = [Displays.timeout_close]
-
 
     ##################################################################################
     # SPLASH RENDER METHOD
@@ -963,7 +947,6 @@ class Dialog(Display):
     use_menu_timeout = False
     use_menu_colors = False
 
-
     ##################################################################################
     # DIALOG INIT METHOD
     ##################################################################################
@@ -971,22 +954,15 @@ class Dialog(Display):
                  border_color=Defaults.default_dialog_border_color, border_width=None, actions=None, buttons=None,
                  timeout=Defaults.default_dialog_timeout, timeout_function=None, use_menu_timeout=False,
                  use_menu_colors=False):
-        super(Dialog, self).__init__(background_color, border_color, border_width, buttons, actions, timeout,
-                                     timeout_function)
+
+        super(Dialog, self).__init__(background_color, border_color, border_width, buttons, actions,
+                                     timeout, timeout_function=merge(Displays.timeout_sleep, timeout_function),
+                                     is_core=False)
+
         self.text = array_single_none(text)
         self.dialog_type = dialog_type
-        self.background_color = background_color
-        self.border_color = border_color
-        self.border_width = border_width
-        self.buttons = array_single_none(buttons)
-        self.actions = array_single_none(actions)
-        self.timeout = timeout
-        self.timeout_function = merge(Displays.timeout_sleep, timeout_function)
         self.use_menu_timeout = use_menu_timeout
         self.use_menu_colors = use_menu_colors
-        if self.border_width is None:
-            self.border_width = Defaults.default_border_width
-
 
     ##################################################################################
     # DIALOG RENDER METHOD
@@ -1060,10 +1036,10 @@ class Dialog(Display):
         else:
             button_pos = get_buttons_start_height(self.buttons)
             if button_pos > Defaults.tft_height - (display_border_width * 2):
-                dialog_text_area_height = Defaults.tft_height - (display.border_width * 2)
+                dialog_text_area_height = Defaults.tft_height - (display_border_width * 2)
             else:
                 dialog_text_area_height = button_pos - display_border_width
-            #dialog_text_area_height = get_buttons_start_height(self.buttons)
+            # dialog_text_area_height = get_buttons_start_height(self.buttons)
         if data is not None:
             render_text = array_single_none(data)
         else:
@@ -1129,7 +1105,7 @@ class Dialog(Display):
 class Header(object):
     text = None
     data = None
-    type = 0
+    mode = 0
     height = 0
     refresh = None
     last_update = None
@@ -1138,67 +1114,64 @@ class Header(object):
     ##################################################################################
     # HEADER INIT METHOD
     ##################################################################################
-    def __init__(self, text=None, data=None, type=HeadFootType.NoDisplay, height=None, refresh=None):
+    def __init__(self, text=None, data=None, mode=HeadFootType.NoDisplay, height=None, refresh=None):
         if text is None:
             self.text = HeadFootLine(None)
         elif not isinstance(text, HeadFootLine):
             self.text = HeadFootLine(unicode(text))
         else:
             self.text = text
-        self.type = type
+        self.mode = mode
         self.data = data
         self.height = height
         self.refresh = refresh
         self.location = HeadFootLocation.Top
-        # if self.height is None:
-        #     self.height = Defaults.default_header_height
         if self.refresh is None:
-            if self.type == HeadFootType.Date:
+            if self.mode == HeadFootType.Date:
                 self.refresh = DisplayHeaderRefresh.Day
-            elif self.type == HeadFootType.Time12 or self.type == HeadFootType.Time24 or \
-                            self.type == HeadFootType.DateTime12 or \
-                            self.type == HeadFootType.DateTime24:
+            elif self.mode == HeadFootType.Time12 or self.mode == HeadFootType.Time24 \
+                or self.mode == HeadFootType.DateTime12 \
+                    or self.mode == HeadFootType.DateTime24:
                 self.refresh = DisplayHeaderRefresh.Minute
             else:
                 self.refresh = DisplayHeaderRefresh.NoRefresh
-
 
     ##################################################################################
     # HEADER (AND FOOTER) RENDER METHOD
     ##################################################################################
     def render(self, display, clear=False):
-        # Get Header Text based on type.  If HeadFootType.UserText, nothing changes
-        if self.type == HeadFootType.NoDisplay:
+        # Get Header Text based on mode.  If HeadFootType.UserText, nothing changes
+        if self.mode == HeadFootType.NoDisplay:
             return
-        elif self.type == HeadFootType.Date:
+        elif self.mode == HeadFootType.Date:
             self.text.text = time.strftime("%B %d, %Y")
-        elif self.type == HeadFootType.Time12:
+        elif self.mode == HeadFootType.Time12:
             self.text.text = time.strftime("%-I:%M %p")
-        elif self.type == HeadFootType.Time24:
+        elif self.mode == HeadFootType.Time24:
             self.text.text = time.strftime("%H:%M")
-        elif self.type == HeadFootType.DateTime12:
+        elif self.mode == HeadFootType.DateTime12:
             self.text.text = time.strftime("%m/%d/%y  %-I:%M %p")
-        elif self.type == HeadFootType.DateTime24:
+        elif self.mode == HeadFootType.DateTime24:
             self.text.text = time.strftime("%d/%m/%y  %H:%M")
-        elif self.type == HeadFootType.DateTimeCustom:
-            if not self.data is None:
+        elif self.mode == HeadFootType.DateTimeCustom:
+            if self.data is not None:
                 self.text.text = time.strftime(self.data)
-        elif self.type == HeadFootType.HostName:
+        elif self.mode == HeadFootType.HostName:
             host_name = run_cmd("hostname")
             if self.text.text:
                 self.text.text = self.text.text.format(host_name[:-1])
             else:
-                self.text.text =  host_name[:-1]
-        elif self.type == HeadFootType.IpAddress:
+                self.text.text = host_name[:-1]
+        elif self.mode == HeadFootType.IpAddress:
             ip_address = get_ip_address()
             if self.text.text:
                 self.text.text = self.text.text.format(ip_address)
             else:
                 self.text.text = ip_address
-        elif self.type == HeadFootType.UserFunction:
+        elif self.mode == HeadFootType.UserFunction:
             if self.data is not None:
                 self.text.text = unicode(self.data(self))
-        elif self.type is not HeadFootType.UserText:
+        elif self.mode is not HeadFootType.UserText:
             return
         if self.text.text is None:
             self.text.text = ""
@@ -1230,7 +1203,7 @@ class Header(object):
         if self.text.font_h_align == TextHAlign.Left:
             headfoot_text_left = display.border_width + self.text.font_h_padding
         elif self.text.font_h_align == TextHAlign.Right:
-            headfoot_text_left = Defaults.tft_width -  headfoot_text_width - display.border_width - \
+            headfoot_text_left = Defaults.tft_width - headfoot_text_width - display.border_width - \
                                self.text.font_h_padding
         else:
             headfoot_text_left = (Defaults.tft_width - headfoot_text_width) / 2
@@ -1247,13 +1220,12 @@ class Header(object):
         headfoot_background_rect = None
         if clear:
             headfoot_background_rect = Rect(display.border_width, headfoot_offset,
-                                        Defaults.tft_width - (display.border_width * 2) - 1,
-                                        true_headfoot_height)
+                                            Defaults.tft_width - (display.border_width * 2) - 1,
+                                            true_headfoot_height)
             draw_true_with_rect(Displays.screen, display.background_color, headfoot_background_rect, 0)
         Displays.screen.blit(headfoot_surface, headfoot_text_rect)
         if clear:
             pygame.display.update(headfoot_background_rect)
-
 
     ##################################################################################
     # HEADER UPDATE METHOD
@@ -1297,8 +1269,8 @@ class Footer(Header):
     ##################################################################################
     # FOOTER INIT METHOD
     ##################################################################################
-    def __init__(self, text=None, data=None, type=HeadFootType.NoDisplay, height=None, refresh=None):
-        super(Footer, self).__init__(text, data, type, height, refresh)
+    def __init__(self, text=None, data=None, mode=HeadFootType.NoDisplay, height=None, refresh=None):
+        super(Footer, self).__init__(text, data, mode, height, refresh)
         self.location = HeadFootLocation.Bottom
                      
                      
@@ -1347,7 +1319,6 @@ class Button(object):
             self.width = Defaults.default_button_height
         if self.border_width is None:
             self.border_width = Defaults.default_button_border_width
-
 
     ##################################################################################
     # BUTTON RENDER METHOD

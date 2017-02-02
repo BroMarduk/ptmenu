@@ -47,7 +47,7 @@ buttons = get_buttons(ButtonTemplate.Bottom2x1,
 # buttons are the buttons created in the previous statement and the header is
 # created in-line using a user displayed message.  The text property can be
 # string or a HeaderText (technically it can be any BaseText item)
-mainMenu = Menu(buttons=buttons, header=Header(type=HeadFootType.UserText, text="Hello Menu!"))
+mainMenu = Menu(buttons=buttons, header=Header(mode=HeadFootType.UserText, text="Hello Menu!"))
 # Adds the mainMenu created above to the Displays collection with the name
 # "Main".
 Displays.menus["Main"] = mainMenu

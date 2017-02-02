@@ -52,55 +52,55 @@ mainMenuButtons = get_buttons(ButtonTemplate.Header3x3, border_color=Color.Yello
                                        Action(DisplayAction.Exit)])
 if mainMenuButtons is not None:
     mainMenu = Menu(timeout=90, buttons=mainMenuButtons,
-                    header=Header(type=HeadFootType.UserText,
+                    header=Header(mode=HeadFootType.UserText,
                                   text=HeadFootLine(text="Button Order Examples", font_size=25)))
     Displays.menus["Main"] = mainMenu
 buttons_lrtb = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.LeftRightTopBottom, border_color=Color.Red)
 if buttons_lrtb is not None:
     buttons_lrtb[len(buttons_lrtb) - 1].text = "Back"
     buttons_lrtb[len(buttons_lrtb) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_lrtb = Menu(timeout=90, buttons=buttons_lrtb, header=Header(type=HeadFootType.NoDisplay))
+    menu_lrtb = Menu(timeout=90, buttons=buttons_lrtb, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuLRTB"] = menu_lrtb
 buttons_lrbt = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.LeftRightBottomTop, border_color=Color.Red)
 if buttons_lrbt is not None:
     buttons_lrbt[len(buttons_lrbt) - 1].text = "Back"
     buttons_lrbt[len(buttons_lrbt) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_lrbt = Menu(timeout=90, buttons=buttons_lrbt, header=Header(type=HeadFootType.NoDisplay))
+    menu_lrbt = Menu(timeout=90, buttons=buttons_lrbt, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuLRBT"] = menu_lrbt
 buttons_rltb = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.RightLeftTopBottom, border_color=Color.Green)
 if buttons_rltb is not None:
     buttons_rltb[len(buttons_rltb) - 1].text = "Back"
     buttons_rltb[len(buttons_rltb) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_rltb = Menu(timeout=90, buttons=buttons_rltb, header=Header(type=HeadFootType.NoDisplay))
+    menu_rltb = Menu(timeout=90, buttons=buttons_rltb, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuRLTB"] = menu_rltb
 buttons_rlbt = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.RightLeftBottomTop, border_color=Color.Green)
 if buttons_rlbt is not None:
     buttons_rlbt[len(buttons_rlbt) - 1].text = "Back"
     buttons_rlbt[len(buttons_rlbt) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_rlbt = Menu(timeout=90, buttons=buttons_rlbt, header=Header(type=HeadFootType.NoDisplay))
+    menu_rlbt = Menu(timeout=90, buttons=buttons_rlbt, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuRLBT"] = menu_rlbt
 buttons_tblr = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.TopBottomLeftRight, border_color=Color.Blue)
 if buttons_tblr is not None:
     buttons_tblr[len(buttons_tblr) - 1].text = "Back"
     buttons_tblr[len(buttons_tblr) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_tblr = Menu(timeout=90, buttons=buttons_tblr, header=Header(type=HeadFootType.NoDisplay))
+    menu_tblr = Menu(timeout=90, buttons=buttons_tblr, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuTBLR"] = menu_tblr
 buttons_tbrl = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.TopBottomRightLeft, border_color=Color.Blue)
 if buttons_tbrl is not None:
     buttons_tbrl[len(buttons_tbrl) - 1].text = "Back"
     buttons_tbrl[len(buttons_tbrl) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_tbrl = Menu(timeout=90, buttons=buttons_tbrl, header=Header(type=HeadFootType.NoDisplay))
+    menu_tbrl = Menu(timeout=90, buttons=buttons_tbrl, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuTBRL"] = menu_tbrl
 buttons_btlr = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.BottomTopLeftRight, border_color=Color.Orange)
 if buttons_btlr is not None:
     buttons_btlr[len(buttons_btlr) - 1].text = "Back"
     buttons_btlr[len(buttons_btlr) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_btlr = Menu(timeout=90, buttons=buttons_btlr, header=Header(type=HeadFootType.NoDisplay))
+    menu_btlr = Menu(timeout=90, buttons=buttons_btlr, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuBTLR"] = menu_btlr
 buttons_btrl = get_buttons(ButtonTemplate.FullScreen4x4, ButtonDirection.BottomTopRightLeft, border_color=Color.Orange)
 if buttons_btrl is not None:
     buttons_btrl[len(buttons_btrl) - 1].text = "Back"
     buttons_btrl[len(buttons_btrl) - 1].action = Action(DisplayAction.Display, "Main")
-    menu_btrl = Menu(timeout=90, buttons=buttons_btrl, header=Header(type=HeadFootType.NoDisplay))
+    menu_btrl = Menu(timeout=90, buttons=buttons_btrl, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuBTRL"] = menu_btrl
 Displays.start(initial_menu=Displays.menus["Main"], backlight_method=BacklightMethod.Pwm)
