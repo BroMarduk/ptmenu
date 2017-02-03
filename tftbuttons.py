@@ -335,7 +335,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def backlight_up(cls, button=None):
-        logger.debug("Method backlight_up executed with button:{0}".format(button if button is not None else "None"))
+        logger.debug("Method backlight_up executed with button:{0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  "
                                       "Unable to adjust backlight up.")
@@ -355,7 +355,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def backlight_down(cls, button=None):
-        logger.debug("Method backlight_down executed with button:{0}".format(button if button is not None else "None"))
+        logger.debug("Method backlight_down executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  "
                                       "Unable to adjust backlight down.")
@@ -377,7 +377,7 @@ class Backlight:
     def screen_wake(cls, button=None):
         # Send the screen wake command as it has nothing to do with the backlight but allows the menu to wake up
         # from the system screen sleep if enabled.
-        logger.debug("Method screen_wake executed with button:{0}".format(button if button is not None else "None"))
+        logger.debug("Method screen_wake executed with button:{0} ".format(button if button is not None else "0"))
         send_wake_command()
         if cls.method != BacklightMethod.NoBacklight:
             if cls.restore_last:
@@ -396,7 +396,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def screen_sleep(cls, button=None):
-        logger.debug("Method screen_sleep executed with button:{0}".format(button if button is not None else "None"))
+        logger.debug("Method screen_sleep executed with button:{0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to sleep screen.")
         # Set backlight to off if it is not already
@@ -409,7 +409,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def screen_toggle(cls, button=None):
-        logger.debug("Method screen_toggle executed with button:{0}".format(button if button is not None else "None"))
+        logger.debug("Method screen_toggle executed with button:{0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to toggle screen.")
         if cls.is_screen_sleeping():
@@ -482,9 +482,7 @@ class GpioButtons(object):
                     if function.action == GpioButtonAction.NoAction:
                         continue
                     elif function.action == GpioButtonAction.Display:
-                        if function.data is not None:
-                            logger.debug(function.data)
-                            tftmenu.Displays.show(function.data, function.render_data)
+                        tftmenu.Displays.show(function.data, function.render_data)
                     elif function.action == GpioButtonAction.Exit:
                         tftmenu.Displays.shutdown(Shutdown.Normal)
                     elif function.action == GpioButtonAction.Reboot:
@@ -492,6 +490,11 @@ class GpioButtons(object):
                     elif function.action == GpioButtonAction.Shutdown:
                         tftmenu.Displays.shutdown(Shutdown.Shutdown)
                     elif function.action == GpioButtonAction.Function:
+                        if function.data is not None and function.data:
+                            return_val = function.data(tftmenu.Displays.current, channel)
+                            if return_val is not None:
+                                if isinstance(return_val, tftmenu.Display):
+                                    tftmenu.Displays.show(return_val, function.render_data)
                         function.data(button, channel)
                     elif function.action == GpioButtonAction.ScreenSleep:
                         Backlight.screen_sleep(channel)
@@ -504,11 +507,11 @@ class GpioButtons(object):
                     elif function.action == GpioButtonAction.BacklightUp:
                         Backlight.backlight_up(channel)
                     elif function.action == GpioButtonAction.Shell:
-                        pass
+                        tftmenu.Displays.shell()
                     elif function.action == GpioButtonAction.StartX:
-                        pass
+                        tftmenu.Displays.start_x(function.data)
                     elif function.action == GpioButtonAction.Execute:
-                        pass
+                        run_cmd(function.data)
 
     ##################################################################################
     # BUTTONS INIT METHOD

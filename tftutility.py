@@ -309,7 +309,7 @@ class DisplayHeaderRefresh:
 
 
 ##################################################################################
-# BUILT-IN SPLASH SCREENS
+# SPLASH BUILT-INs
 ##################################################################################
 class SplashBuiltIn:
     Blank   = "Blank"
@@ -318,6 +318,19 @@ class SplashBuiltIn:
     Error   = "Error"
     Warning = "Warning"
     Battery = "LowBattery"
+
+
+##################################################################################
+# SPLASH MUTE LEVEL
+##################################################################################
+class SplashMuteLevel:
+    NoMute  = 0
+    Exit    = 1
+    Info    = 2
+    Warning = 4
+    Error   = 8
+    Battery = 16
+    Quiet   = 31
 
 
 ##################################################################################

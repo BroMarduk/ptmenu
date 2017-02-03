@@ -94,6 +94,7 @@ class Displays:
     loop_mode_shelled = False
     display_type = None
     initialized = False
+    splash_mute_level = None
 
     ##################################################################################
     # DISPLAYS SHOW METHOD
@@ -115,7 +116,26 @@ class Displays:
             display.render(data)
             cls.current = display
         else:
-            logger.warning("Unable to get valid dispaly to show.  item={0}, data={1}".format("D","E"))
+            logger.warning("Unable to get valid dispaly to show.  item={0}, data={1}".format(item, data))
+
+    @classmethod
+    def show_splash(cls, splash_type, data=None):
+        if splash_type == SplashBuiltIn.Exit and not cls.splash_mute_level & SplashMuteLevel.Exit:
+            cls.show(SplashBuiltIn.Exit, data)
+            return True
+        elif splash_type == SplashBuiltIn.Info and not cls.splash_mute_level & SplashMuteLevel.Info:
+            cls.show(SplashBuiltIn.Info, data)
+            return True
+        elif splash_type == SplashBuiltIn.Warning and not cls.splash_mute_level & SplashMuteLevel.Warning:
+            cls.show(SplashBuiltIn.Warning, data)
+            return True
+        elif splash_type == SplashBuiltIn.Error and not cls.splash_mute_level & SplashMuteLevel.Error:
+            cls.show(SplashBuiltIn.Error, data)
+            return True
+        elif splash_type == SplashBuiltIn.Battery and not cls.splash_mute_level & SplashMuteLevel.Battery:
+            cls.show(SplashBuiltIn.Battery, data)
+            return True
+        return False
 
     ##################################################################################
     # DISPLAYS TIMEOUT_SLEEP METHOD
@@ -150,9 +170,11 @@ class Displays:
                 Backlight.screen_sleep()
         else:
             if exit_splash is not None:
-                Displays.show(exit_splash, splash_data)
+                not_muted = Displays.show_splash(exit_splash, splash_data)
             else:
-                Displays.show(SplashBuiltIn.Exit)
+                not_muted = Displays.show_splash(SplashBuiltIn.Exit)
+            if not not_muted:
+                Displays.show(SplashBuiltIn.Blank)
             pygame.display.flip()
         pygame.quit()
         Timer.abort()
@@ -165,19 +187,26 @@ class Displays:
 
     @classmethod
     def shell(cls):
-        # To shell, pygame display is quit, but then we reinitialize to get touch events.
-        pygame.display.quit()
-        pygame.init()
-        # Set loop_mode_shelled which puts our event loop in shelled mode where
-        # only a long touch is detected
-        cls.loop_mode_shelled = True
+        if Defaults.tft_type is DISP22NT:
+            render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
+                           SplashLine("Shell not permitted on non-touch display", wrap_text=True)]
+            cls.show_splash(SplashBuiltIn.Warning, render_data)
+        else:
+            cls.shelled = Displays.current
+            pygame.display.quit()
+            pygame.init()
+            # Set loop_mode_shelled which puts our event loop in shelled mode where
+            # only a long touch is detected
+            cls.loop_mode_shelled = True
 
     @classmethod
     def start_x(cls, hdmi=False):
         # Check if x is already running
         if run_cmd(["pidof", "x"]) <= 0:
-            # if so, don't start it again
-            return False
+            # if so, don't start it again and shwo warning
+            render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
+                           SplashLine("X is already running.", wrap_text=True)]
+            cls.show_splash(SplashBuiltIn.Warning, render_data)
         # Make sure StartX exists.  It will not on Lite versions of Raspian
         if os.path.isfile(START_X_FILE):
             # Determine which FRAMEBUFFER to start it on.
@@ -185,8 +214,11 @@ class Displays:
                 subprocess.call(Command.StartXHdmi)
             else:
                 subprocess.call(Command.StartXTft)
-            return True
-        return False
+            return
+        else:
+            render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
+                           SplashLine("GUI is not installed on in expected location.", wrap_text=True)]
+            cls.show_splash(SplashBuiltIn.Warning, render_data)
 
     @classmethod
     def restore(cls):
@@ -218,7 +250,11 @@ class Displays:
         while previous is not None:
             if previous.is_core:
                 return previous
-            previous = previous.last
+            # Avoid case where we get stuck in a loop
+            if previous.last == previous:
+                return Displays.last
+            else:
+                previous = previous.last
         return cls.initial
 
     ##################################################################################
@@ -227,8 +263,10 @@ class Displays:
     @classmethod
     def initialize(cls, tft_type, global_background_color=None, global_border_width=None, global_border_color=None,
                    global_font=None, global_font_size=None, global_font_color=None, global_font_h_padding=None,
-                   global_font_v_padding=None, global_font_h_align=None, global_font_v_align=None):
+                   global_font_v_padding=None, global_font_h_align=None, global_font_v_align=None,
+                   splash_mute_level=SplashMuteLevel.NoMute, splash_timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_MEDIUM):
 
+        cls.splash_mute_level = splash_mute_level
         # Set the defaults based on the resolution of the display.  Fonts are scaled
         # using the font resolutions setting which provides similar sized fonts for
         # both the small and large displays.
@@ -238,29 +276,40 @@ class Displays:
                               global_font_color=global_font_color, global_font_h_padding=global_font_h_padding,
                               global_font_v_padding=global_font_v_padding, global_font_h_align=global_font_h_align,
                               global_font_v_align=global_font_v_align)
-        # Create the internally used splash screens.  First one is the exit screen splash
-        cls.menus[SplashBuiltIn.Exit] = Splash([
-            SplashLine("MENU CLOSING", Defaults.default_splash_font_size_title),
-            SplashLine("Please wait for a few seconds.", Defaults.default_splash_font_size)], Color.Green,
-            timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_SHORT)
-        # This creates the information screen splash used to pass non-critical information
-        cls.menus[SplashBuiltIn.Info] = Splash([
-            SplashLine("ATTENTION", Defaults.default_splash_font_size_title),
-            SplashLine("Unspecifed Information", Defaults.default_splash_font_size)], Color.Blue)
-        # This creates the error screen splash used to indicate an error.
-        cls.menus[SplashBuiltIn.Error] = Splash([
-            SplashLine("ERROR", Defaults.default_splash_font_size_title),
-            SplashLine("Closing down menu.  Please Wait...", Defaults.default_splash_font_size)], Color.Red)
-        # This creates the error screen splash used to indicate an warning
-        cls.menus[SplashBuiltIn.Warning] = Splash([
-            SplashLine("WARNING", Defaults.default_splash_font_size_title),
-            SplashLine("Unspecified Warning.", Defaults.default_splash_font_size)], Color.Orange,
-            timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_MEDIUM)
-        # This creates the error screen splash used to indicate an low battery shutdown
-        cls.menus[SplashBuiltIn.Battery] = Splash([
-            SplashLine("LOW BATTERY", Defaults.default_splash_font_size_title, Color.Black),
-            SplashLine("System will shut down shortly.", Defaults.default_splash_font_size, Color.Black)],
-            Color.Yellow, timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_LONG)
+        # cls.menus[SplashBuiltIn.Blank] = Splash(background_color=Color.Black,
+        #                                         timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_SHORT)
+        cls.menus[SplashBuiltIn.Blank] = Splash(None, Color.Black, timeout=1)
+
+        if not cls.splash_mute_level & SplashMuteLevel.Exit:
+            # Create the internally used splash screens.  First one is the exit screen splash
+            cls.menus[SplashBuiltIn.Exit] = Splash([
+                SplashLine("MENU CLOSING", Defaults.default_splash_font_size_title),
+                SplashLine("Please wait for a few seconds.", Defaults.default_splash_font_size)], Color.Green,
+                timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_SHORT)
+        if not cls.splash_mute_level & SplashMuteLevel.Info:
+            # This creates the information screen splash used to pass non-critical information
+            cls.menus[SplashBuiltIn.Info] = Splash([
+                SplashLine("ATTENTION", Defaults.default_splash_font_size_title),
+                SplashLine("Unspecifed Information", Defaults.default_splash_font_size)], Color.Blue,
+                timeout=splash_timeout)
+        if not cls.splash_mute_level & SplashMuteLevel.Warning:
+            # This creates the error screen splash used to indicate an warning
+            cls.menus[SplashBuiltIn.Warning] = Splash([
+                SplashLine("WARNING", Defaults.default_splash_font_size_title),
+                SplashLine("Unspecified Warning.", Defaults.default_splash_font_size)], Color.Orange,
+                timeout=splash_timeout)
+        if not cls.splash_mute_level & SplashMuteLevel.Error:
+            # This creates the error screen splash used to indicate an error.
+            cls.menus[SplashBuiltIn.Error] = Splash([
+                SplashLine("ERROR", Defaults.default_splash_font_size_title),
+                SplashLine("Unspecifed Error", Defaults.default_splash_font_size)], Color.Red,
+                timeout=splash_timeout)
+        if not cls.splash_mute_level & SplashMuteLevel.Battery:
+            # This creates the error screen splash used to indicate an low battery shutdown
+            cls.menus[SplashBuiltIn.Battery] = Splash([
+                SplashLine("LOW BATTERY", Defaults.default_splash_font_size_title, Color.Black),
+                SplashLine("System will shut down shortly.", Defaults.default_splash_font_size, Color.Black)],
+                Color.Yellow, timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_LONG)
         # Initialize touchscreen drivers
         os.environ["SDL_FBDEV"] = "/dev/fb1"
         os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
@@ -792,8 +841,10 @@ class Display(object):
         if action == DisplayAction.NoAction:
             return new_menu, None
         elif action == DisplayAction.Display:
-            if action_data is not None and len(action_data) > 0 and action_data in Displays.menus:
+            if action_data is not None and action_data and action_data in Displays.menus:
                 new_menu = Displays.menus[action_data]
+            else:
+                return Displays.get_last_core_display(), None
         elif action == DisplayAction.Back:
             new_menu = Displays.get_last_core_display()
             if new_menu is None:
@@ -816,25 +867,13 @@ class Display(object):
         elif action == DisplayAction.BacklightDown:
             Backlight.backlight_down()
         elif action == DisplayAction.Shell:
-            if Defaults.tft_type is DISP22NT:
-                new_menu = Displays.menus[SplashBuiltIn.Warning]
-                action_render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
-                                      SplashLine("Shell not permitted on non-touch display", wrap_text=True)]
-            else:
-                Displays.shelled = self
-                Displays.shell()
+            Displays.shell()
         elif action == DisplayAction.Reboot:
             Displays.shutdown(Shutdown.Reboot)
         elif action == DisplayAction.Shutdown:
             Displays.shutdown(Shutdown.Shutdown)
         elif action == DisplayAction.StartX:
-            result = Displays.start_x(action_data)
-            if result is True:
-                pass
-            else:
-                new_menu = Displays.menus[SplashBuiltIn.Warning]
-                action_render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
-                                      SplashLine("GUI is not installed on in expected location.", wrap_text=True)]
+            Displays.start_x(action_data)
         elif action == DisplayAction.Execute:
             run_cmd(action_data)
         return new_menu, action_render_data
@@ -878,8 +917,9 @@ class Splash(Display):
     def __init__(self, text=None, background_color=Defaults.default_splash_background_color,
                  timeout=Defaults.default_splash_timeout):
         super(Splash, self).__init__(background_color, None, None, None, None,
-                                     timeout, timeout_function=[Displays.timeout_close], is_core=False)
+                                     timeout, timeout_function=None, is_core=False)
         self.text = array_single_none(text)
+        self.timeout_function = [Displays.timeout_close]
 
     ##################################################################################
     # SPLASH RENDER METHOD
@@ -893,12 +933,15 @@ class Splash(Display):
         if data is not None:
             render_text = array_single_none(data)
         else:
-            render_text = self.text
+            render_text = array_single_none(self.text)
         if render_text:
             splash_text_tuples = []
             splash_text_height = 0
             text_v_align = None
+            last_item = None
             for text_item in render_text:
+                if not isinstance(text_item, BaseLine):
+                    text_item = SplashLine(text_item)
                 if text_item.text is None:
                     text_item.text = ""
                 if text_v_align is None:
@@ -911,9 +954,10 @@ class Splash(Display):
                 last_text_height = text_height + text_item.font_v_padding
                 splash_text_height += last_text_height
                 splash_text_tuples.append(tuple_text)
+                last_item = text_item
             splash_text_offset = 0
             if text_v_align is not TextVAlign.Top:
-                splash_text_height -= render_text[-1].font_v_padding
+                splash_text_height -= last_item.font_v_padding
             for text_line in splash_text_tuples:
                 # Handle horizontal alignment
                 if text_line[TextTuple.HAlign] == TextHAlign.Left:
@@ -933,10 +977,10 @@ class Splash(Display):
                 splash_top_rect = text_line[TextTuple.Surface].get_rect(left=text_left, top=text_top)
                 Displays.screen.blit(text_line[TextTuple.Surface], splash_top_rect)
                 splash_text_offset += text_line[TextTuple.Height] + text_line[TextTuple.VPadding]
-            pygame.display.flip()
-            if self.timeout > 0:
-                Timer.timeout(self.timeout, ignore_reset=True)
-            Backlight.screen_wake()
+        pygame.display.flip()
+        if self.timeout > 0:
+            Timer.timeout(self.timeout, ignore_reset=True)
+        Backlight.screen_wake()
 
 
 ##################################################################################
@@ -1043,12 +1087,15 @@ class Dialog(Display):
         if data is not None:
             render_text = array_single_none(data)
         else:
-            render_text = self.text
+            render_text = array_single_none(self.text)
         if render_text:
             dialog_text_tuples = []
             dialog_text_height = 0
             text_v_align = None
+            last_item = None
             for text_item in render_text:
+                if not isinstance(text_item, BaseLine):
+                    text_item = DialogLine(text_item)
                 if text_item.text is None:
                     text_item.text = ""
                 elif text_v_align is None:
@@ -1061,9 +1108,10 @@ class Dialog(Display):
                 last_text_height = text_height + text_item.font_v_padding
                 dialog_text_height += last_text_height
                 dialog_text_tuples.append(tuple_text)
+                last_item = text_item
             dialog_text_offset = 0
             if text_v_align is not TextVAlign.Top:
-                dialog_text_height -= render_text[-1].font_v_padding
+                dialog_text_height -= last_item.font_v_padding
             for text_line in dialog_text_tuples:
                 # Handle horizontal alignment
                 if text_line[TextTuple.HAlign] == TextHAlign.Left:
