@@ -1,53 +1,5 @@
 #!/usr/bin/python
 ##################################################################################
-# TO DO
-##################################################################################
-
-# [20%] - Comment Functions
-# [15%] - Add Warning and Exit dialogs in code
-# [20%] - Add Logging
-# [ 0%] - Code to standards
-# [ 0%] - Move GPIO button templates to sepearate modules
-# [90%] - Add StartX functionality - subprocess.call("FRAMEBUFFER=/dev/fb1 startx", shell=True)
-
-# [OOS] - Make Tokens for Header Functions
-# [OOS] - Move Text to Resources and use gettext
-# [OOS] - Create Error, Warning and Info functions to make passing in text easier.
-# [OOS] - Add Icons/Images to buttons
-
-# DONE! - Make "Enums" out of Constant
-# DONE! - Add footers to Menu
-# DONE! - Add Right-Click button event
-# DONE! - Fix Dialog & Splash Text Position
-# DONE! - Fix Splash Timeout on Close
-# DONE! - Add Text Alignment
-# DONE! - Handle Internal Splash Screens
-# DONE! - Check Splash Heights
-# DONE! - Add Start function Support for Backlight options
-# DONE! - Check Alternate Backlight Methods
-# DONE! - Add Button Generator and Templates
-# DONE! - Add Support for 480x320 Screens
-# DONE! - Add support for 2x4 ScreenButtons
-# DONE! - Add Timer for Date/Time Headers
-# DONE! - Add Custom Button Functions
-# DONE! - Add Backlight Functions for Buttons
-# DONE! - Pass back header objcet to custom header function and see if we can change
-# DONE! - Add button to custom button callback
-# DONE! - Create Examples
-# DONE! - Have Splash Screens take an optional text parameter to customize
-# DONE! - Screen Timeout timer Resets on Splash touch
-# DONE! - List properties that can take an array or singleton and make consistent
-# DONE! - Clean up Debug procedure and statements
-# DONE! - Multiline Text
-# DONE! - Run Command Function
-# DONE! - Create additional templates for dialogs and footers
-# DONE! - Ensure that only one instance of the applicaiton is running.
-# DONE! - Ensure Application runs as root.
-# DONE! - When waking up the screen by touch, if you hold in a button it will press
-# DONE! - When loading menu with timeout = 0, the initial splash does not work
-
-
-##################################################################################
 # IMPORTS
 ##################################################################################
 import fcntl
@@ -73,7 +25,7 @@ file_open = open(lock_file, 'w')
 try:
     fcntl.lockf(file_open, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except IOError:
-    logger.critical("Only one instance of the applicaiton can run at a time.")
+    logger.critical("Only one instance of the application can run at a time.")
     sys.exit()
 
 
@@ -82,6 +34,7 @@ except IOError:
 ##################################################################################
 # Displays class responsible for the menu initialization and keeping track of
 # current and last menus and states
+##################################################################################
 class Displays:
     menus = {}
     current = None
@@ -98,6 +51,8 @@ class Displays:
 
     ##################################################################################
     # DISPLAYS SHOW METHOD
+    ##################################################################################
+    # Classmethod that shows any type of display by name or by object.
     ##################################################################################
     @classmethod
     def show(cls, item, data=None):
@@ -116,8 +71,14 @@ class Displays:
             display.render(data)
             cls.current = display
         else:
-            logger.warning("Unable to get valid dispaly to show.  item={0}, data={1}".format(item, data))
+            logger.warning("Unable to get valid display to show.  item={0}, data={1}".format(item, data))
 
+    ##################################################################################
+    # DISPLAYS SHOW METHOD
+    ##################################################################################
+    # Classmethod that Shows a Splash screen enforcing any suppression flags that
+    # may be set.
+    ##################################################################################
     @classmethod
     def show_splash(cls, splash_type, data=None):
         if splash_type == SplashBuiltIn.Exit and not cls.splash_mute_level & SplashMuteLevel.Exit:
@@ -140,6 +101,9 @@ class Displays:
     ##################################################################################
     # DISPLAYS TIMEOUT_SLEEP METHOD
     ##################################################################################
+    # Callback method that occurs when the timeout is met on a non-Splash display.
+    # The screen is put to sleep when the timeout occurs.
+    ##################################################################################
     @classmethod
     def timeout_sleep(cls):
         # Turn out the backlight after timer expires
@@ -149,12 +113,22 @@ class Displays:
     ##################################################################################
     # DISPLAYS TIMEOUT_CLOSE METHOD
     ##################################################################################
+    # Callback method that occurs when the timeout on a Splash display occurs.  The
+    # last core display is shown on timeout.
+    ##################################################################################
     @classmethod
     def timeout_close(cls):
         cls.show(cls.get_last_core_display(cls.current))
 
     ##################################################################################
     # DISPLAYS SHUTDOWN METHOD
+    ##################################################################################
+    # Classmethod to shutdown the application.  The method parameter indicates the
+    # type of shutdown.  Normal indicates a standard exit from the program.  Error
+    # indicates an unrecoverable error shutting down the program.  Terminate when
+    # the OS or system indicates the application should shut down.  Reboot and
+    # Shutdown are user initiated exits with a request to reboot or shutdown the
+    # system as well.
     ##################################################################################
     @classmethod
     def shutdown(cls, method, exit_splash=None, splash_data=None):
@@ -185,6 +159,13 @@ class Displays:
             subprocess.call(Command.Reboot.split())
         sys.exit()
 
+    ##################################################################################
+    # DISPLAYS SHELL METHOD
+    ##################################################################################
+    # Classmethod to show the TTY command line instead of the displays.  This puts the
+    # tftmenu program into a state where it monitors only for the return from the
+    # shell indication (which is a long press on the screeN).
+    ##################################################################################
     @classmethod
     def shell(cls):
         if Defaults.tft_type is DISP22NT:
@@ -199,11 +180,16 @@ class Displays:
             # only a long touch is detected
             cls.loop_mode_shelled = True
 
+    ##################################################################################
+    # DISPLAYS SHELL METHOD
+    ##################################################################################
+    # Classmethod to start X on an HDMI or TFT display if X is installed on the system
+    ##################################################################################
     @classmethod
     def start_x(cls, hdmi=False):
         # Check if x is already running
         if run_cmd(["pidof", "x"]) <= 0:
-            # if so, don't start it again and shwo warning
+            # if so, don't start it again and show warning
             render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
                            SplashLine("X is already running.", wrap_text=True)]
             cls.show_splash(SplashBuiltIn.Warning, render_data)
@@ -220,6 +206,11 @@ class Displays:
                            SplashLine("GUI is not installed on in expected location.", wrap_text=True)]
             cls.show_splash(SplashBuiltIn.Warning, render_data)
 
+    ##################################################################################
+    # DISPLAYS RESTORE METHOD
+    ##################################################################################
+    # Classmethod used to restore the menu back from a shell.
+    ##################################################################################
     @classmethod
     def restore(cls):
         send_wake_command()
@@ -231,6 +222,11 @@ class Displays:
         Displays.show(return_display)
         cls.loop_mode_shelled = False
 
+    ##################################################################################
+    # DISPLAYS SHELL METHOD
+    ##################################################################################
+    # Callback method from a signal to shutdown the menu.
+    ##################################################################################
     @classmethod
     def on_shutdown(cls, signum, frame):
         logger.debug("Shutdown Signal Received.  Signum:{0}, Frame:{1}".format(signum, frame))
@@ -241,9 +237,10 @@ class Displays:
     ##################################################################################
     # This method iterates backwards from the current display to find the last display
     # up the chain that is of class Display or Menu.   This is used when closing a
-    # display or splash to esure the close happens back to a core display type (not
+    # display or splash to ensure the close happens back to a core display type (not
     # another splash or dialog) so that dialogs and splashes could be chained together
     # and still "closed' back to a core display.
+    ##################################################################################
     @classmethod
     def get_last_core_display(cls, start=None):
         previous = cls.current.last if start is None else start
@@ -260,6 +257,9 @@ class Displays:
     ##################################################################################
     # DISPLAYS INITIALIZE METHOD
     ##################################################################################
+    # Classmethod to initialize Displays class.  Sets any defaults, the mute level of
+    # Splash displays and then the splash displays.  Also initializes pygame and the
+    # touchscreen drivers.
     @classmethod
     def initialize(cls, tft_type, global_background_color=None, global_border_width=None, global_border_color=None,
                    global_font=None, global_font_size=None, global_font_color=None, global_font_h_padding=None,
@@ -276,10 +276,7 @@ class Displays:
                               global_font_color=global_font_color, global_font_h_padding=global_font_h_padding,
                               global_font_v_padding=global_font_v_padding, global_font_h_align=global_font_h_align,
                               global_font_v_align=global_font_v_align)
-        # cls.menus[SplashBuiltIn.Blank] = Splash(background_color=Color.Black,
-        #                                         timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_SHORT)
         cls.menus[SplashBuiltIn.Blank] = Splash(None, Color.Black, timeout=1)
-
         if not cls.splash_mute_level & SplashMuteLevel.Exit:
             # Create the internally used splash screens.  First one is the exit screen splash
             cls.menus[SplashBuiltIn.Exit] = Splash([
@@ -290,7 +287,7 @@ class Displays:
             # This creates the information screen splash used to pass non-critical information
             cls.menus[SplashBuiltIn.Info] = Splash([
                 SplashLine("ATTENTION", Defaults.default_splash_font_size_title),
-                SplashLine("Unspecifed Information", Defaults.default_splash_font_size)], Color.Blue,
+                SplashLine("Unspecified Information", Defaults.default_splash_font_size)], Color.Blue,
                 timeout=splash_timeout)
         if not cls.splash_mute_level & SplashMuteLevel.Warning:
             # This creates the error screen splash used to indicate an warning
@@ -302,7 +299,7 @@ class Displays:
             # This creates the error screen splash used to indicate an error.
             cls.menus[SplashBuiltIn.Error] = Splash([
                 SplashLine("ERROR", Defaults.default_splash_font_size_title),
-                SplashLine("Unspecifed Error", Defaults.default_splash_font_size)], Color.Red,
+                SplashLine("Unspecified Error", Defaults.default_splash_font_size)], Color.Red,
                 timeout=splash_timeout)
         if not cls.splash_mute_level & SplashMuteLevel.Battery:
             # This creates the error screen splash used to indicate an low battery shutdown
@@ -318,12 +315,15 @@ class Displays:
         pygame.init()
         if Defaults.tft_type is not DISP22NT:
             pygame.mouse.set_visible(False)
-        logger.info("Intitialized - %s", "Dan")
+        logger.info("Initialized - %s", "Dan")
         cls.initialized = True
 
     ##################################################################################
     # DISPLAYS START METHOD
     ##################################################################################
+    # Classmethod called to start the menu Displays.   The initial menu needs to be
+    # passed it, along with any settings for the backlight.  The main execution loop
+    # then follows.
     @classmethod
     def start(cls, initial_menu, backlight_method=None, backlight_steps=None, backlight_default=None,
               backlight_restore_last=False, backlight_auto=False, button_callback=None,
@@ -337,7 +337,7 @@ class Displays:
         # Make sure initialization has been run
         if not cls.initialized or Defaults.tft_type is None:
             cls.started = False
-            raise NotInitializedException("Displays not initialized.  Use initiazlie() method before start().")
+            raise NotInitializedException("Displays not initialized.  Use initialize() method before start().")
         # Add signals for shutdown from OS
         signal.signal(signal.SIG_IGN, cls.on_shutdown)
         signal.signal(signal.SIGINT, cls.on_shutdown)
@@ -387,10 +387,10 @@ class Displays:
                                 # the button.
                                 if button_id == down_button:
                                     # Get the next menu and any associated data from the
-                                    # process_button methond, then call Displays.show.  If the
+                                    # process_button method, then call Displays.show.  If the
                                     # menu is the same, it will not be re-rendered unless the
                                     # force_render flag is set - this allows for the Splash and
-                                    # Dialog items to have changable text
+                                    # Dialog items to have changeable text
                                     if time.time() - down_time > Times.RightClick or event.button == MouseButton.Right:
                                         button_type = MouseButton.Right
                                     else:
@@ -414,7 +414,7 @@ class Displays:
                         if cls.current.timeout_function is not None:
                             for function in cls.current.timeout_function:
                                 function()
-                    # If the display has a headder attribute, call header update which will take
+                    # If the display has a header attribute, call header update which will take
                     # care of refreshing the header if necessary
                     if hasattr(cls.current, Attributes.Header) and cls.current.header is not None:
                         cls.current.header.update(cls.current)
@@ -445,11 +445,13 @@ class Displays:
             error_message = unicode(ex)
             splash_data = [SplashLine("ERROR", Defaults.default_splash_font_size_title),
                            SplashLine(error_message, Defaults.default_splash_font_size, wrap_text=True)]
-            cls.shutdown(Shutdown.Normal, exit_splash, splash_data)
+            cls.shutdown(Shutdown.Error, exit_splash, splash_data)
 
 
 ##################################################################################
 # BASELINE LINE CLASS
+##################################################################################
+# Base class of all rendered text on the displays
 ##################################################################################
 class BaseLine(object):
     text = None
@@ -465,6 +467,9 @@ class BaseLine(object):
 
     ##################################################################################
     # BASELINE INIT METHOD
+    ##################################################################################
+    # Initialize method of the BaseLine class.  Unlike the other line classes, this
+    # one does not set any defaults.
     ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=False,
@@ -483,6 +488,8 @@ class BaseLine(object):
 
     ##################################################################################
     # BASELINE RENDER METHOD
+    ##################################################################################
+    # Method to render the text of a BaseLine or derived object.
     ##################################################################################
     def render(self, background_color=None):
         if self.font is None:
@@ -505,7 +512,7 @@ class BaseLine(object):
                                               else Defaults.tft_width - ((Displays.current.border_width +
                                                                           self.font_h_padding) * 2))
             except Exception, ex:
-                logger.error("Error occured while attempting to wrap text.  {0}".format(ex))
+                logger.error("Error occurred while attempting to wrap text.  {0}".format(ex))
                 Displays.shutdown(Shutdown.Error, SplashBuiltIn.Error)
             if len(wrapped_text[0]) is 1:
                 return self.font.render(wrapped_text[0][0] if wrapped_text[0][0] is not None else "",
@@ -528,7 +535,7 @@ class BaseLine(object):
                     try:
                         self.font.render_to(text_surface, (left, top), wrapped_text[0][index], fgcolor=self.font_color)
                     except Exception, ex:
-                        logger.error("Error occured while attempting to render wrapped text.  {0}".format(ex))
+                        logger.error("Error occurred while attempting to render wrapped text.  {0}".format(ex))
                     text_top += wrapped_text[1][index] + self.font_v_padding
                 return text_surface, text_surface.get_rect()
 
@@ -536,16 +543,22 @@ class BaseLine(object):
 ##################################################################################
 # TFTMENU TEXT LINE CLASS
 ##################################################################################
+# Text line class designed to be used for Display and Menu classes
+##################################################################################
 class TextLine(BaseLine):
 
     ##################################################################################
     # TEXT LINE INIT METHOD
     ##################################################################################
+    # Initializes a Text Line item with the Text Line defaults
+    ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
-        super(TextLine, self).__init__(text, font_size, font_color, font, font_style,
-                                       font_h_align, font_h_padding, font_v_align, font_v_padding, font_pad, wrap_text)
+        super(TextLine, self).__init__(text=text, font_size=font_size, font_color=font_color, font=font,
+                                       font_style=font_style, font_h_align=font_h_align, font_h_padding=font_h_padding,
+                                       font_v_align=font_v_align, font_v_padding=font_v_padding, font_pad=font_pad,
+                                       wrap_text=wrap_text)
         if self.font is None:
             self.font = Defaults.default_text_line_font
         if self.font_color is None:
@@ -565,19 +578,24 @@ class TextLine(BaseLine):
 
 
 ##################################################################################
-# TFTMENU SPLASHLINE CLASS
+# TFTMENU SPLASH LINE CLASS
+##################################################################################
+# Splash line class designed to be used for Splash classes
 ##################################################################################
 class SplashLine(BaseLine):
 
     ##################################################################################
-    # SPLASHLINE INIT METHOD
+    # SPLASH LINE INIT METHOD
+    ##################################################################################
+    # Initializes a Splash Line item with the Splash defaults
     ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
-        super(SplashLine, self).__init__(text, font_size, font_color, font, font_style,
-                                         font_h_align, font_h_padding, font_v_align, font_v_padding,
-                                         font_pad, wrap_text)
+        super(SplashLine, self).__init__(text=text, font_size=font_size, font_color=font_color, font=font,
+                                         font_style=font_style, font_h_align=font_h_align,
+                                         font_h_padding=font_h_padding, font_v_align=font_v_align,
+                                         font_v_padding=font_v_padding, font_pad=font_pad, wrap_text=wrap_text)
         if self.font is None:
             self.font = Defaults.default_splash_font
         if self.font_color is None:
@@ -597,19 +615,24 @@ class SplashLine(BaseLine):
 
 
 ##################################################################################
-# TFTMENU DIALOGLINE CLASS
+# TFTMENU DIALOG LINE CLASS
+##################################################################################
+# Dialog line class designed to be used for Dialog classes
 ##################################################################################
 class DialogLine(BaseLine):
 
     ##################################################################################
-    # DIALOGLINE INIT METHOD
+    # DIALOG LINE INIT METHOD
+    ##################################################################################
+    # Initializes a Dialog Line item with the Dialog defaults
     ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
-        super(DialogLine, self).__init__(text, font_size, font_color, font, font_style,
-                                         font_h_align, font_h_padding, font_v_align, font_v_padding,
-                                         font_pad, wrap_text)
+        super(DialogLine, self).__init__(text=text, font_size=font_size, font_color=font_color, font=font,
+                                         font_style=font_style, font_h_align=font_h_align,
+                                         font_h_padding=font_h_padding, font_v_align=font_v_align,
+                                         font_v_padding=font_v_padding, font_pad=font_pad, wrap_text=wrap_text)
         if self.font is None:
             self.font = Defaults.default_dialog_font
         if self.font_color is None:
@@ -629,51 +652,62 @@ class DialogLine(BaseLine):
 
 
 ##################################################################################
-# TFTMENU HEADERLINE CLASS
+# TFTMENU HEAD/FOOT LINE CLASS
+##################################################################################
+# Head/Foot line class designed to be used for Header and Footer classes within
+# other displays.
 ##################################################################################
 class HeadFootLine(BaseLine):
 
     ##################################################################################
-    # HEADERLINE INIT METHOD
+    # HEAD/FOOT LINE INIT METHOD
+    ##################################################################################
+    # Initializes a Head/Foot Line item with the Head/Foot defaults
     ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
-        super(HeadFootLine, self).__init__(text, font_size, font_color, font, font_style,
-                                           font_h_align, font_h_padding, font_v_align, font_v_padding,
-                                           font_pad, wrap_text)
+        super(HeadFootLine, self).__init__(text=text, font_size=font_size, font_color=font_color, font=font,
+                                           font_style=font_style, font_h_align=font_h_align,
+                                           font_h_padding=font_h_padding, font_v_align=font_v_align,
+                                           font_v_padding=font_v_padding, font_pad=font_pad, wrap_text=wrap_text)
         if self.font is None:
-            self.font = Defaults.default_header_font
+            self.font = Defaults.default_headfoot_font
         if self.font_color is None:
-            self.font_color = Defaults.default_header_font_color
+            self.font_color = Defaults.default_headfoot_font_color
         if self.font_size is None:
-            self.font_size = Defaults.default_header_font_size
+            self.font_size = Defaults.default_headfoot_font_size
         if self.font_style is None:
             self.font_style = pygame.freetype.STYLE_NORMAL
         if self.font_h_align is None:
-            self.font_h_align = Defaults.default_header_font_h_align
+            self.font_h_align = Defaults.default_headfoot_font_h_align
         if self.font_v_align is None:
-            self.font_v_align = Defaults.default_header_font_v_align
+            self.font_v_align = Defaults.default_headfoot_font_v_align
         if self.font_h_padding is None:
-            self.font_h_padding = Defaults.default_header_font_h_padding
+            self.font_h_padding = Defaults.default_headfoot_font_h_padding
         if self.font_v_padding is None:
-            self.font_v_padding = Defaults.default_header_font_v_padding
+            self.font_v_padding = Defaults.default_headfoot_font_v_padding
 
 
 ##################################################################################
-# TFTMENU BUTTONLINE CLASS
+# TFTMENU BUTTON LINE CLASS
+##################################################################################
+# Button line class designed to be used for Button classes
 ##################################################################################
 class ButtonLine(BaseLine):
 
     ##################################################################################
-    # BUTTONLINE INIT METHOD
+    # BUTTON LINE INIT METHOD
+    ##################################################################################
+    # Initializes a Button Line item with the Button defaults
     ##################################################################################
     def __init__(self, text=None, font_size=None, font_color=None, font=None, font_style=None,
                  font_h_align=None, font_h_padding=None, font_v_align=None, font_v_padding=None, font_pad=True,
                  wrap_text=False):
-        super(ButtonLine, self).__init__(text, font_size, font_color, font, font_style,
-                                         font_h_align, font_h_padding, font_v_align, font_v_padding,
-                                         font_pad, wrap_text)
+        super(ButtonLine, self).__init__(text=text, font_size=font_size, font_color=font_color, font=font,
+                                         font_style=font_style, font_h_align=font_h_align,
+                                         font_h_padding=font_h_padding, font_v_align=font_v_align,
+                                         font_v_padding=font_v_padding, font_pad=font_pad, wrap_text=wrap_text)
         if self.font is None:
             self.font = Defaults.default_button_font
         if self.font_color is None:
@@ -695,6 +729,8 @@ class ButtonLine(BaseLine):
 ##################################################################################
 # TFTMENU ACTION CLASS
 ##################################################################################
+# Class to hold the information about a soft button action
+##################################################################################
 class Action(object):
     action = None
     data = None
@@ -702,6 +738,8 @@ class Action(object):
 
     ##################################################################################
     # ACTION INIT METHOD
+    ##################################################################################
+    # Sets soft-Button Action properties to defaults.
     ##################################################################################
     def __init__(self, action=DisplayAction.NoAction, data=None, render_data=None):
         self.action = action
@@ -712,7 +750,10 @@ class Action(object):
 ##################################################################################
 # TFTMENU DISPLAY CLASS
 ##################################################################################
-# Base Class for all displays in the menu system.
+# Base Class for all displays in the menu system.  The Display class is the base
+# menu item that can be used for menus without a header and/or footer.  It's main
+# purpose is to display buttons.  It is a core display.
+##################################################################################
 class Display(object):
     background_color = None
     border_color = None
@@ -723,14 +764,16 @@ class Display(object):
     timeout_function = None
     last = None
     force_refresh = False
-    is_core = True
+    is_core = False
 
     ##################################################################################
     # DISPLAY INIT METHOD
     ##################################################################################
+    # Initialize the Display class with defaults
+    ##################################################################################
     def __init__(self, background_color=Defaults.default_background_color,
                  border_color=Defaults.default_border_color, border_width=None,
-                 buttons=None, actions=None, timeout=Defaults.default_timeout, timeout_function=None, is_core=True):
+                 buttons=None, actions=None, timeout=Defaults.default_timeout, timeout_function=None):
         self.background_color = background_color
         self.border_color = border_color
         self.border_width = border_width
@@ -740,10 +783,14 @@ class Display(object):
         self.timeout_function = merge(Displays.timeout_sleep, timeout_function)
         if self.border_width is None:
             self.border_width = Defaults.default_border_width
-        self.is_core = is_core
+        self.is_core = True
 
     ##################################################################################
     # DISPLAY RENDER METHOD
+    ##################################################################################
+    # Method for rendering Display and Menu items.  Set the screen to the background
+    # color, draws the border, renders any header of footer and finally renders the
+    # buttons and sets any screen timeout.
     ##################################################################################
     def render(self, data=None):
         # No need to render unless current display
@@ -773,6 +820,9 @@ class Display(object):
     ##################################################################################
     # DISPLAYS RENDER_BUTTONS METHOD
     ##################################################################################
+    # Method that loops through the buttons in class to be rendered and calls the
+    # Button render function for each.
+    ##################################################################################
     def render_buttons(self):
         for button in self.buttons:
             if button is not None:
@@ -780,6 +830,9 @@ class Display(object):
 
     ##################################################################################
     # DISPLAYS PROCESS_LOCATION METHOD
+    ##################################################################################
+    # Method that takes a pygame touch event and returns the button id that contained
+    # the touch hit.
     ##################################################################################
     def process_location(self, position):
         x = position[0]
@@ -797,6 +850,9 @@ class Display(object):
     ##################################################################################
     # DISPLAYS PROCESS_DOWN_BUTTON METHOD
     ##################################################################################
+    # Method that processes a button press by displaying the button in the button
+    # down state (filled in background).
+    ##################################################################################
     def process_down_button(self, button_index):
         if button_index == 0:
             return button_index
@@ -813,6 +869,9 @@ class Display(object):
     ##################################################################################
     # DISPLAYS PROCESS_UP_BUTTON METHOD
     ##################################################################################
+    # Method the processes a button up release by rendering the button back to the
+    # outline only state.
+    ##################################################################################
     def process_up_button(self, button_index):
         if button_index == 0:
             return
@@ -825,10 +884,17 @@ class Display(object):
     ##################################################################################
     # DISPLAYS PROCESS_BUTTON METHOD
     ##################################################################################
+    # Method that takes a button press (a consecutive button up and button down event
+    # in the same button) and calls the appropriate action depending if a normal click
+    # or a right click (long press).  The action is then performed based on the action
+    # type of the action.
+    ##################################################################################
     def process_button(self, button_index, button_type):
         if button_index == 0:
             return self, None
         button = self.buttons[button_index - 1]
+        # See if the button is a normal button or a right button click and use the
+        # appropriate action.
         if button.action_right is None or button_type == MouseButton.Left:
             action = button.action.action
             action_data = button.action.data
@@ -851,7 +917,7 @@ class Display(object):
                 if Displays.initial is not None:
                     new_menu = Displays.initial
                 else:
-                    Displays.shutdown(Shutdown.Normal)
+                    Displays.shutdown(Shutdown.Error)
         elif action == DisplayAction.Exit:
             Displays.loop = False
         elif action == DisplayAction.Function:
@@ -882,6 +948,10 @@ class Display(object):
 ##################################################################################
 # TFTMENU MENU CLASS
 ##################################################################################
+# Display Class for a Menu item, which is a base Display plus a Header or Footer.
+# It's main purpose is to display buttons along with a header or footer for some
+# additional information.  It is a core display.
+##################################################################################
 class Menu(Display):
     header = None
     footer = None
@@ -889,11 +959,14 @@ class Menu(Display):
     ##################################################################################
     # MENU INIT METHOD
     ##################################################################################
+    # Initialize the Menu class with defaults
+    ##################################################################################
     def __init__(self, background_color=Defaults.default_background_color,
                  border_color=Defaults.default_border_color, border_width=None, buttons=None, actions=None,
                  timeout=Defaults.default_timeout, timeout_function=None, header=None, footer=None):
-        super(Menu, self).__init__(background_color, border_color, border_width, buttons, actions,
-                                   timeout, timeout_function, is_core=True)
+        super(Menu, self).__init__(background_color=background_color, border_color=border_color,
+                                   border_width=border_width, buttons=buttons, actions=actions, timeout=timeout,
+                                   timeout_function=timeout_function)
         if self.border_width is None:
             self.border_width = Defaults.default_border_width
         if header is None:
@@ -904,25 +977,38 @@ class Menu(Display):
             self.footer = Header(HeadFootType.NoDisplay)
         else:
             self.footer = footer
+        self.is_core = True
 
 
 ##################################################################################
 # TFTMENU SPLASH CLASS
+##################################################################################
+# Display class that shows a message on the screen for an amount of time that is
+# determined from the timeout property.  The display will then disappear and then
+# return to the last core display.  The Splash item is used do display a message
+# that does not require any user action.   A Splash item is NOT a core display.
 ##################################################################################
 class Splash(Display):
     
     ##################################################################################
     # SPLASH INIT METHOD
     ##################################################################################
+    # Initialize the Splash class with defaults.  Changes the default timeout callback
+    # to use the timeout_close function instead of the timeout_sleep function.
+    ##################################################################################
     def __init__(self, text=None, background_color=Defaults.default_splash_background_color,
-                 timeout=Defaults.default_splash_timeout):
-        super(Splash, self).__init__(background_color, None, None, None, None,
-                                     timeout, timeout_function=None, is_core=False)
+                 timeout=Defaults.default_splash_timeout, timeout_function=None):
+        super(Splash, self).__init__(background_color=background_color, border_color=None, border_width=None,
+                                     buttons=None, actions=None, timeout=timeout, timeout_function=None)
         self.text = array_single_none(text)
-        self.timeout_function = [Displays.timeout_close]
+        self.timeout_function = merge([Displays.timeout_close], timeout_function)
+        self.is_core = False
 
     ##################################################################################
     # SPLASH RENDER METHOD
+    ##################################################################################
+    # Render the Splash display by showing the Splash Lines text and then setting the
+    # timeout.
     ##################################################################################
     def render(self, data=None):
         # No need to render unless current display
@@ -986,6 +1072,10 @@ class Splash(Display):
 ##################################################################################
 # TFTMENU DIALOG CLASS
 ##################################################################################
+# Display Class for a Dialog item, which is a message along with pre-defined
+# action buttons.  It's main purpose is to display a message and wait for user
+# interaction to specify what to do next.  It is NOT a core display.
+##################################################################################
 class Dialog(Display):
     dialog_type = DialogStyle.Ok
     use_menu_timeout = False
@@ -994,22 +1084,28 @@ class Dialog(Display):
     ##################################################################################
     # DIALOG INIT METHOD
     ##################################################################################
+    # Initialize the Dialog class with defaults
+    ##################################################################################
     def __init__(self, text=None, dialog_type=DialogStyle.Ok, background_color=Defaults.default_dialog_background_color,
                  border_color=Defaults.default_dialog_border_color, border_width=None, actions=None, buttons=None,
                  timeout=Defaults.default_dialog_timeout, timeout_function=None, use_menu_timeout=False,
                  use_menu_colors=False):
 
-        super(Dialog, self).__init__(background_color, border_color, border_width, buttons, actions,
-                                     timeout, timeout_function=merge(Displays.timeout_sleep, timeout_function),
-                                     is_core=False)
+        super(Dialog, self).__init__(background_color=background_color, border_color=border_color,
+                                     border_width=border_width, buttons=buttons, actions=actions, timeout=timeout,
+                                     timeout_function=merge(Displays.timeout_sleep, timeout_function))
 
         self.text = array_single_none(text)
         self.dialog_type = dialog_type
         self.use_menu_timeout = use_menu_timeout
         self.use_menu_colors = use_menu_colors
+        self.is_core = False
 
     ##################################################################################
     # DIALOG RENDER METHOD
+    ##################################################################################
+    # Method to render a Dialog display Dialog Text, background, buttons and borders.
+    # The dialog type can be a predefined template or can be custom.
     ##################################################################################
     def render(self, data=None):
         # No need to render unless current display
@@ -1138,7 +1234,7 @@ class Dialog(Display):
             self.render_buttons()
         pygame.display.flip()
         Backlight.screen_wake()
-        # Set the Screen Timeout if using the previous Menu's timeout
+        # Set the Screen Timeout if using the previous display's timeout
         if core_display is not None and self.use_menu_timeout:
             timeout = core_display.timeout
         else:
@@ -1149,6 +1245,8 @@ class Dialog(Display):
 
 ##################################################################################
 # TFTMENU HEADER CLASS
+##################################################################################
+# Class for a Header item.
 ##################################################################################
 class Header(object):
     text = None
@@ -1161,6 +1259,8 @@ class Header(object):
 
     ##################################################################################
     # HEADER INIT METHOD
+    ##################################################################################
+    # Header initialize method.
     ##################################################################################
     def __init__(self, text=None, data=None, mode=HeadFootType.NoDisplay, height=None, refresh=None):
         if text is None:
@@ -1187,6 +1287,11 @@ class Header(object):
     ##################################################################################
     # HEADER (AND FOOTER) RENDER METHOD
     ##################################################################################
+    # Method to render the text for a header or footer using the predefined types.  A
+    # header or footer can contain a refresh property that determines how often the
+    # header or footer is redrawn.  This can be used to provide dynamic headers and
+    # footers on a Menu display.
+    ##################################################################################
     def render(self, display, clear=False):
         # Get Header Text based on mode.  If HeadFootType.UserText, nothing changes
         if self.mode == HeadFootType.NoDisplay:
@@ -1196,14 +1301,17 @@ class Header(object):
         elif self.mode == HeadFootType.Time12:
             self.text.text = time.strftime("%-I:%M %p")
         elif self.mode == HeadFootType.Time24:
-            self.text.text = time.strftime("%H:%M")
+            self.text.text = time.strftime("%R")
         elif self.mode == HeadFootType.DateTime12:
-            self.text.text = time.strftime("%m/%d/%y  %-I:%M %p")
+            self.text.text = time.strftime("%x %-I:%M %p")
         elif self.mode == HeadFootType.DateTime24:
-            self.text.text = time.strftime("%d/%m/%y  %H:%M")
+            self.text.text = time.strftime("%x %R")
         elif self.mode == HeadFootType.DateTimeCustom:
             if self.data is not None:
-                self.text.text = time.strftime(self.data)
+                if self.text.text:
+                    self.text.text = self.text.text.format(time.strftime(self.data))
+                else:
+                    self.text.text = time.strftime(self.data)
         elif self.mode == HeadFootType.HostName:
             host_name = run_cmd("hostname")
             if self.text.text:
@@ -1278,6 +1386,12 @@ class Header(object):
     ##################################################################################
     # HEADER UPDATE METHOD
     ##################################################################################
+    # Method that updates (refreshes) a Header (or Footer) item.  Uses the
+    # DisplayHeaderRefresh parameter to decide what to update.  The use_two_second_-
+    # range allows for an update to occur in either the first or second second after
+    # an event occurs.  This allows slower systems to still process an event should
+    # a process delay the initial notification.
+    ##################################################################################
     def update(self, display):
         if self.refresh == DisplayHeaderRefresh.NoRefresh:
             return
@@ -1297,14 +1411,20 @@ class Header(object):
             if local_time[TimeStruct.Second] != 0:
                 return
             use_two_second_range = True
-        else:
+        elif self.refresh == DisplayHeaderRefresh.Second:
             use_two_second_range = False
-        if use_two_second_range:
-            if self.last_update == cur_time or self.last_update == cur_time - 1:
-                return
+        elif self.refresh == DisplayHeaderRefresh.All:
+            use_two_second_range = None
         else:
-            if self.last_update == cur_time:
-                return
+            # if unknown value, then no refresh
+            return
+        if use_two_second_range is not None:
+            if use_two_second_range:
+                if self.last_update == cur_time or self.last_update == cur_time - 1:
+                    return
+            else:
+                if self.last_update == cur_time:
+                    return
         self.render(display, True)
         self.last_update = cur_time
 
@@ -1312,18 +1432,24 @@ class Header(object):
 ##################################################################################
 # TFTMENU FOOTER CLASS
 ##################################################################################
+# Class for a Footer item.  Subclass of Header
+##################################################################################
 class Footer(Header):
 
     ##################################################################################
     # FOOTER INIT METHOD
     ##################################################################################
+    # Init method that calls the Header class to initialize.
+    ##################################################################################
     def __init__(self, text=None, data=None, mode=HeadFootType.NoDisplay, height=None, refresh=None):
-        super(Footer, self).__init__(text, data, mode, height, refresh)
+        super(Footer, self).__init__(text=text, data=data, mode=mode, height=height, refresh=refresh)
         self.location = HeadFootLocation.Bottom
                      
                      
 ##################################################################################
 # TFTMENU BUTTON CLASS
+##################################################################################
+# Class for a button on a display.
 ##################################################################################
 class Button(object):
     background_color = None
@@ -1342,6 +1468,8 @@ class Button(object):
 
     ##################################################################################
     # BUTTON INIT METHOD
+    ##################################################################################
+    # Init method for Button class.  Sets defaults to button defaults
     ##################################################################################
     def __init__(self, text=None, x=0, y=0, width=None, height=Defaults.default_button_height,
                  background_color=Defaults.default_background_color, border_color=Defaults.default_button_border_color,
@@ -1370,6 +1498,9 @@ class Button(object):
 
     ##################################################################################
     # BUTTON RENDER METHOD
+    ##################################################################################
+    # Method to render the a button including text.  The solid parameter indicates if
+    # the button is an outline only (when False) or a solid rectangle (when True)
     ##################################################################################
     def render(self, solid=False):
         # No text means we don't render a button.
@@ -1405,6 +1536,6 @@ class Button(object):
         else:
             button_text_top = (self.y + (self.height / 2)) - (button_text_height / 2)
         button_text_rect = button_surface.get_rect(left=button_text_left, top=button_text_top)
-        # Blit the text on the screen
+        # Block transfer the text on the screen
         Displays.screen.blit(button_surface, button_text_rect)
         return button_rect

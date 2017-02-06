@@ -89,6 +89,9 @@ class Timer:
     ##################################################################################
     # TIMER ALARM METHOD
     ##################################################################################
+    # Method called from a system Alarm signal.  When an alarm occurs, the __triggered
+    # variable is set to True and can be detected in the is_expired method.
+    ##################################################################################
     @classmethod
     def alarm(cls, signum, frame):
         logger.debug("Alarm Signal Received.  Signum:{0}, Frame:{1}".format(signum, frame))
@@ -99,6 +102,8 @@ class Timer:
     ##################################################################################
     # TIMER RESET METHOD
     ##################################################################################
+    # Method to reset the Alarm signal timer
+    ##################################################################################
     @classmethod
     def reset(cls):
         if not cls.__ignore_reset:
@@ -108,6 +113,9 @@ class Timer:
 
     ##################################################################################
     # TIMER TIMEOUT METHOD
+    ##################################################################################
+    # Method that initially sets the Alarm signal callback.  The ignore_reset
+    # parameter can be set to True to ignore reset signals.
     ##################################################################################
     @classmethod
     def timeout(cls, timeout, ignore_reset=False):
@@ -121,6 +129,8 @@ class Timer:
     ##################################################################################
     # TIMER IS_EXPIRED METHOD
     ##################################################################################
+    # Method to detect if a timer alarm has occurred.
+    ##################################################################################
     @classmethod
     def is_expired(cls):
         if cls.__timeout == 0 or not cls.__triggered:
@@ -132,15 +142,22 @@ class Timer:
     ##################################################################################
     # TIMER TIMER METHOD
     ##################################################################################
+    # Method to initiate the timer t
+    ##################################################################################
     @classmethod
-    def timer(cls, timeout):
+    def timer(cls, timeout, target=None):
         if timeout > 0:
-            thread = Thread(target=cls.sleep, args=(timeout, ))
+            if target is None:
+                target = cls.sleep
+            thread = Thread(target=target, args=(timeout, ))
             thread.start()
             thread.join()
 
     ##################################################################################
     # TIMER ABORT METHOD
+    ##################################################################################
+    # Method to abort the timer.  Called on exit to interrupt any sleep that may be
+    # occurring.
     ##################################################################################
     @classmethod
     def abort(cls):
@@ -149,20 +166,25 @@ class Timer:
     ##################################################################################
     # TIMER SLEEP METHOD
     ##################################################################################
+    # Method to initiate a sleep to cause a timeout.  This is the preferred way to do
+    # a menu sleep from the menu because it can be aborted with the abort() method.
+    ##################################################################################
     @classmethod
     def sleep(cls, arguments):
-        print ("Buttons - In Sleep Thread:", arguments)
+        logger.debug("Buttons - In Sleep Thread:", arguments)
         for delay in range(arguments):
             time.sleep(Times.SleepLong)
             if cls.__abort:
                 break
-
-        print ("Buttons - Exiting Sleep Thread:", arguments)
+        logger.debug("Buttons - Exiting Sleep Thread:", arguments)
 
 
 ##################################################################################
 # BACKLIGHT CLASS
-################################################################################## 
+##################################################################################
+# Class to manage the backlight of the PiTft.  Handles dimming, brightening,
+# sleeping and waking of the device.
+##################################################################################
 class Backlight:
     method       = 0
     steps        = None
@@ -176,6 +198,10 @@ class Backlight:
 
     ##################################################################################
     # BACKLIGHT INITIALIZE METHOD
+    ##################################################################################
+    # Method for initializing the Backlight class.  Checks if already initialized and
+    # set to initialized if not.  Set the backlight options that are passed in then
+    # set the backlight method and tweak options based on the backlight method.
     ##################################################################################
     @classmethod
     def initialize(cls, method=None, steps=None, restore_last=False, default=None, callback=None):
@@ -261,7 +287,7 @@ class Backlight:
                 backlight_pin = GPIO_ECHO_BACKLIGHT
                 if cls.method == BacklightMethod.Echo252:
                     backlight_pin = GPIO_ECHO_BACKLIGHT_ALT
-                # ECHO GPIO is binary (ON/OFF) so change is always the maxium brightness
+                # ECHO GPIO is binary (ON/OFF) so change is always the maximum brightness
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_ECHO_LINK.format(backlight_pin)])
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_ECHO_OUTPUT.format(backlight_pin)])
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_ECHO_SET.format(initial_value, backlight_pin)])
@@ -273,6 +299,9 @@ class Backlight:
     ##################################################################################
     # BACKLIGHT IS_SCREEN_SLEEPING METHOD
     ##################################################################################
+    # Determines if the backlight is in a sleeping state that is maintained by the
+    # class.
+    ##################################################################################
     @classmethod
     def is_screen_sleeping(cls):
         if cls.method == BacklightMethod.NoBacklight:
@@ -282,6 +311,8 @@ class Backlight:
 
     ##################################################################################
     # BACKLIGHT SET_BACKLIGHT METHOD
+    ##################################################################################
+    # Method that sets the backlight using the code required by the backlight method.
     ##################################################################################
     @classmethod
     def set_backlight(cls, state):
@@ -333,6 +364,9 @@ class Backlight:
     ##################################################################################
     # BACKLIGHT BACKLIGHT_UP METHOD
     ##################################################################################
+    # Method to increase the brightness of the backlight by the amount in the
+    # backlight steps
+    ##################################################################################
     @classmethod
     def backlight_up(cls, button=None):
         logger.debug("Method backlight_up executed with button:{0} ".format(button if button is not None else "0"))
@@ -352,6 +386,9 @@ class Backlight:
 
     ##################################################################################
     # BACKLIGHT BACKLIGHT_DOWN METHOD
+    ##################################################################################
+    # Method to decrease the brightness of the backlight by the amount in the
+    # backlight steps
     ##################################################################################
     @classmethod
     def backlight_down(cls, button=None):
@@ -373,13 +410,18 @@ class Backlight:
     ##################################################################################
     # BACKLIGHT SCREEN_WAKE METHOD
     ##################################################################################
+    # Send the screen wake command as it has nothing to do with the backlight but
+    # allows the menu to wake up from the system screen sleep if enabled.  This is
+    # done regardless of any backlight manipulation.
+    ##################################################################################
     @classmethod
     def screen_wake(cls, button=None):
-        # Send the screen wake command as it has nothing to do with the backlight but allows the menu to wake up
-        # from the system screen sleep if enabled.
         logger.debug("Method screen_wake executed with button:{0} ".format(button if button is not None else "0"))
         send_wake_command()
         if cls.method != BacklightMethod.NoBacklight:
+            # Check if we should restore the backlight to the setting it was set to
+            # before it sleeping.  If that setting was Off, then go back to full
+            # brightness.
             if cls.restore_last:
                 if cls.last_state == GPIO_BACKLIGHT_OFF:
                     cls.set_backlight(GPIO_BACKLIGHT_HIGH)
@@ -394,6 +436,8 @@ class Backlight:
     ##################################################################################
     # BACKLIGHT SCREEN_SLEEP METHOD
     ##################################################################################
+    # Sends the command to the screen to sleep the screen
+    ##################################################################################
     @classmethod
     def screen_sleep(cls, button=None):
         logger.debug("Method screen_sleep executed with button:{0} ".format(button if button is not None else "0"))
@@ -407,11 +451,15 @@ class Backlight:
     ##################################################################################
     # BACKLIGHT SCREEN_TOGGLE METHOD
     ##################################################################################
+    # Sends the command to the screen to sleep the screen if it awake or wake the
+    # screen if it is sleeping.
+    ##################################################################################
     @classmethod
     def screen_toggle(cls, button=None):
         logger.debug("Method screen_toggle executed with button:{0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to toggle screen.")
+        # Set backlight to off if it is not already
         if cls.is_screen_sleeping():
             cls.screen_wake(None)
         else:
@@ -421,6 +469,11 @@ class Backlight:
     ##################################################################################
     # BACKLIGHT CALL_BUTTON_PRESS METHOD
     ##################################################################################
+    # Classmethod that calls any callbacks in the list of callbacks when a button is
+    # pressed.  Timer.reset is added by default when creating the Button class and is
+    # used internally.  Additional handlers can be implemented by adding custom
+    # callback functions.
+    ##################################################################################
     @classmethod
     def call_button_press(cls):
         if cls.callback is not None:
@@ -428,6 +481,12 @@ class Backlight:
                 function()
 
 
+##################################################################################
+# GPIO ACTION CLASS
+##################################################################################
+# Class that holds the actions for a GPIO button press, including and additional
+# data or data for drawing a new display (render_data).
+##################################################################################
 class GpioAction(object):
     action = None
     data = None
@@ -436,6 +495,8 @@ class GpioAction(object):
     ##################################################################################
     # GPIO ACTION INIT METHOD
     ##################################################################################
+    # Sets the GPIO Action properties to defaults.
+    ##################################################################################
     def __init__(self, action=GpioButtonAction.NoAction, data=None, render_data=None):
         self.action = action
         self.data = data
@@ -443,8 +504,12 @@ class GpioAction(object):
 
 
 ##################################################################################
-#  BUTTONS CLASS
-################################################################################## 
+#  GPIO BUTTONS CLASS
+##################################################################################
+# Class to hold the state, methods and creation of the gpio buttons.  These
+# buttons can be virtual, physical (on the tft) or external (such as on a bread-
+# board.
+##################################################################################
 class GpioButtons(object):
     tft_type         = None
     buttons          = []
@@ -455,21 +520,12 @@ class GpioButtons(object):
     initialized      = False
 
     ##################################################################################
-    # BUTTONS IS_INITIALIZED METHOD
-    ##################################################################################
-    @classmethod
-    def is_initialized(cls):
-        return cls.initialized
-
-    ##################################################################################
-    # BUTTONS INITIALIZE METHOD
-    ##################################################################################
-    @classmethod
-    def initialize(cls, initialized):
-        cls.initialized = initialized
-
-    ##################################################################################
     # BUTTONS GPIO_BUTTON METHOD
+    ##################################################################################
+    # Method called by the GPIO.add_event_detect.   The button contains the sequential
+    # id of the button, starting at 0, the actions parameter contains the list of
+    # actions to be executed by the button press and channel contains the GPIO id of
+    # the pressed button.
     ##################################################################################
     @classmethod
     def gpio_button(cls, button, actions, channel):
@@ -516,13 +572,16 @@ class GpioButtons(object):
     ##################################################################################
     # BUTTONS INIT METHOD
     ##################################################################################
+    # Method that sets the initial properties of the GpioButtons class.  These
+    # properties include the GPIOs for power on/of, battery monitoring and buttons as
+    # well as the associated actions.
+    ##################################################################################
     def __init__(self, tft_type, buttons=None, actions=None,  backlight_method=BacklightMethod.NoBacklight,
                  backlight_steps=None, backlight_default=None, backlight_restore_last=False, backlight_auto=False,
                  button_callback=None, power_gpio=None, battery_gpio=None):
-        if GpioButtons.is_initialized():
+        if GpioButtons.gpio_initialized:
             raise AlreadyInitializedException("TftButtons Class has already been initialized as required.")
-        GpioButtons.initialize(True)
-        # Buttons.initialized(True)
+        GpioButtons.initialized = True
         self.tft_type     = tft_type
         self.buttons = array_single_none(buttons, no_coerce_none=True)
         self.actions = array_single_none(actions, no_coerce_none=True)
@@ -562,7 +621,7 @@ class GpioButtons(object):
                 self.buttons = []
         else:
             self.buttons = []
-        # Get GPIO used as shutdown button in Adafruit kernals, if set in the config, we can
+        # Get GPIO used as shutdown button in Adafruit kernels, if set in the config, we can
         # get it and set it automatically.  This only works for one or two digit GPIOs and
         # setting the GPIO manually will negate any checking.
         if (self.power_gpio == DEFAULT_PI_BATTERY_GPIO) and (os.path.isfile(ADAFRUIT_CONF_FILE)):
@@ -609,12 +668,12 @@ class GpioButtons(object):
                                 GpioAction(GpioButtonAction.ScreenToggle)]
             elif len(self.buttons) == 1:
                 self.actions = [GpioAction(GpioButtonAction.ScreenToggle)]
-        # Setup GPIO for low battery indication which is usefull if using a LiPo battery with a bouard that can
+        # Setup GPIO for low battery indication which is useful if using a LiPo battery with a board that can
         # control a GPIO pin.
         GPIO.setmode(GPIO.BCM)
         if self.battery_gpio is not DEFAULT_PI_BATTERY_GPIO:
             GPIO.setup(self.battery_gpio, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        if self.actions and Backlight.method != BacklightMethod.NoBacklight:
+        if self.actions:
             for button in self.buttons:
                 GPIO.setup(button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             # Bind actions to GPIO Buttons if they exist
@@ -626,22 +685,31 @@ class GpioButtons(object):
                                           callback=partial(GpioButtons.gpio_button, action_count, button_actions),
                                           bouncetime=Times.SwitchBounce)
                 action_count += 1
-        self.gpio_initialized = True
+            GpioButtons.gpio_initialized = True
 
     ##################################################################################
     # BUTTONS DEL METHOD
     ##################################################################################
+    # Method to clean up upon deletion of the class.
+    ##################################################################################
     def __del__(self):
+        # Set the backlight back to its highest setting if any backlight manipulation
+        # could have been done
         if Backlight.method != BacklightMethod.NoBacklight:
             Backlight.set_backlight(GPIO_BACKLIGHT_HIGH)
-        if self.gpio_initialized:
+        # If any GPIO event detection was done, clean up.
+        if GpioButtons.initialized:
             GPIO.cleanup()
         GpioButtons.initialized = False
 
     ##################################################################################
     # BUTTONS IS_LOW_BATTERY METHOD
     ##################################################################################
+    # Method to check to see if the GPIO input used to monitor the battery is
+    # indicating a low battery.
+    ##################################################################################
     def is_low_battery(self):
+        # No need to check if we are set to default (no battery GPIO).
         if self.battery_gpio is DEFAULT_PI_BATTERY_GPIO:
             return False
         else:

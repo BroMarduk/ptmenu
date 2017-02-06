@@ -3,13 +3,19 @@
 # IMPORTS
 ##################################################################################
 # The "from tftmenu import *" and "from tfttemplates import *" items need to be
-# present in all display applicaitons.
+# present in all display applications.
 from tftmenu import *
 from tfttemplates import *
 
 
 ##################################################################################
 # DISPLAY_PI_TEMP CUSTOM HEADER FUNCTION
+##################################################################################
+# Callback function that returns the CPU temperature of the pi color coded to
+# indicate any issues.  The temperature numbers are based on the operating
+# temperatures of the LAN component of the Pi, which seems to be the most
+# sensitive to temperature.  Below 0 degrees Celsius and the text turns blue,
+# between 0 and 60 green, above 60 but below 70, yellow, and above 70, red.
 ##################################################################################
 def display_pi_temp(header=None):
     result = os.popen('vcgencmd measure_temp').readline()
@@ -19,9 +25,9 @@ def display_pi_temp(header=None):
         val = float(temp)
         if val < 0:
             header.text.font_color = Color.Blue
-        elif val < 80.0:  # Pi turns on processor throttling
+        elif val < 60.0:  # Pi turns on processor throttling
             header.text.font_color = Color.Green
-        elif val < 85.0:  # Pi turns on processor and cpu throttling
+        elif val < 70.0:  # Pi turns on processor and cpu throttling
             header.text.font_color = Color.Yellow
         else:
             header.text.font_color = Color.Red
@@ -58,7 +64,7 @@ mainMenuButtons = get_buttons(ButtonTemplate.FullScreen3x4, border_color=Color.B
                                      "Time (12 Hour)",
                                      "Time (24 Hour)",
                                      "Date/Time (US)",
-                                     "Date/Time (Intl)",
+                                     "Date/Time (Int.)",
                                      "Custom Date",
                                      "Host Name",
                                      "IP Address",

@@ -3,7 +3,7 @@
 # IMPORTS
 ##################################################################################
 # The "from tftmenu import *" and "from tfttemplates import *" items need to be
-# present in all display applicaitons.
+# present in all display applications.
 from tftmenu import *
 from tfttemplates import *
 
@@ -34,7 +34,7 @@ Displays.initialize(DISP28CP)
 # Create buttons for menu using a template (BUTTONS_2X1_BOTTOM) that adds two
 # buttons.  The first says "Hello" and the second says "Goodbye".  Actions are set
 # to show a "Hello!" message using and add actions to show a message using the
-# SPLASH_INFO built-in dialog (used internally).  The seocnd button, "Goodbye"
+# SPLASH_INFO built-in dialog (used internally).  The second button, "Goodbye"
 # button exits the application.
 buttons = get_buttons(ButtonTemplate.Bottom2x1,
                       names=["Hello", "Goodbye"],
@@ -53,6 +53,6 @@ mainMenu = Menu(buttons=buttons, header=Header(mode=HeadFootType.UserText, text=
 Displays.menus["Main"] = mainMenu
 # Starts the menu by initializing the necessary components and displaying the
 # menu called "Main".  Start can also be called with the menu object itself
-# (mainMenu) as an olternative.  Creating a menu with an existing name will
+# (mainMenu) as an alternative.  Creating a menu with an existing name will
 # replace the previous menu with the new one.  Execution will continue on the
 Displays.start("Main")

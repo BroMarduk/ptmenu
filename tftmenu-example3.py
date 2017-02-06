@@ -3,7 +3,7 @@
 # IMPORTS
 ##################################################################################
 # The "from tftmenu import *" and "from tfttemplates import *" items need to be
-# present in all display applicaitons.
+# present in all display applications.
 from tftmenu import *
 from tfttemplates import *
 
@@ -31,7 +31,7 @@ Displays.initialize(DISP28CP)
 ##################################################################################
 # MENU TEMPLATES
 ##################################################################################
-mainMenuButtons = get_buttons(ButtonTemplate.Header3x3, border_color=Color.Yellow, font_size=18,  # font_size=35,
+mainMenuButtons = get_buttons(ButtonTemplate.Header3x3, border_color=Color.Yellow, font_size=18,
                               names=["L-R / T-B",
                                      "L-R / B-T",
                                      "R-L / T-B",

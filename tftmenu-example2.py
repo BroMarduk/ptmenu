@@ -4,7 +4,7 @@
 ##################################################################################
 # THe random import is used only for the random_button_color callback function and
 # is not normally needed.   The "from tftmenu import *" and "from tfttemplates
-# import *" items need to be present in all display applicaitons.
+# import *" items need to be present in all display applications.
 import random
 
 from tftmenu import *
@@ -14,7 +14,7 @@ from tfttemplates import *
 ##################################################################################
 # RANDOM BUTTON CALLBACK FUNCTION
 ##################################################################################
-# Example of a button call back function.  The menu and button parmeters are
+# Example of a button call back function.  The menu and button parameters are
 # passed in and can be changed.  The function can return a new Display object
 # if a new menu should be loaded or returning None.  The menu.force_refresh is set
 # to force a menu to redraw (useful if graphic elements have changed and need to
@@ -59,7 +59,7 @@ def random_button_color(menu, button):
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
 Displays.initialize(DISP28CP, global_font="./Fonts/BebasNeue.otf")
-Defaults.default_header_font_color = Color.Silver
+Defaults.default_headfoot_font_color = Color.Silver
 Defaults.default_text_line_font_color = Color.Silver
 Defaults.default_dialog_font_color = Color.Silver
 Defaults.default_button_font_color = Color.Silver
@@ -123,7 +123,7 @@ dialogYesNoCancel = Dialog(dialogYesNoCancelText, DialogStyle.YesNoCancel, Color
                            actions=dialogYesNoCancelActions, use_menu_timeout=True, use_menu_colors=True)
 Displays.menus["YesNoCancel"] = dialogYesNoCancel
 # Custom French dialog box used to confirm exit.  Oui = Yes, Non = No.  Uses
-# custom botton font color as well as different button colors for each button
+# custom button font color as well as different button colors for each button
 dialogCustomFrenchText = [DialogLine("Voulez-vous vraiment quitter?", font_size=24, font_pad=False)]
 dialogCustomFrenchButtons = get_buttons(ButtonTemplate.Bottom2x1, ButtonDirection.LeftRightTopBottom,
                                         names=["Oui", "Non"], font_color=[Color.White, Color.Magenta],
@@ -134,7 +134,7 @@ dialogCustomFrench = Dialog(dialogCustomFrenchText, DialogStyle.Custom, Color.Bl
                             buttons=dialogCustomFrenchButtons)
 Displays.menus["CustomFrench"] = dialogCustomFrench
 # Full screen dialog.  Has no visible button, but touching anywhere on the
-# screen will dissmiss the dialog.
+# screen will dismiss the dialog.
 dialogScreenButtonText = [DialogLine("Touch anywhere on the", font_size=30, font_pad=False),
                           DialogLine("screen to dismiss", font_size=30, font_pad=False)]
 dialogScreenButtonActions = [Action(DisplayAction.Back)]

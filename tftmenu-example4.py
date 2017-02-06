@@ -3,7 +3,7 @@
 # IMPORTS
 ##################################################################################
 # The "from tftmenu import *" and "from tfttemplates import *" items need to be
-# present in all display applicaitons.
+# present in all display applications.
 from tftmenu import *
 from tfttemplates import *
 

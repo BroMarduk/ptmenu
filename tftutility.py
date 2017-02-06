@@ -14,7 +14,11 @@ import pygame.freetype
 ##################################################################################
 # CONFIGURE LOGGING
 ##################################################################################
+# Creates the logger and allows for use of command line parameter when running a
+# menu display of --log followed by the level of logging.   This parameter will be
+# WARNING if not passed in or an invalid parameter is used
 # Create Logger with 'tftmenu' name.
+##################################################################################
 logger = logging.getLogger("tftmenu")
 logger.setLevel(logging.DEBUG)
 # Create File Handler which logs all messages
@@ -45,10 +49,11 @@ logger.addHandler(stream_handler)
 ##################################################################################
 # RUN CMD METHOD
 ##################################################################################
-# Function to run a command an return the output of the commend in a string or a
-# list. This code was modifed from the code in garthvh and re4son branch located
+# Method to run a command an return the output of the commend in a string or a
+# list. This code was modified from the code in garthVH and re4son branch located
 # at https://github.com/garthvh/pitftmenu and https://github.com/Re4son/pitftmenu
 # respectively
+##################################################################################
 def run_cmd(cmd):
     if isinstance(cmd, list):
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -61,8 +66,9 @@ def run_cmd(cmd):
 ##################################################################################
 # IS ROOT METHOD
 ##################################################################################
-# Function that returns True if the EUID (Effective User ID) is 0 (root) and False
-# if not reoot.
+# Method that returns True if the EUID (Effective User ID) is 0 (root) and False
+# if not reboot.
+##################################################################################
 def is_root():
     return os.geteuid() is 0
 
@@ -84,6 +90,8 @@ DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
 ##################################################################################
 # SCREEN CONSTANTS
 ##################################################################################
+# Used to wake the Pi from its own sleep state.
+##################################################################################
 class Screen:
     Tty         = "tty{0}".format(run_cmd("fgconsole")[:-1])
     WakeCommand = "printf \033[13]"
@@ -92,6 +100,8 @@ class Screen:
 
 ##################################################################################
 # COMMAND CLASS CONSTANTS
+##################################################################################
+# Constants used to shutdown, reboot or start X.
 ##################################################################################
 class Command:
     Shutdown   = "sudo shutdown -h now"
@@ -103,17 +113,26 @@ class Command:
 ##################################################################################
 # SHUTDOWN CLASS CONSTANTS
 ##################################################################################
+# Constants used during calls to Displays.shutdown().  Normal indicates a user
+# initiated exit by CTL-C or Escape (when not shelled), Error indicates that an
+# error has determined the Displays need to be shut down, Terminate when a signal
+# indicating the pi or python is being shutdown or killed.  Reboot and Shutdown
+# indicate to perform a normal shutdown then either reboot or shutdown the pi
+# respectively.
+##################################################################################
 class Shutdown:
     Normal    = 0
     Error     = 1
     Terminate = 2
-    Quit      = 3
     Reboot    = 4
     Shutdown  = 5
 
 
 ##################################################################################
-# DIALOGBUTTONTEXT CLASS CONSTANTS
+# DIALOG BUTTON TEXT CLASS CONSTANTS
+##################################################################################
+# Standard text for dialog buttons.   Provides a one stop place to set these
+# should alternate text be desired.
 ##################################################################################
 class DialogButtonText:
     Yes    = "Yes"
@@ -125,6 +144,8 @@ class DialogButtonText:
 ##################################################################################
 # ATTRIBUTES CLASS CONSTANTS
 ##################################################################################
+# Names of attributes used by calls to hasattr()
+##################################################################################
 class Attributes:
     Header = "header"
     Footer = "footer"
@@ -132,6 +153,8 @@ class Attributes:
 
 ##################################################################################
 # COLOR DEFINITIONS
+##################################################################################
+# Some standard colors defined for use.  Can easily be extended or modified.
 ##################################################################################
 class Color:
     # Color     R    G    B
@@ -157,6 +180,9 @@ class Color:
 ##################################################################################
 # BUTTON TEMPLATE CONSTANTS
 ##################################################################################
+# Constants for the different button templates.  If additional templates are
+# added, an additional item should also be added here.
+##################################################################################
 class ButtonTemplate:
     Header2x3          = 0
     HeaderFooter2x2    = 1
@@ -177,6 +203,9 @@ class ButtonTemplate:
 ##################################################################################
 # BUTTON DIRECTION CONSTANTS
 ##################################################################################
+# Constants for the direction the buttons are rendered.  Should cover all left/
+# right and top/down combinations.
+##################################################################################
 class ButtonDirection:
     LeftRightTopBottom = 0
     LeftRightBottomTop = 1
@@ -191,6 +220,8 @@ class ButtonDirection:
 ##################################################################################
 # BUTTON TUPLE CONSTANTS
 ##################################################################################
+# Constants used for button tuple used by the TftTemplates module.
+##################################################################################
 class ButtonTuple:
     Columns        = 0
     Rows           = 1
@@ -202,7 +233,11 @@ class ButtonTuple:
     Height         = 7
 
 
-# Tweakable Parameters.  Should be good but can be changed if needed
+##################################################################################
+# TIMES CONSTANTS
+##################################################################################
+# Changeable Parameters.  Should be good but can be changed if needed
+##################################################################################
 class Times:
     SleepLoop    = 0.05
     SleepShort   = 0.25
@@ -215,7 +250,9 @@ class Times:
 # BACKLIGHT METHOD CONSTANTS
 ##################################################################################
 # Backlight Method to use.  Which one to use depends on what you want to do with
-# the backlight and what version of Raspian is being used.
+# the backlight, whether the backlight PWM is enabled (on certain PiTft displays),
+# and what version of Raspian is being used (Jessie and Wheezy are supported).
+##################################################################################
 class BacklightMethod:
     NoBacklight = 0
     Pwm         = 1
@@ -227,6 +264,10 @@ class BacklightMethod:
 
 ##################################################################################
 # DISPLAY RESOLUTION CONSTANTS
+##################################################################################
+# Constants indicating the two currently supported display resolutions.  All
+# current Adafruit PiTft display and MOST third party displays use one of these
+# two resolutions.
 ##################################################################################
 class DisplayResolution:
     Small320x240 = 0
@@ -273,8 +314,17 @@ class GpioButtonAction:
 
 
 ##################################################################################
-# MENU HEADER CONSTANTS
+# MENU HEAD/FOOT CONSTANTS
 ##################################################################################
+# Constants indicating the type of header or footer that should be displayed.  The
+# NoDisplay will render a blank header, Date will render the long date, Time12 and
+# Time24 will display time in Hours:Minutes format in either 12 (with AM/PM) or 24
+# hour mode.  DateTime12 and DateTime24 will return the short date along with
+# either 12 or 24 hour time.  DateTimeCustom will allow for a custom format to be
+# passed in.  HostName and IpAddress will display the Pi's HostName or the Pi's IP
+# Address.  UserText allows any specified user text to be passed in and
+# UserFunction displays the result of a passed in function.  In addition to the
+# header type, this will also help determine the header refresh rate
 class HeadFootType:
     NoDisplay      = 0
     Date           = 1
@@ -290,7 +340,10 @@ class HeadFootType:
 
 
 ##################################################################################
-# MENU HEADER CONSTANTS
+# MENU HEAD/FOOT LOCATION CONSTANTS
+##################################################################################
+# The location of the header or footer.  Top is above the highest button, Below is
+# under the lowest button.
 ##################################################################################
 class HeadFootLocation:
     Top    = 0
@@ -300,16 +353,22 @@ class HeadFootLocation:
 ##################################################################################
 # DISPLAY HEADER REFRESH CLASS CONSTANTS
 ##################################################################################
+# Constants to determine the frequency of refreshes to the header or footer.  The
+# All setting will update the header at the highest possible frequency.
+##################################################################################
 class DisplayHeaderRefresh:
     NoRefresh = 0
     Day       = 1
     Hour      = 2
     Minute    = 3
     Second    = 4
+    All       = 5
 
 
 ##################################################################################
 # SPLASH BUILT-INs
+##################################################################################
+# Constants containing the names of the built-in Splash displays.
 ##################################################################################
 class SplashBuiltIn:
     Blank   = "Blank"
@@ -323,6 +382,9 @@ class SplashBuiltIn:
 ##################################################################################
 # SPLASH MUTE LEVEL
 ##################################################################################
+# Constant flags to allow for muting of specific levels of Splash displays.  They
+# can be combined to create custom levels of muting.
+##################################################################################
 class SplashMuteLevel:
     NoMute  = 0
     Exit    = 1
@@ -334,7 +396,9 @@ class SplashMuteLevel:
 
 
 ##################################################################################
-# DATE/TIME STRUCT CONSTANTS
+# TIME STRUCT CONSTANTS
+##################################################################################
+# Constants used for the date/time struct positions
 ##################################################################################
 class TimeStruct:
     Year      = 0
@@ -351,6 +415,8 @@ class TimeStruct:
 ##################################################################################
 # HORIZONTAL TEXT ALIGNMENT CONSTANTS
 ##################################################################################
+# Constants for horizontal text alignment
+##################################################################################
 class TextHAlign:
     Left   = 0
     Center = 1
@@ -360,6 +426,8 @@ class TextHAlign:
 ##################################################################################
 # VERTICAL TEXT ALIGNMENT CONSTANTS
 ##################################################################################
+# Constants for vertical text alignment
+##################################################################################
 class TextVAlign:
     Top    = 0
     Middle = 1
@@ -368,6 +436,8 @@ class TextVAlign:
 
 ##################################################################################
 # TEXT TUPLE CONSTANTS
+##################################################################################
+# Constants for the indexes of the tuple use to set text positions.
 ##################################################################################
 class TextTuple:
     Surface  = 0
@@ -379,7 +449,10 @@ class TextTuple:
 
 
 ##################################################################################
-# DIALOGSTYLE CONSTANTS
+# DIALOG STYLE CONSTANTS
+##################################################################################
+# Constants for the types of dialog styles that can be created by the Dialog
+# display class.  These determine buttons and button positions.
 ##################################################################################
 class DialogStyle:
     Ok           = 0
@@ -396,6 +469,8 @@ class DialogStyle:
 ##################################################################################
 # MOUSE BUTTON CONSTANTS
 ##################################################################################
+# Constants indicating the pygame mouse buttons
+##################################################################################
 class MouseButton:
     Left   = 1
     Middle = 2
@@ -405,9 +480,15 @@ class MouseButton:
 ##################################################################################
 # DEFAULTS CLASS
 ##################################################################################
+# Class for holding the defaults for the different displays and text lines.  Some
+# of the parameters are adjusted based on the size of the tft in use.  Currently
+# 240x320 and 320x480 screens are supported.
+##################################################################################
 class Defaults:
     ##################################################################################
     # DEFAULTS DEFAULT CONSTANTS
+    ##################################################################################
+    # Default constants that apply to all resolutions
     ##################################################################################
     DEFAULT_BACKGROUND_COLOR = Color.Black
     DEFAULT_BORDER_COLOR = Color.Blue
@@ -417,11 +498,11 @@ class Defaults:
     DEFAULT_TEXT_LINE_FONT_SIZE = 15
     DEFAULT_TEXT_LINE_FONT_ALIGN = TextHAlign.Center
     DEFAULT_TEXT_LINE_FONT_VALIGN = TextVAlign.Middle
-    DEFAULT_HEADER_FONT_COLOR = Color.White
-    DEFAULT_HEADER_FONT = None
-    DEFAULT_HEADER_FONT_SIZE = 30
-    DEFAULT_HEADER_FONT_ALIGN = TextHAlign.Center
-    DEFAULT_HEADER_FONT_VALIGN = TextVAlign.Middle
+    DEFAULT_HEADFOOT_FONT_COLOR = Color.White
+    DEFAULT_HEADFOOT_FONT = None
+    DEFAULT_HEADFOOT_FONT_SIZE = 30
+    DEFAULT_HEADFOOT_FONT_ALIGN = TextHAlign.Center
+    DEFAULT_HEADFOOT_FONT_VALIGN = TextVAlign.Middle
     DEFAULT_SPLASH_BACKGROUND_COLOR = Color.Black
     DEFAULT_SPLASH_FONT_COLOR = Color.White
     DEFAULT_SPLASH_FONT = None
@@ -452,6 +533,8 @@ class Defaults:
     ##################################################################################
     # DEFAULTS DEFAULT 320x240 CONSTANTS
     ##################################################################################
+    # Default constants for the 320x240 resolution
+    ##################################################################################
     DEFAULT_BORDER_WIDTH_320x240 = 4
     DEFAULT_TEXT_LINE_FONT_H_PADDING_320x240 = 6
     DEFAULT_TEXT_LINE_FONT_V_PADDING_320x240 = 8
@@ -461,8 +544,8 @@ class Defaults:
     DEFAULT_DIALOG_BORDER_WIDTH_320x240 = 4
     DEFAULT_DIALOG_FONT_H_PADDING_320x240 = 6
     DEFAULT_DIALOG_FONT_V_PADDING_320x240 = 8
-    DEFAULT_HEADER_FONT_H_PADDING_320x240 = 6
-    DEFAULT_HEADER_FONT_V_PADDING_320x240 = 8
+    DEFAULT_HEADFOOT_FONT_H_PADDING_320x240 = 6
+    DEFAULT_HEADFOOT_FONT_V_PADDING_320x240 = 8
     DEFAULT_BUTTON_FONT_H_PADDING_320x240 = 2
     DEFAULT_BUTTON_FONT_V_PADDING_320x240 = 2
     DEFAULT_BUTTON_BORDER_WIDTH_320x240 = 4
@@ -475,6 +558,8 @@ class Defaults:
     ##################################################################################
     # DEFAULTS DEFAULT 480x320 CONSTANTS
     ##################################################################################
+    # Default constants for the 480x320 resolution
+    ##################################################################################
     DEFAULT_BORDER_WIDTH_480x320 = 6
     DEFAULT_TEXT_LINE_FONT_H_PADDING_480x320 = 7
     DEFAULT_TEXT_LINE_FONT_V_PADDING_480x320 = 7
@@ -484,8 +569,8 @@ class Defaults:
     DEFAULT_DIALOG_BORDER_WIDTH_480x320 = 6
     DEFAULT_DIALOG_FONT_H_PADDING_480x320 = 6
     DEFAULT_DIALOG_FONT_V_PADDING_480x320 = 6
-    DEFAULT_HEADER_FONT_H_PADDDING_480x320 = 6
-    DEFAULT_HEADER_FONT_V_PADDING_480x320 = 6
+    DEFAULT_HEADFOOT_FONT_H_PADDDING_480x320 = 6
+    DEFAULT_HEADFOOT_FONT_V_PADDING_480x320 = 6
     DEFAULT_BUTTON_FONT_H_PADDING_480x320 = 3
     DEFAULT_BUTTON_FONT_V_PADDING_480x320 = 3
     DEFAULT_BUTTON_BORDER_WIDTH_480x320 = 6
@@ -523,11 +608,11 @@ class Defaults:
     default_dialog_font_size          = DEFAULT_DIALOG_FONT_SIZE
     default_dialog_font_h_align       = DEFAULT_TEXT_LINE_FONT_ALIGN
     default_dialog_font_v_align       = DEFAULT_TEXT_LINE_FONT_VALIGN
-    default_header_font_color         = DEFAULT_HEADER_FONT_COLOR
-    default_header_font               = DEFAULT_HEADER_FONT
-    default_header_font_size          = DEFAULT_HEADER_FONT_SIZE
-    default_header_font_h_align       = DEFAULT_HEADER_FONT_ALIGN
-    default_header_font_v_align       = DEFAULT_HEADER_FONT_VALIGN
+    default_headfoot_font_color         = DEFAULT_HEADFOOT_FONT_COLOR
+    default_headfoot_font               = DEFAULT_HEADFOOT_FONT
+    default_headfoot_font_size          = DEFAULT_HEADFOOT_FONT_SIZE
+    default_headfoot_font_h_align       = DEFAULT_HEADFOOT_FONT_ALIGN
+    default_headfoot_font_v_align       = DEFAULT_HEADFOOT_FONT_VALIGN
     default_button_border_color       = DEFAULT_BUTTON_BORDER_COLOR
     default_button_font_color         = DEFAULT_BUTTON_FONT_COLOR
     default_button_font               = DEFAULT_BUTTON_FONT
@@ -543,8 +628,8 @@ class Defaults:
     default_dialog_border_width       = DEFAULT_DIALOG_BORDER_WIDTH_320x240
     default_dialog_font_h_padding     = DEFAULT_DIALOG_FONT_H_PADDING_320x240
     default_dialog_font_v_padding     = DEFAULT_DIALOG_FONT_V_PADDING_320x240
-    default_header_font_h_padding     = DEFAULT_HEADER_FONT_H_PADDING_320x240
-    default_header_font_v_padding     = DEFAULT_HEADER_FONT_V_PADDING_320x240
+    default_headfoot_font_h_padding     = DEFAULT_HEADFOOT_FONT_H_PADDING_320x240
+    default_headfoot_font_v_padding     = DEFAULT_HEADFOOT_FONT_V_PADDING_320x240
     default_button_font_h_padding     = DEFAULT_BUTTON_FONT_H_PADDING_320x240
     default_button_font_v_padding     = DEFAULT_BUTTON_FONT_V_PADDING_320x240
     default_button_border_width       = DEFAULT_BUTTON_BORDER_WIDTH_320x240
@@ -571,8 +656,8 @@ class Defaults:
             cls.default_dialog_border_width       = Defaults.DEFAULT_DIALOG_BORDER_WIDTH_480x320
             cls.default_dialog_font_h_padding     = Defaults.DEFAULT_DIALOG_FONT_H_PADDING_480x320
             cls.default_dialog_font_v_padding     = Defaults.DEFAULT_DIALOG_FONT_V_PADDING_480x320
-            cls.default_header_font_h_padding     = Defaults.DEFAULT_HEADER_FONT_H_PADDDING_480x320
-            cls.default_header_font_v_padding     = Defaults.DEFAULT_HEADER_FONT_V_PADDING_480x320
+            cls.default_headfoot_font_h_padding     = Defaults.DEFAULT_HEADFOOT_FONT_H_PADDDING_480x320
+            cls.default_headfoot_font_v_padding     = Defaults.DEFAULT_HEADFOOT_FONT_V_PADDING_480x320
             cls.default_button_font_h_padding     = Defaults.DEFAULT_BUTTON_FONT_H_PADDING_480x320
             cls.default_button_font_v_padding     = Defaults.DEFAULT_BUTTON_FONT_V_PADDING_480x320
             cls.default_button_border_width       = Defaults.DEFAULT_BUTTON_BORDER_WIDTH_480x320
@@ -599,48 +684,51 @@ class Defaults:
             cls.default_text_line_font = global_font
             cls.default_splash_font = global_font
             cls.default_dialog_font = global_font
-            cls.default_header_font = global_font
+            cls.default_headfoot_font = global_font
             cls.default_button_font = global_font
         if global_font_size is not None:
             cls.default_text_line_font_size = global_font_size
             cls.default_splash_font_size = global_font_size
             cls.default_dialog_font_size = global_font_size
-            cls.default_header_font_size = global_font_size
+            cls.default_headfoot_font_size = global_font_size
             cls.default_button_font_size = global_font_size
         if global_font_color is not None:
             cls.default_text_line_font_color = global_font_color
             cls.default_splash_font_color = global_font_color
             cls.default_dialog_font_color = global_font_color
-            cls.default_header_font_color = global_font_color
+            cls.default_headfoot_font_color = global_font_color
             cls.default_button_font_color = global_font_color
         if global_font_h_padding is not None:
             cls.default_text_line_font_h_padding = global_font_h_padding
             cls.default_splash_font_h_padding = global_font_h_padding
             cls.default_dialog_font_h_padding = global_font_h_padding
-            cls.default_header_font_h_padding = global_font_h_padding
+            cls.default_headfoot_font_h_padding = global_font_h_padding
             cls.default_button_font_h_padding = global_font_h_padding
         if global_font_v_padding is not None:
             cls.default_text_line_v_padding = global_font_v_padding
             cls.default_splash_v_padding = global_font_v_padding
             cls.default_dialog_v_paddingt = global_font_v_padding
-            cls.default_header_v_padding = global_font_v_padding
+            cls.default_headfoot_v_padding = global_font_v_padding
             cls.default_button_v_padding = global_font_v_padding
         if global_font_h_align is not None:
             cls.default_text_line_font_h_align = global_font_h_align
             cls.default_splash_font_h_align = global_font_h_align
             cls.default_dialog_font_h_align = global_font_h_align
-            cls.default_header_font_h_align = global_font_h_align
+            cls.default_headfoot_font_h_align = global_font_h_align
             cls.default_button_font_h_align = global_font_h_align
         if global_font_v_align is not None:
             cls.default_text_line_v_align = global_font_v_align
             cls.default_splash_v_align = global_font_v_align
             cls.default_dialog_v_alignt = global_font_v_align
-            cls.default_header_v_align = global_font_v_align
+            cls.default_headfoot_v_align = global_font_v_align
             cls.default_button_v_align = global_font_v_align
 
 
 ##################################################################################
 # MERGE METHOD
+##################################################################################
+# Method that unions the contents of two lists together.  Duplicate items are
+# only added in once (with the first list having priority).
 ##################################################################################
 def merge(*arguments):
     output = []
@@ -655,6 +743,11 @@ def merge(*arguments):
 
 ##################################################################################
 # ARRAY_SINGLE_NONE METHOD
+##################################################################################
+# Method that takes a singleton item and makes it a list.  If an item is already
+# a list, then it is returned.   THe no_coerce_none parameter determines if a None
+# value is returned as none (when no_coerce_none is True) or an empty list when
+# no_coerce_none is True
 ##################################################################################
 def array_single_none(item, no_coerce_none=False):
     if isinstance(item, list):
@@ -671,6 +764,8 @@ def array_single_none(item, no_coerce_none=False):
 ##################################################################################
 # REMOVE DUPLICATES METHOD
 ##################################################################################
+# Method to remove any duplicate values from a list.
+##################################################################################
 def remove_duplicates(sequence):
     uniques = set()
     return [item for item in sequence if item not in uniques and not uniques.add(item)]
@@ -679,7 +774,8 @@ def remove_duplicates(sequence):
 ##################################################################################
 # GET_IP_ADDRESS METHOD
 ##################################################################################
-# Used to return the primary local IP address
+# Method used to return the primary local IP address of the device.
+##################################################################################
 def get_ip_address():
     local_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -695,8 +791,9 @@ def get_ip_address():
 ##################################################################################
 # DRAW_TRUE_WITH_RECT METHOD
 ##################################################################################
-# Function that draws a rectangle with 'square' borders for more crips buttons and
+# Method that draws a rectangle with 'square' borders for more crisp buttons and
 # borders using the a rectangle as input.
+##################################################################################
 def draw_true_with_rect(screen, color, rect, border_width):
     return draw_true_rect(screen, color, rect.x, rect.y, rect.width, rect.height, border_width)
 
@@ -704,8 +801,9 @@ def draw_true_with_rect(screen, color, rect, border_width):
 ##################################################################################
 # DRAW_TRUE_RECT METHOD
 ##################################################################################
-# Function that draws a rectangle with 'square' borders for more crips buttons and
+# Method that draws a rectangle with 'square' borders for more crisp buttons and
 # borders using the rectangle parameters as input.
+##################################################################################
 def draw_true_rect(screen, color, x, y, width, height, border_width):
     if border_width == 0:
         return pygame.draw.rect(screen, color, (x, y, width, height), border_width)
@@ -722,12 +820,12 @@ def draw_true_rect(screen, color, x, y, width, height, border_width):
 
 
 ##################################################################################
-# WRAPTEXT METHOD
+# WRAP_TEXT_LINE METHOD
 ##################################################################################
-# Taken and modified from the function code located on the pygame wiki site:
+# Method that is modified from the function code located on the pygame wiki site:
 # http://pygame.org/wiki/TextWrap to work with freetype and return the lines in a
-# list.  This will take text and deterimine if it fits in the specifed width
-# parameter.   Newline characters also create breaks.  The return is a tuple that
+# list.  This will take text and determine if it fits in the specified width
+# parameter.  Newline characters also create breaks.  The return is a tuple that
 # contains each text line along with the text, height (should be the same) and
 # width of each.
 ##################################################################################
@@ -736,9 +834,12 @@ def wrap_text_line(font, text, width):
     text_height = []
     text_width = []
     i = 1
-    max_height = font.get_rect("(TMOg!pqjt[}|/").height
+    # A few random words and symbols that have ascenders and descenders
+    max_height = font.get_rect("jet Mopping quiT!([}|/").height
     while text:
         font_rect = font.get_rect(text[:i])
+        # Loop through the words until we exceed the width, run out of characters,
+        # run out of spaces or run out of words.
         while (font_rect.width < width and i < len(text) and "\n" not in text[:i]) or\
                 (" " not in text[:i] and text[:i] is not text):
             i += 1
@@ -760,7 +861,7 @@ def wrap_text_line(font, text, width):
 ##################################################################################
 # GET_BUTTONS_START_HEIGHT METHOD
 ##################################################################################
-# Function that returns the y location or top of the top most button that is not
+# Method that returns the y location or top of the top most button that is not
 # None (and therefore not displayed) from a list of buttons.
 ##################################################################################
 def get_buttons_start_height(buttons):
@@ -775,7 +876,7 @@ def get_buttons_start_height(buttons):
 ##################################################################################
 # GET_BUTTONS_END_HEIGHT METHOD
 ##################################################################################
-# Function that returns the bottom of the lowest visible button (text not set to
+# Method that returns the bottom of the lowest visible button (text not set to
 # None) from a list of buttons.
 ##################################################################################
 def get_buttons_end_height(buttons):
@@ -790,7 +891,7 @@ def get_buttons_end_height(buttons):
 ##################################################################################
 # SEND WAKE COMMAND METHOD
 ##################################################################################
-# Function to 'wake' the screen should the built-in screen blanking functionality
+# Method to 'wake' the screen should the built-in screen blanking functionality
 # be active.   This is done by executing a command similarly to the following:
 # $ printf \033[13] | sudo tee /dev/tty1 > /dev/null.
 ##################################################################################
