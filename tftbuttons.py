@@ -235,7 +235,7 @@ class Backlight:
                 # to default if present, or maximum brightness if no default
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT, GPIO_BACKLIGHT_PWM_MODE).split())
                 subprocess.call(GPIO_BACKLIGHT_PWM_SET.format(GPIO_PWM_BACKLIGHT, initial_value).split())
-            if cls.method == BacklightMethod.PwmBinary:
+            elif cls.method == BacklightMethod.PwmBinary:
                 # If STMPE path exists, make sure backlight is on.
                 if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
                     subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
