@@ -143,46 +143,6 @@ class Timer:
             cls.reset()
             return True
 
-    # ##################################################################################
-    # # TIMER TIMER METHOD
-    # ##################################################################################
-    # # Method to initiate the timer
-    # ##################################################################################
-    # @classmethod
-    # def timer(cls, target=None, *keyword_arguments):
-    #     if target is None:
-    #         thread_target = cls.sleep
-    #     else:
-    #         thread_target = target
-    #     thread = Thread(target=thread_target, args=keyword_arguments)
-    #     thread.start()
-    #     thread.join()
-    #
-    # ##################################################################################
-    # # TIMER ABORT METHOD
-    # ##################################################################################
-    # # Method to abort the timer.  Called on exit to interrupt any sleep that may be
-    # # occurring.
-    # ##################################################################################
-    # @classmethod
-    # def abort(cls):
-    #     cls.__abort = True
-    #
-    # ##################################################################################
-    # # TIMER SLEEP METHOD
-    # ##################################################################################
-    # # Method to initiate a sleep to cause a timeout.  This is the preferred way to do
-    # # a menu sleep from the menu because it can be aborted with the abort() method.
-    # ##################################################################################
-    # @classmethod
-    # def sleep(cls, arguments):
-    #     logger.debug("Buttons - In Sleep Thread:", arguments)
-    #     for delay in range(arguments):
-    #         time.sleep(Times.SleepLong)
-    #         if cls.__abort:
-    #             break
-    #     logger.debug("Buttons - Exiting Sleep Thread:", arguments)
-
 
 ##################################################################################
 # BACKLIGHT CLASS
@@ -236,7 +196,7 @@ class Backlight:
                 if cls.steps < GPIO_BACKLIGHT_CHANGE_STEPS_MIN:
                     # Always need at least two steps (on and off)
                     cls.steps = GPIO_BACKLIGHT_CHANGE_STEPS_MIN
-                elif cls.steps > GPIO_BACKLIGHT_CHANGE_STEPS_MAX:
+                if cls.steps > GPIO_BACKLIGHT_CHANGE_STEPS_MAX:
                     # Maximum amount of steps is the maximum number of backlight settings
                     cls.steps = GPIO_BACKLIGHT_CHANGE_STEPS_MAX
                     # Determine the amount to change the backlight at each step
@@ -245,7 +205,7 @@ class Backlight:
                 # Make sure default is in the proper range, if not set to off (too low) or (too) high
                 if cls.default < GPIO_BACKLIGHT_OFF:
                     cls.default = GPIO_BACKLIGHT_OFF
-                elif cls.default > GPIO_BACKLIGHT_HIGH:
+                if cls.default > GPIO_BACKLIGHT_HIGH:
                     cls.default = GPIO_BACKLIGHT_HIGH
                 initial_value = cls.default
             # All other methods are binary and are either on or off
@@ -298,7 +258,9 @@ class Backlight:
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_ECHO_OUTPUT.format(backlight_pin)])
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_ECHO_SET.format(initial_value, backlight_pin)])
             else:
-                pass
+                logger.warning("Unknown Backlight Method.  Setting backlight method to No Backlight.  Method: {0}"
+                               .format(cls.method))
+                cls.method = BacklightMethod.NoBacklight
         send_wake_command()
         return True
 
@@ -311,6 +273,7 @@ class Backlight:
     @classmethod
     def is_screen_sleeping(cls):
         if cls.method == BacklightMethod.NoBacklight:
+            logger.error("Attempt to detect sleep with a Backlight method of BacklightMethod.NoBacklight.")
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  "
                                       "Unable to determine sleep state.")
         return cls.state == GPIO_BACKLIGHT_OFF
@@ -325,6 +288,7 @@ class Backlight:
         if not cls.initialized:
             return
         if cls.method == BacklightMethod.NoBacklight:
+            logger.error("Attempt to set backlight with a Backlight method of BacklightMethod.NoBacklight.")
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to set backlight.")
         if state == cls.state:
             return
@@ -365,7 +329,7 @@ class Backlight:
                 cls.state = GPIO_BACKLIGHT_HIGH
                 cls.last_state = GPIO_BACKLIGHT_HIGH
         else:
-            pass
+            logger.warning("Unable to set backlight.  Unknown Backlight Method: {0}".format(cls.method))
 
     ##################################################################################
     # BACKLIGHT BACKLIGHT_UP METHOD
@@ -377,6 +341,7 @@ class Backlight:
     def backlight_up(cls, button=None):
         logger.debug("Method backlight_up executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
+            logger.error("Attempt to set backlight up with a Backlight method of BacklightMethod.NoBacklight.")
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  "
                                       "Unable to adjust backlight up.")
         if Backlight.is_screen_sleeping():
@@ -400,6 +365,7 @@ class Backlight:
     def backlight_down(cls, button=None):
         logger.debug("Method backlight_down executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
+            logger.error("Attempt to set backlight down with a Backlight method of BacklightMethod.NoBacklight.")
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  "
                                       "Unable to adjust backlight down.")
         if Backlight.is_screen_sleeping():
@@ -448,6 +414,7 @@ class Backlight:
     def screen_sleep(cls, button=None):
         logger.debug("Method screen_sleep executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
+            logger.error("Attempt to sleep screen up with a Backlight method of BacklightMethod.NoBacklight.")
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to sleep screen.")
         # Set backlight to off if it is not already
         if not cls.is_screen_sleeping():
@@ -464,6 +431,7 @@ class Backlight:
     def screen_toggle(cls, button=None):
         logger.debug("Method screen_toggle executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
+            logger.error("Attempt to toggle screen up with a Backlight method of BacklightMethod.NoBacklight.")
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to toggle screen.")
         # Set backlight to off if it is not already
         if cls.is_screen_sleeping():
@@ -676,6 +644,8 @@ class GpioButtons(object):
                                 GpioAction(GpioButtonAction.ScreenToggle)]
             elif len(self.buttons) == 1:
                 self.actions = [GpioAction(GpioButtonAction.ScreenToggle)]
+            else:
+                self.actions = []
         # Setup GPIO for low battery indication which is useful if using a LiPo battery with a board that can
         # control a GPIO pin.
         GPIO.setmode(GPIO.BCM)

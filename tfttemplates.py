@@ -5,7 +5,6 @@
 import tftmenu
 from tftutility import *
 
-logger.debug("Loading Templates Module")
 ##################################################################################
 # CONSTANTS
 ##################################################################################
@@ -372,57 +371,62 @@ def get_buttons(template, direction=ButtonDirection.LeftRightTopBottom, blank=Fa
     # Code to create the buttons in the correct direction.  Default is defined in the get_buttons call and is
     # set to BUTTON_DIR_LEFT_RIGHT_TOP_BOTTOM.   See pattern comments to see how a 3x3 grid of buttons would be
     # built using a particular direction.
-    if direction == ButtonDirection.LeftRightTopBottom:  # 1 2 3
-        axis_primary_end = rows                          # 4 5 6
-        axis_secondary_end = cols                        # 7 8 9
-    if direction == ButtonDirection.RightLeftTopBottom:
-        axis_primary_end = rows                          # 3 2 1
-        axis_secondary_start = cols - 1                  # 6 5 4
-        axis_secondary_end -= 1                          # 7 8 9
+    if direction == ButtonDirection.LeftRightTopBottom:    # 1 2 3
+        axis_primary_end = rows                            # 4 5 6
+        axis_secondary_end = cols                          # 7 8 9
+    elif direction == ButtonDirection.RightLeftTopBottom:
+        axis_primary_end = rows                            # 3 2 1
+        axis_secondary_start = cols - 1                    # 6 5 4
+        axis_secondary_end -= 1                            # 7 8 9
         axis_secondary_step = BUTTON_STEP_DOWN
-    if direction == ButtonDirection.TopBottomLeftRight:  # 1 4 7
-        axis_primary = BUTTON_AXIS_COLUMNS               # 2 5 8
-        axis_primary_end = cols                          # 3 6 9
+    elif direction == ButtonDirection.TopBottomLeftRight:  # 1 4 7
+        axis_primary = BUTTON_AXIS_COLUMNS                 # 2 5 8
+        axis_primary_end = cols                            # 3 6 9
         axis_secondary_end = rows
-    if direction == ButtonDirection.TopBottomRightLeft:  # 7 4 1
-        axis_primary = BUTTON_AXIS_COLUMNS               # 8 5 2
-        axis_primary_start = cols - 1                    # 9 6 3
+    elif direction == ButtonDirection.TopBottomRightLeft:  # 7 4 1
+        axis_primary = BUTTON_AXIS_COLUMNS                 # 8 5 2
+        axis_primary_start = cols - 1                      # 9 6 3
         axis_primary_end -= 1
         axis_primary_step = BUTTON_STEP_DOWN
         axis_secondary_end = rows
-    if direction == ButtonDirection.LeftRightBottomTop:  # 7 8 9
-        axis_primary_start = rows - 1                    # 4 5 6
-        axis_primary_end -= 1                            # 1 2 3
+    elif direction == ButtonDirection.LeftRightBottomTop:  # 7 8 9
+        axis_primary_start = rows - 1                      # 4 5 6
+        axis_primary_end -= 1                              # 1 2 3
         axis_primary_step = BUTTON_STEP_DOWN
         axis_secondary_end = cols
-    if direction == ButtonDirection.RightLeftBottomTop:  # 9 8 7
-        axis_primary_start = rows - 1                    # 6 5 4
-        axis_primary_end -= 1                            # 3 2 1
+    elif direction == ButtonDirection.RightLeftBottomTop:  # 9 8 7
+        axis_primary_start = rows - 1                      # 6 5 4
+        axis_primary_end -= 1                              # 3 2 1
         axis_primary_step = BUTTON_STEP_DOWN
         axis_secondary_start = cols - 1
         axis_secondary_end -= 1
         axis_secondary_step = BUTTON_STEP_DOWN
-    if direction == ButtonDirection.BottomTopLeftRight:  # 3 6 9
-        axis_primary = BUTTON_AXIS_COLUMNS               # 2 5 8
-        axis_primary_end = cols                          # 1 4 7
+    elif direction == ButtonDirection.BottomTopLeftRight:  # 3 6 9
+        axis_primary = BUTTON_AXIS_COLUMNS                 # 2 5 8
+        axis_primary_end = cols                            # 1 4 7
         axis_secondary_start = rows - 1
         axis_secondary_end -= 1
         axis_secondary_step = BUTTON_STEP_DOWN
-    if direction == ButtonDirection.BottomTopRightLeft:  # 9 6 3
-        axis_primary = BUTTON_AXIS_COLUMNS               # 8 5 2
-        axis_primary_start = cols - 1                    # 7 4 1
+    elif direction == ButtonDirection.BottomTopRightLeft:  # 9 6 3
+        axis_primary = BUTTON_AXIS_COLUMNS                 # 8 5 2
+        axis_primary_start = cols - 1                      # 7 4 1
         axis_primary_end -= 1
         axis_primary_step = BUTTON_STEP_DOWN
         axis_secondary_start = rows - 1
         axis_secondary_end -= 1
         axis_secondary_step = BUTTON_STEP_DOWN
+    else:
+        logger.warning("Invalid Button Direction.  Using default of Left to Right then Top to Bottom")
+        axis_primary_end = rows
+        axis_secondary_end = cols
     for primary in range(axis_primary_start, axis_primary_end, axis_primary_step):
         for secondary in range(axis_secondary_start, axis_secondary_end, axis_secondary_step):
-            text = unicode(button_id + 1)
             if blank:
                 text = None
             elif len(names) - 1 >= button_id:
                 text = names[button_id]
+            else:
+                text = unicode(button_id + 1)
             if actions and len(actions) - 1 >= button_id:
                 action = actions[button_id]
             else:

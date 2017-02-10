@@ -446,6 +446,8 @@ class Displays:
                             if event.key == K_ESCAPE:
                                 logger.debug("Escape Key pressed")
                                 cls.loop = False
+                        else:
+                            logger.debug("Ignored pygame event.  Event: {0}".format(event.type))
                     # Check for expired timer.  If so, execute all functions in the display's
                     # timeout_function.
                     if Timer.is_expired():
@@ -981,6 +983,8 @@ class Display(object):
             Displays.start_x(action_data)
         elif action == DisplayAction.Execute:
             run_cmd(action_data)
+        else:
+            logger.warning("Unknown soft button action ({0}).  Nothing done.".format(action))
         return new_menu, action_render_data
 
 
@@ -1187,25 +1191,26 @@ class Dialog(Display):
                                                         actions=self.actions, background_color=button_background_color,
                                                         border_color=button_background_color)
             elif self.dialog_type == DialogStyle.Ok:
-                self.buttons = tfttemplates.get_buttons(ButtonTemplate.Bottom1x1, names=[""],
+                self.buttons = tfttemplates.get_buttons(ButtonTemplate.Bottom1x1, names=[DialogButtonText.OK],
                                                         actions=self.actions, background_color=button_background_color,
                                                         border_color=button_background_color)
             elif self.dialog_type == DialogStyle.OkLeft:
-                self.buttons = tfttemplates.get_buttons(ButtonTemplate.BottomLeft1x1, names=[""],
+                self.buttons = tfttemplates.get_buttons(ButtonTemplate.BottomLeft1x1, names=[DialogButtonText.OK],
                                                         actions=self.actions, background_color=button_background_color,
                                                         border_color=button_background_color)
             elif self.dialog_type == DialogStyle.OkRight:
-                self.buttons = tfttemplates.get_buttons(ButtonTemplate.BottomRight1x1, names=[""],
+                self.buttons = tfttemplates.get_buttons(ButtonTemplate.BottomRight1x1, names=[DialogButtonText.OK],
                                                         actions=self.actions, background_color=button_background_color,
                                                         border_color=button_background_color)
             elif self.dialog_type == DialogStyle.OkFullScreen:
-                self.buttons = tfttemplates.get_buttons(ButtonTemplate.BottomFullWidth1x1, names=[""],
+                self.buttons = tfttemplates.get_buttons(ButtonTemplate.BottomFullWidth1x1, names=[DialogButtonText.OK],
                                                         actions=self.actions, background_color=button_background_color,
                                                         border_color=button_background_color)
             else:
-                self.buttons = tfttemplates.get_buttons(ButtonTemplate.Bottom2x1, names=[DialogButtonText.OK, None],
+                logger.warning("Unknown dialog type ({0}).  Using DialogButtonText.OK.".format(self.dialog_type))
+                self.buttons = tfttemplates.get_buttons(ButtonTemplate.Bottom1x1, names=[DialogButtonText.OK],
                                                         actions=self.actions, background_color=button_background_color,
-                                                        border_color=button_border_color)
+                                                        border_color=button_background_color)
         # Draw Borders and Background
         Displays.screen.fill(display_background_color)
         draw_true_rect(Displays.screen, display_border_color, 0, 0, Defaults.tft_width - 1, Defaults.tft_height - 1,
@@ -1367,6 +1372,7 @@ class Header(object):
             if self.data is not None:
                 self.text.text = unicode(self.data(self))
         elif self.mode is not HeadFootType.UserText:
+            logger.warning("Unknown header mode ({0}).  No Header will be displayed.".format(self.mode))
             return
         if self.text.text is None:
             self.text.text = ""
@@ -1455,7 +1461,7 @@ class Header(object):
         elif self.refresh == DisplayHeaderRefresh.All:
             use_two_second_range = None
         else:
-            # if unknown value, then no refresh
+            logger.warning("Unknown header refresh value ({0}).  Unable to set header refresh.".format(self.refresh))
             return
         if use_two_second_range is not None:
             if use_two_second_range:
