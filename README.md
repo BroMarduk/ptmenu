@@ -67,7 +67,7 @@ While the main functionality of the application is to display a screen with butt
 + On/Off backlight support when using PWM for sound playback
 + Support for Adafruit's Power Button GPIO with detection
 + Built in soft button templates for 13 soft button configurations
-+ Displays built on a 320x480 screen will work on a 240x320 screen
++ Displays built on a 320x480 screen will work on a 240x320 screen and vice-versa.
 + Customizable button render order (multiple combinations of left-right and top-bottom)
 + Shell support without having to exit menu
 + Multiple text alignments for buttons/text/headers (left, center, right, top, middle, bottom)
@@ -89,17 +89,17 @@ Once in the ptmenu directory, there are 5 example projects in the directory that
 
 Supported Display Identifiers (any Method or the Value will work):
 
-|  Method 1  |  Method 2  |  Method 3  | Value | GPIOs (Backlight)     |
-|------------|------------|------------|:-----:|-----------------------|
-| DISP22NT   | AF_2315    | NONE22     | 1     | 17,22,23,27,(18)      |
-| DISP24R    | AF_2455    | RES24      | 2     | 16,13,12,6,5,(18)     |
-| DISP28R    | AF_1601    | RES28      | 3     | 23,22,21/27,18,(None) |
-| DISP28C    | AF_1983    | CAP28      | 4     | 23,22,21/27,17,(18)   |
-| DISP28RP   | AF_2298    | RES28P     | 5     | 17,22,23,27,(18)      |
-| DISP28CP   | AF_2423    | CAP28P     | 6     | 17,22,23,27,(18)      |
-| DISP32RP   | AF_2626    | RES32P     | 7     | 22,23,17,27,(18)      |
-| DISP35R    | AF_2097    | RES35      | 8     | (18)                  |
-| DISP35RP   | AF_2441    | RES35P     | 9     | (18)                  |
+|  Device                            |  Value 1 | Value 2 | Value 3 | Int Value | GPIOs (Backlight)     |
+|------------------------------------|----------|---------|---------|:---------:|-----------------------|
+| Adafruit 2315 2.2" No Touch        | DISP22NT | AF_2315 | NONE22  | 1         | 17,22,23,27,(18)      |
+| Adafruit 2455 2.4" Resistive       | DISP24R  | AF_2455 | RES24   | 2         | 16,13,12,6,5,(18)     |
+| Adafruit 1601 2.8" Resistive       | DISP28R  | AF_1601 | RES28   | 3         | 23,22,21/27,18,(None) |
+| Adafruit 1983 2.8" Capacitive      | DISP28C  | AF_1983 | CAP28   | 4         | 23,22,21/27,17,(18)   |
+| Adafruit 2298 2.8" Resistive Plus  | DISP28RP | AF_2298 | RES28P  | 5         | 17,22,23,27,(18)      |
+| Adafruit 2423 2.8" Capacitive Plus | DISP28CP | AF_2423 | CAP28P  | 6         | 17,22,23,27,(18)      |
+| Adafruit 2626 3.2" Resistive Plus  | DISP32RP | AF_2626 | RES32P  | 7         | 22,23,17,27,(18)      |
+| Adafruit 2097 3.5" Resistive       | DISP35R  | AF_2097 | RES35   | 8         | (18)                  |
+| Adafruit 2441 3.5" Resistive Plus  | DISP35RP | AF_2441 | RES35P  | 9         | (18)                  |
 
 + <b>sudo python tftmenu-example1.py</b>
 
@@ -107,7 +107,7 @@ Supported Display Identifiers (any Method or the Value will work):
   
 + <b>sudo python tftmenu-example2.py</b>
 
-  Advanced Menu Example - Demonstrates a majority of the features of the menu
+  Advanced Menu Example - Demonstrates a majority of the features of the menu, including the hard buttons on some of the Adafruit displays
   
 + <b>sudo python tftmenu-example3.py</b>
 
@@ -119,7 +119,7 @@ Supported Display Identifiers (any Method or the Value will work):
   
 + <b>sudo python tftmenu-example5.py</b>
 
-  Demonstrates some of the possible menu headers (can also be used in footers) that can be displayed.  In addition to the built-in headers, a custom function can also be provided.  This example uses a function called display_pi_temp(), which will show the current temperature of the pi, color coded to be green if below 80 degrees Celsius, Yellow if between 80 and 85 degrees Celsius, and Red if over 85 degrees.  (Also uses Blue if below 0 degrees Celsius, just in case it’s winter and you have the Pi outside).
+  Demonstrates some of the possible menu headers (can also be used in footers) that can be displayed.  In addition to the built-in headers, a custom function can also be provided.  This example uses a function called display_pi_temp(), which will show the current temperature of the pi, color coded to be green if below 60 degrees Celsius, Yellow if between 60 and 70 degrees Celsius, and Red if over 70 degrees.  (Also uses Blue if below 0 degrees Celsius, just in case it’s winter and you have the Pi outside).  These temps are based on the operating temperature of the LAN port, which seems to be the smallest range of specified operating temperatures I could find.
  
 ## Creating First Display
 [Coming Soon]

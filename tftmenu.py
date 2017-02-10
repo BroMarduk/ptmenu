@@ -71,7 +71,7 @@ class Displays:
             display.render(data)
             cls.current = display
         else:
-            logger.warning("Unable to get valid display to show.  item={0}, data={1}".format(item, data))
+            logger.warning("Unable to get valid display to show.  Item: {0}, Data: {1}".format(item, data))
 
     ##################################################################################
     # DISPLAYS SHOW METHOD
@@ -81,21 +81,31 @@ class Displays:
     ##################################################################################
     @classmethod
     def show_splash(cls, splash_type, data=None):
-        if splash_type == SplashBuiltIn.Exit and not cls.splash_mute_level & SplashMuteLevel.Exit:
-            cls.show(SplashBuiltIn.Exit, data)
-            return True
-        elif splash_type == SplashBuiltIn.Info and not cls.splash_mute_level & SplashMuteLevel.Info:
-            cls.show(SplashBuiltIn.Info, data)
-            return True
-        elif splash_type == SplashBuiltIn.Warning and not cls.splash_mute_level & SplashMuteLevel.Warning:
-            cls.show(SplashBuiltIn.Warning, data)
-            return True
-        elif splash_type == SplashBuiltIn.Error and not cls.splash_mute_level & SplashMuteLevel.Error:
-            cls.show(SplashBuiltIn.Error, data)
-            return True
-        elif splash_type == SplashBuiltIn.Battery and not cls.splash_mute_level & SplashMuteLevel.Battery:
-            cls.show(SplashBuiltIn.Battery, data)
-            return True
+        if splash_type == SplashBuiltIn.Exit:
+            if not cls.splash_mute_level & SplashMuteLevel.Exit:
+                cls.show(SplashBuiltIn.Exit, data)
+                return True
+        elif splash_type == SplashBuiltIn.Info:
+            if not cls.splash_mute_level & SplashMuteLevel.Info:
+                cls.show(SplashBuiltIn.Info, data)
+                return True
+        elif splash_type == SplashBuiltIn.Warning:
+            if not cls.splash_mute_level & SplashMuteLevel.Warning:
+                cls.show(SplashBuiltIn.Warning, data)
+                return True
+        elif splash_type == SplashBuiltIn.Error:
+            if not cls.splash_mute_level & SplashMuteLevel.Error:
+                cls.show(SplashBuiltIn.Error, data)
+                return True
+        elif splash_type == SplashBuiltIn.Battery:
+            if not cls.splash_mute_level & SplashMuteLevel.Battery:
+                cls.show(SplashBuiltIn.Battery, data)
+                return True
+        else:
+            logger.warning("Splash type not found in built-in types.  Splash Type: {0}".format(splash_type))
+            return False
+        logger.info("Item not shown due to splash mute level.  Splash Type: {0}, Splash Mute Level: {1}".format(
+            splash_type, cls.splash_mute_level))
         return False
 
     ##################################################################################
@@ -108,6 +118,7 @@ class Displays:
     def timeout_sleep(cls):
         # Turn out the backlight after timer expires
         if Backlight.method != BacklightMethod.NoBacklight and not Backlight.is_screen_sleeping():
+            logger.debug("Timeout initiating Backlight Screen Sleep")
             Backlight.screen_sleep()
 
     ##################################################################################
@@ -118,6 +129,7 @@ class Displays:
     ##################################################################################
     @classmethod
     def timeout_close(cls):
+        logger.debug("Timeout initiating Display Close")
         cls.show(cls.get_last_core_display(cls.current))
 
     ##################################################################################
@@ -133,7 +145,10 @@ class Displays:
     @classmethod
     def shutdown(cls, method, exit_splash=None, splash_data=None):
         # method to shutdown application
+        logger.debug("Shutdown requested.  Method: {0}, Exit Splash: {1}, Splash Data:{2}".
+                     format(method, exit_splash, splash_data))
         if cls.loop_mode_shelled:
+            logger.debug("Shutting down while in shelled mode.")
             if Defaults.tft_type is not DISP22NT:
                 pygame.mouse.set_visible(False)
             Displays.screen = pygame.display.set_mode(Defaults.tft_size)
@@ -151,12 +166,12 @@ class Displays:
                 Displays.show(SplashBuiltIn.Blank)
             pygame.display.flip()
         pygame.quit()
-        Timer.abort()
         cls.started = False
         if method is Shutdown.Shutdown:
             subprocess.call(Command.Shutdown.split())
         elif method is Shutdown.Reboot:
             subprocess.call(Command.Reboot.split())
+        logger.debug("Exiting application.")
         sys.exit()
 
     ##################################################################################
@@ -164,15 +179,17 @@ class Displays:
     ##################################################################################
     # Classmethod to show the TTY command line instead of the displays.  This puts the
     # tftmenu program into a state where it monitors only for the return from the
-    # shell indication (which is a long press on the screeN).
+    # shell indication (which is a long press on the screen.
     ##################################################################################
     @classmethod
     def shell(cls):
         if Defaults.tft_type is DISP22NT:
+            logger.warning("Attempting shell on a non-touch display.  Ignoring request.")
             render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
                            SplashLine("Shell not permitted on non-touch display", wrap_text=True)]
             cls.show_splash(SplashBuiltIn.Warning, render_data)
         else:
+            logger.debug("Shelling to {0}".format(Screen.Tty))
             cls.shelled = Displays.current
             pygame.display.quit()
             pygame.init()
@@ -190,6 +207,7 @@ class Displays:
         # Check if x is already running
         if run_cmd(["pidof", "x"]) <= 0:
             # if so, don't start it again and show warning
+            logger.warning("Attempting to start X, but x is already running.")
             render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
                            SplashLine("X is already running.", wrap_text=True)]
             cls.show_splash(SplashBuiltIn.Warning, render_data)
@@ -202,6 +220,8 @@ class Displays:
                 subprocess.call(Command.StartXTft)
             return
         else:
+            logger.warning("Attempting to start X but it could not be detected in default location: {0}"
+                           .format(START_X_FILE))
             render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
                            SplashLine("GUI is not installed on in expected location.", wrap_text=True)]
             cls.show_splash(SplashBuiltIn.Warning, render_data)
@@ -213,6 +233,7 @@ class Displays:
     ##################################################################################
     @classmethod
     def restore(cls):
+        logger.debug("Restoring back from shell.")
         send_wake_command()
         if Defaults.tft_type is not DISP22NT:
             pygame.mouse.set_visible(False)
@@ -246,9 +267,11 @@ class Displays:
         previous = cls.current.last if start is None else start
         while previous is not None:
             if previous.is_core:
+                logger.debug("Last Core Display detected normally.  Display: {0}".format(previous))
                 return previous
             # Avoid case where we get stuck in a loop
             if previous.last == previous:
+                logger.debug("Last Core Display detected via loop prevention.  Display: {0}".format(Displays.last))
                 return Displays.last
             else:
                 previous = previous.last
@@ -270,6 +293,7 @@ class Displays:
         # Set the defaults based on the resolution of the display.  Fonts are scaled
         # using the font resolutions setting which provides similar sized fonts for
         # both the small and large displays.
+        logger.debug("Initializing Defaults")
         Defaults.set_defaults(tft_type, global_background_color=global_background_color,
                               global_border_width=global_border_width, global_border_color=global_border_color,
                               global_font=global_font, global_font_size=global_font_size,
@@ -277,6 +301,7 @@ class Displays:
                               global_font_v_padding=global_font_v_padding, global_font_h_align=global_font_h_align,
                               global_font_v_align=global_font_v_align)
         cls.menus[SplashBuiltIn.Blank] = Splash(None, Color.Black, timeout=1)
+        logger.debug("Creating built-in Splash Displays.  Splash Mule Level: {0}".format(cls.splash_mute_level))
         if not cls.splash_mute_level & SplashMuteLevel.Exit:
             # Create the internally used splash screens.  First one is the exit screen splash
             cls.menus[SplashBuiltIn.Exit] = Splash([
@@ -308,14 +333,17 @@ class Displays:
                 SplashLine("System will shut down shortly.", Defaults.default_splash_font_size, Color.Black)],
                 Color.Yellow, timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_LONG)
         # Initialize touchscreen drivers
-        os.environ["SDL_FBDEV"] = "/dev/fb1"
-        os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
-        os.environ["SDL_MOUSEDRV"] = "TSLIB"
+        if Defaults.tft_type is not DISP22NT:
+            logger.debug("Initializing Touchscreen Drivers")
+            os.environ["SDL_FBDEV"] = "/dev/fb1"
+            os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
+            os.environ["SDL_MOUSEDRV"] = "TSLIB"
         # Initialize pygame and hide mouse if not using a non-touch display
+        logger.debug("Initializing pygame")
         pygame.init()
         if Defaults.tft_type is not DISP22NT:
             pygame.mouse.set_visible(False)
-        logger.info("Initialized - %s", "Dan")
+        logger.info("Initialization complete")
         cls.initialized = True
 
     ##################################################################################
@@ -332,10 +360,11 @@ class Displays:
         if cls.started:
             return
         cls.started = True
-        down_button = 0
+        button_down = 0
         down_time = None
         # Make sure initialization has been run
         if not cls.initialized or Defaults.tft_type is None:
+            logger.error("Displays class not initialized.")
             cls.started = False
             raise NotInitializedException("Displays not initialized.  Use initialize() method before start().")
         # Add signals for shutdown from OS
@@ -365,10 +394,11 @@ class Displays:
                         if event.type == MOUSEBUTTONDOWN:
                             Timer.reset()
                             if Backlight.method != BacklightMethod.NoBacklight and Backlight.is_screen_sleeping():
-                                pass
+                                logger.debug("Button Down Ignored while screen is sleeping")
                             else:
                                 pos = pygame.mouse.get_pos()
-                                down_button = cls.current.process_down_button(cls.current.process_location(pos))
+                                button_down = cls.current.process_down_button(cls.current.process_location(pos))
+                                logger.debug("Button Down Event occurred in Button: {0}".format(button_down))
                                 down_time = time.time()
                         # Mouse up or release on screen
                         elif event.type == MOUSEBUTTONUP:
@@ -379,13 +409,17 @@ class Displays:
                                 # Need to send the screen wake on any mouse up or button press
                                 # when Backlight.method == BacklightMethod.NoBacklight
                                 if Backlight.method == BacklightMethod.NoBacklight:
+                                    logger.debug("Button Up waking screen while screen is sleeping")
                                     Backlight.screen_wake()
                                 pos = pygame.mouse.get_pos()
-                                cls.current.process_up_button(down_button)
-                                button_id = cls.current.process_location(pos)
+                                cls.current.process_up_button(button_down)
+                                button_up = cls.current.process_location(pos)
+                                logger.debug("Button Up Event occurred in Button: {0}".format(button_up))
                                 # if the up button was the same as the down button, then process
                                 # the button.
-                                if button_id == down_button:
+                                if button_up == button_down:
+                                    logger.debug("Button press occurred.  Down Button: {0}, Up Button: {1}"
+                                                 .format(button_down, button_up))
                                     # Get the next menu and any associated data from the
                                     # process_button method, then call Displays.show.  If the
                                     # menu is the same, it will not be re-rendered unless the
@@ -395,10 +429,13 @@ class Displays:
                                         button_type = MouseButton.Right
                                     else:
                                         button_type = MouseButton.Left
-                                    next_menu, next_data = cls.current.process_button(button_id, button_type)
+                                    next_menu, next_data = cls.current.process_button(button_up, button_type)
                                     Displays.show(next_menu, next_data)
+                                else:
+                                    logger.debug("Button press ignored.  Down Button: {0}, Up Button: {1}"
+                                                 .format(button_down, button_up))
                                 # Reset the down button.
-                                down_button = 0
+                                button_down = 0
                         elif event.type == KEYDOWN:
                             Timer.reset()
                         elif event.type == KEYUP:
@@ -407,6 +444,7 @@ class Displays:
                                 Backlight.screen_wake()
                             # Allow escape key to exit menu application
                             if event.key == K_ESCAPE:
+                                logger.debug("Escape Key pressed")
                                 cls.loop = False
                     # Check for expired timer.  If so, execute all functions in the display's
                     # timeout_function.
@@ -426,7 +464,7 @@ class Displays:
                         if event.type == MOUSEBUTTONDOWN:
                             down_time = time.time()
                         if event.type == MOUSEBUTTONUP:
-                            if time.time() - down_time > Times.RightClick:
+                            if time.time() - down_time > Times.RightClick or event.button == MouseButton.Right:
                                 Displays.restore()
                 if tft_buttons.is_low_battery():
                     exit_splash = SplashBuiltIn.Battery
@@ -445,6 +483,7 @@ class Displays:
             error_message = unicode(ex)
             splash_data = [SplashLine("ERROR", Defaults.default_splash_font_size_title),
                            SplashLine(error_message, Defaults.default_splash_font_size, wrap_text=True)]
+            logger.error(error_message, exc_info=True)
             cls.shutdown(Shutdown.Error, exit_splash, splash_data)
 
 

@@ -5,7 +5,6 @@
 import signal
 import time
 from functools import partial
-from threading import Thread
 
 import RPi.GPIO as GPIO
 
@@ -94,7 +93,7 @@ class Timer:
     ##################################################################################
     @classmethod
     def alarm(cls, signum, frame):
-        logger.debug("Alarm Signal Received.  Signum:{0}, Frame:{1}".format(signum, frame))
+        logger.debug("Alarm Signal Received.  Signum: {0}, Frame: {1}".format(signum, frame))
         cls.__triggered = True
         cls.__ignore_reset = False
         signal.alarm(0)
@@ -107,9 +106,12 @@ class Timer:
     @classmethod
     def reset(cls):
         if not cls.__ignore_reset:
+            logger.debug("Timer reset")
             cls.__triggered = False
             signal.alarm(0)
             signal.alarm(cls.__timeout)
+        else:
+            logger.debug("Timer reset ignored.")
 
     ##################################################################################
     # TIMER TIMEOUT METHOD
@@ -119,10 +121,12 @@ class Timer:
     ##################################################################################
     @classmethod
     def timeout(cls, timeout, ignore_reset=False):
+        logger.debug("Timeout set.  Timeout: {0}, Ignore Reset: {1}".format(timeout, ignore_reset))
         cls.__timeout = timeout
         if not cls.__alarmed:
             signal.signal(signal.SIGALRM, Timer.alarm)
             cls.__alarmed = True
+            logger.debug("Alarm Signal Initialized")
         cls.reset()
         cls.__ignore_reset = ignore_reset
 
@@ -139,44 +143,45 @@ class Timer:
             cls.reset()
             return True
 
-    ##################################################################################
-    # TIMER TIMER METHOD
-    ##################################################################################
-    # Method to initiate the timer t
-    ##################################################################################
-    @classmethod
-    def timer(cls, timeout, target=None):
-        if timeout > 0:
-            if target is None:
-                target = cls.sleep
-            thread = Thread(target=target, args=(timeout, ))
-            thread.start()
-            thread.join()
-
-    ##################################################################################
-    # TIMER ABORT METHOD
-    ##################################################################################
-    # Method to abort the timer.  Called on exit to interrupt any sleep that may be
-    # occurring.
-    ##################################################################################
-    @classmethod
-    def abort(cls):
-        cls.__abort = True
-
-    ##################################################################################
-    # TIMER SLEEP METHOD
-    ##################################################################################
-    # Method to initiate a sleep to cause a timeout.  This is the preferred way to do
-    # a menu sleep from the menu because it can be aborted with the abort() method.
-    ##################################################################################
-    @classmethod
-    def sleep(cls, arguments):
-        logger.debug("Buttons - In Sleep Thread:", arguments)
-        for delay in range(arguments):
-            time.sleep(Times.SleepLong)
-            if cls.__abort:
-                break
-        logger.debug("Buttons - Exiting Sleep Thread:", arguments)
+    # ##################################################################################
+    # # TIMER TIMER METHOD
+    # ##################################################################################
+    # # Method to initiate the timer
+    # ##################################################################################
+    # @classmethod
+    # def timer(cls, target=None, *keyword_arguments):
+    #     if target is None:
+    #         thread_target = cls.sleep
+    #     else:
+    #         thread_target = target
+    #     thread = Thread(target=thread_target, args=keyword_arguments)
+    #     thread.start()
+    #     thread.join()
+    #
+    # ##################################################################################
+    # # TIMER ABORT METHOD
+    # ##################################################################################
+    # # Method to abort the timer.  Called on exit to interrupt any sleep that may be
+    # # occurring.
+    # ##################################################################################
+    # @classmethod
+    # def abort(cls):
+    #     cls.__abort = True
+    #
+    # ##################################################################################
+    # # TIMER SLEEP METHOD
+    # ##################################################################################
+    # # Method to initiate a sleep to cause a timeout.  This is the preferred way to do
+    # # a menu sleep from the menu because it can be aborted with the abort() method.
+    # ##################################################################################
+    # @classmethod
+    # def sleep(cls, arguments):
+    #     logger.debug("Buttons - In Sleep Thread:", arguments)
+    #     for delay in range(arguments):
+    #         time.sleep(Times.SleepLong)
+    #         if cls.__abort:
+    #             break
+    #     logger.debug("Buttons - Exiting Sleep Thread:", arguments)
 
 
 ##################################################################################
@@ -206,7 +211,8 @@ class Backlight:
     @classmethod
     def initialize(cls, method=None, steps=None, restore_last=False, default=None, callback=None):
         if cls.initialized:
-            raise AlreadyInitializedException("Backlight Class has already been initialized as required.")
+            logger.error("Backlight Class has already been initialized.")
+            raise AlreadyInitializedException("Backlight Class has already been initialized.")
         cls.initialized = True
         # Set Class Variables
         cls.method    = method
@@ -369,7 +375,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def backlight_up(cls, button=None):
-        logger.debug("Method backlight_up executed with button:{0} ".format(button if button is not None else "0"))
+        logger.debug("Method backlight_up executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  "
                                       "Unable to adjust backlight up.")
@@ -416,7 +422,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def screen_wake(cls, button=None):
-        logger.debug("Method screen_wake executed with button:{0} ".format(button if button is not None else "0"))
+        logger.debug("Method screen_wake executed with button: {0} ".format(button if button is not None else "0"))
         send_wake_command()
         if cls.method != BacklightMethod.NoBacklight:
             # Check if we should restore the backlight to the setting it was set to
@@ -440,7 +446,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def screen_sleep(cls, button=None):
-        logger.debug("Method screen_sleep executed with button:{0} ".format(button if button is not None else "0"))
+        logger.debug("Method screen_sleep executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to sleep screen.")
         # Set backlight to off if it is not already
@@ -456,7 +462,7 @@ class Backlight:
     ##################################################################################
     @classmethod
     def screen_toggle(cls, button=None):
-        logger.debug("Method screen_toggle executed with button:{0} ".format(button if button is not None else "0"))
+        logger.debug("Method screen_toggle executed with button: {0} ".format(button if button is not None else "0"))
         if cls.method == BacklightMethod.NoBacklight:
             raise BacklightNotEnabled("Backlight method set to BacklightMethod.NoBacklight.  Unable to toggle screen.")
         # Set backlight to off if it is not already
@@ -478,6 +484,7 @@ class Backlight:
     def call_button_press(cls):
         if cls.callback is not None:
             for function in cls.callback:
+                logger.debug("Calling button press function {0}".format(function))
                 function()
 
 
@@ -580,7 +587,8 @@ class GpioButtons(object):
                  backlight_steps=None, backlight_default=None, backlight_restore_last=False, backlight_auto=False,
                  button_callback=None, power_gpio=None, battery_gpio=None):
         if GpioButtons.gpio_initialized:
-            raise AlreadyInitializedException("TftButtons Class has already been initialized as required.")
+            logger.error("TftButtons Class has already been initialized.")
+            raise AlreadyInitializedException("TftButtons Class has already been initialized.")
         GpioButtons.initialized = True
         self.tft_type     = tft_type
         self.buttons = array_single_none(buttons, no_coerce_none=True)
@@ -698,8 +706,9 @@ class GpioButtons(object):
         if Backlight.method != BacklightMethod.NoBacklight:
             Backlight.set_backlight(GPIO_BACKLIGHT_HIGH)
         # If any GPIO event detection was done, clean up.
-        if GpioButtons.initialized:
+        if GpioButtons.gpio_initialized:
             GPIO.cleanup()
+            GpioButtons.gpio_initialized = False
         GpioButtons.initialized = False
 
     ##################################################################################
