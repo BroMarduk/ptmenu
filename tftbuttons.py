@@ -160,6 +160,7 @@ class Backlight:
     last_state  = 0
     change      = 0.0
     initialized = False
+    state_sleep = False
 
     ##################################################################################
     # BACKLIGHT INITIALIZE METHOD
@@ -169,17 +170,18 @@ class Backlight:
     # set the backlight method and tweak options based on the backlight method.
     ##################################################################################
     @classmethod
-    def initialize(cls, method=None, steps=None, restore_last=False, default=None, callback=None):
+    def initialize(cls, method=None, steps=None, restore_last=False, state_sleep=False, default=None, callback=None):
         if cls.initialized:
             logger.error("Backlight Class has already been initialized.")
             raise AlreadyInitializedException("Backlight Class has already been initialized.")
         cls.initialized = True
         # Set Class Variables
-        cls.method    = method
+        cls.method = method
         cls.restore_last  = restore_last
-        cls.steps     = steps
-        cls.default   = default
-        cls.callback  = merge(Timer.reset, callback)
+        cls.steps = steps
+        cls.state_sleep = state_sleep
+        cls.default = default
+        cls.callback = merge(Timer.reset, callback)
         if cls.method is None:
             cls.method = BacklightMethod.NoBacklight
         if cls.steps is None:
@@ -357,6 +359,10 @@ class Backlight:
             new_state = int(cls.state + cls.change)
             if new_state > GPIO_BACKLIGHT_HIGH:
                 new_state = GPIO_BACKLIGHT_HIGH
+        # If using soft buttons, we don't want to sleep screen so ignore anything that
+        # would turn off backlight is ignored, even if state_sleep is True.
+        if (cls.state_sleep == False or (button is None or button == 0)) and new_state == GPIO_BACKLIGHT_OFF:
+            return
         Backlight.set_backlight(new_state)
         cls.call_button_press()
 
@@ -381,6 +387,10 @@ class Backlight:
             new_state = int(cls.state - cls.change)
             if new_state < GPIO_BACKLIGHT_OFF:
                 new_state = GPIO_BACKLIGHT_OFF
+        # If using soft buttons, we don't want to sleep screen so ignore anything that
+        # would turn off backlight is ignored, even if state_sleep is True.
+        if (cls.state_sleep==False or (button is None or button == 0)) and new_state == GPIO_BACKLIGHT_OFF:
+            return
         Backlight.set_backlight(new_state)
         cls.call_button_press()
 
@@ -557,7 +567,8 @@ class GpioButtons(object):
     # well as the associated actions.
     ##################################################################################
     def __init__(self, tft_type, buttons=None, actions=None,  backlight_method=BacklightMethod.NoBacklight,
-                 backlight_steps=None, backlight_default=None, backlight_restore_last=False, backlight_auto=False,
+                 backlight_steps=None, backlight_default=None, backlight_restore_last=False,
+                 backlight_state_sleep=False, backlight_auto=False,
                  button_callback=None, power_gpio=None, battery_gpio=None):
         if GpioButtons.gpio_initialized:
             logger.error("TftButtons Class has already been initialized.")
@@ -580,8 +591,8 @@ class GpioButtons(object):
                 (backlight_method != BacklightMethod.Pwm and backlight_method != BacklightMethod.PwmBinary and
                  backlight_method != BacklightMethod.NoBacklight and backlight_method is not None):
             backlight_method = BacklightMethod.PwmBinary
-        Backlight.initialize(backlight_method, backlight_steps, backlight_restore_last, backlight_default,
-                             button_callback)
+        Backlight.initialize(backlight_method, backlight_steps, backlight_restore_last, backlight_state_sleep,
+                             backlight_default, button_callback)
         # Set GPIO if not passed in based on device
         if self.buttons is None and backlight_auto:
             if tft_type == DISP22NT:

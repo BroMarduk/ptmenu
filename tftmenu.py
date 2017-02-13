@@ -354,7 +354,7 @@ class Displays:
     # then follows.
     @classmethod
     def start(cls, initial_menu, backlight_method=None, backlight_steps=None, backlight_default=None,
-              backlight_restore_last=False, backlight_auto=False, button_callback=None,
+              backlight_restore_last=False, backlight_state_sleep=False, backlight_auto=False, button_callback=None,
               power_gpio=None, battery_gpio=None):
         # Make sure start process has not already started.
         if cls.started:
@@ -378,7 +378,7 @@ class Displays:
             tft_buttons = GpioButtons(Defaults.tft_type, backlight_method=backlight_method,
                                       backlight_steps=backlight_steps, backlight_default=backlight_default,
                                       backlight_restore_last=backlight_restore_last, backlight_auto=backlight_auto,
-                                      button_callback=button_callback,
+                                      backlight_state_sleep=backlight_state_sleep, button_callback=button_callback,
                                       power_gpio=power_gpio, battery_gpio=battery_gpio)
             # Show and set initial menu
             Displays.initial = initial_menu

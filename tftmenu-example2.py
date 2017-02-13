@@ -100,7 +100,7 @@ backlightMenuActions = [Action(DisplayAction.BacklightUp), Action(DisplayAction.
 backlightMenuButtons = get_buttons(ButtonTemplate.HeaderFooter2x2, ButtonDirection.LeftRightTopBottom,
                                    names=["Up", "Sleep", "Down", "Back"], actions=backlightMenuActions,
                                    border_color=[Color.Yellow, Color.Yellow, Color.Yellow, Color.Green])
-backlightMenu = Menu(border_color=Color.Green, timeout=10, buttons=backlightMenuButtons,
+backlightMenu = Menu(border_color=Color.Green, timeout=90, buttons=backlightMenuButtons,
                      header=Header(mode=HeadFootType.UserText, text=HeadFootLine(text="Backlight", font_pad=False)),
                      footer=Footer(mode=HeadFootType.IpAddress, text=HeadFootLine(text="Your IP: {0}", font_pad=False)))
 Displays.menus["Backlight"] = backlightMenu
@@ -166,4 +166,4 @@ dialogYesNoColored.buttons[0].border_color = Color.Red
 dialogYesNoColored.buttons[1].border_color = Color.Green
 Displays.menus["YesNoColored"] = dialogYesNoColored
 Displays.start(initial_menu="Main", backlight_method=BacklightMethod.Pwm, backlight_restore_last=True,
-               backlight_auto=True)
+               backlight_state_sleep=True, backlight_auto=True)
