@@ -234,6 +234,7 @@ class Backlight:
                 # Set PWM Mode on GPIO 18, which controls the backlight and set the brightness
                 # to default if present, or maximum brightness if no default
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT, GPIO_BACKLIGHT_PWM_MODE).split())
+                subprocess.call(GPIO_BACKLIGHT_PWMC_SET.format(GPIO_BACKLIGHT_PWM_FREQUENCY).split())
                 subprocess.call(GPIO_BACKLIGHT_PWM_SET.format(GPIO_PWM_BACKLIGHT, initial_value).split())
             elif cls.method == BacklightMethod.PwmBinary:
                 # If STMPE path exists, make sure backlight is on.
@@ -294,6 +295,7 @@ class Backlight:
             return
         time.sleep(Times.SleepShort)
         if cls.method == BacklightMethod.Pwm:
+            logger.debug("Setting backlight to state {0} from {1} using PWM".format(state, cls.state))
             if state == GPIO_BACKLIGHT_OFF:
                 subprocess.call(GPIO_BACKLIGHT_PWM_SET.format(GPIO_PWM_BACKLIGHT, GPIO_BACKLIGHT_OFF).split())
                 cls.state = GPIO_BACKLIGHT_OFF
@@ -302,6 +304,7 @@ class Backlight:
                 cls.state = state
                 cls.last_state = state
         elif cls.method == BacklightMethod.PwmBinary:
+            logger.debug("Setting backlight to state {0} using PWM Binary Mode".format(state, cls.state))
             if state == GPIO_BACKLIGHT_OFF:
                 subprocess.call(GPIO_BACKLIGHT_PWM_BINARY_SET.format(GPIO_PWM_BACKLIGHT, GPIO_BACKLIGHT_OFF).split())
                 cls.state = GPIO_BACKLIGHT_OFF
@@ -310,6 +313,7 @@ class Backlight:
                 cls.state = GPIO_BACKLIGHT_HIGH
                 cls.last_state = GPIO_BACKLIGHT_HIGH
         elif cls.method == BacklightMethod.Stmpe:
+            logger.debug("Setting backlight to state {0} using STMPE".format(state, cls.state))
             if state == GPIO_BACKLIGHT_OFF:
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
                 cls.state = GPIO_BACKLIGHT_OFF
@@ -318,6 +322,7 @@ class Backlight:
                 cls.state = GPIO_BACKLIGHT_HIGH
                 cls.last_state = GPIO_BACKLIGHT_HIGH
         elif (cls.method == BacklightMethod.Echo) or (cls.method == BacklightMethod.Echo252):
+            logger.debug("Setting backlight to state {0} using Echo".format(state, cls.state))
             backlight_pin = GPIO_ECHO_BACKLIGHT
             if cls.method == BacklightMethod.Echo252:
                 backlight_pin = GPIO_ECHO_BACKLIGHT_ALT

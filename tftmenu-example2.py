@@ -84,16 +84,26 @@ mainMenu = Menu(timeout=90, buttons=mainMenuButtons,
                 header=Header(mode=HeadFootType.DateTime12,
                               text=HeadFootLine(font_pad=False)))
 Displays.menus["Main"] = mainMenu
-page2MenuActions = [Action(DisplayAction.ScreenSleep), Action(DisplayAction.Shell),
+page2MenuActions = [Action(DisplayAction.Display, "Backlight"), Action(DisplayAction.Shell),
                     Action(DisplayAction.Function, random_button_color),
                     Action(DisplayAction.Display, "ScreenButton"), Action(DisplayAction.Display, "Main"),
                     Action(DisplayAction.Display, "YesNoColored")]
 page2MenuButtons = get_buttons(ButtonTemplate.Header2x3, ButtonDirection.LeftRightTopBottom,
-                               names=["Sleep", "Shell", "Random", "Full", "Previous", "Exit"], actions=page2MenuActions,
+                               names=["Backlight", "Shell", "Random", "Full", "Previous", "Exit"],
+                               actions=page2MenuActions,
                                border_color=[Color.Red, Color.Green, Color.Cyan, Color.Orange, Color.Yellow])
 page2Menu = Menu(border_color=Color.Red, timeout=10, buttons=page2MenuButtons,
                  header=Header(mode=HeadFootType.UserText, text=HeadFootLine(text="Secondary Menu", font_pad=False)))
 Displays.menus["Page2"] = page2Menu
+backlightMenuActions = [Action(DisplayAction.BacklightUp), Action(DisplayAction.ScreenSleep),
+                        Action(DisplayAction.BacklightDown), Action(DisplayAction.Display, "Main")]
+backlightMenuButtons = get_buttons(ButtonTemplate.HeaderFooter2x2, ButtonDirection.LeftRightTopBottom,
+                                   names=["Up", "Sleep", "Down", "Back"], actions=backlightMenuActions,
+                                   border_color=[Color.Yellow, Color.Yellow, Color.Yellow, Color.Green])
+backlightMenu = Menu(border_color=Color.Green, timeout=10, buttons=backlightMenuButtons,
+                     header=Header(mode=HeadFootType.UserText, text=HeadFootLine(text="Backlight", font_pad=False)),
+                     footer=Footer(mode=HeadFootType.IpAddress, text=HeadFootLine(text="Your IP: {0}", font_pad=False)))
+Displays.menus["Backlight"] = backlightMenu
 
 
 ##################################################################################
