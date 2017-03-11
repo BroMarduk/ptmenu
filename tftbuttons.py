@@ -230,23 +230,25 @@ class Backlight:
             # screens, the jumper enabling GPIO 18 to control the backlight must be soldered to
             # control the backlight.
             if cls.method == BacklightMethod.Pwm:
-                # If STMPE path exists, make sure backlight is on.
-                if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
-                    subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
                 # Set PWM Mode on GPIO 18, which controls the backlight and set the brightness
                 # to default if present, or maximum brightness if no default
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT, GPIO_BACKLIGHT_PWM_MODE).split())
                 subprocess.call(GPIO_BACKLIGHT_PWMC_SET.format(GPIO_BACKLIGHT_PWM_FREQUENCY).split())
                 subprocess.call(GPIO_BACKLIGHT_PWM_SET.format(GPIO_PWM_BACKLIGHT, initial_value).split())
-            elif cls.method == BacklightMethod.PwmBinary:
-                # If STMPE path exists, make sure backlight is on.
+                # If STMPE path exists, set it to 0 which seems to relinquish control of the
+                # backlight to PWM
                 if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
                     subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
+            elif cls.method == BacklightMethod.PwmBinary:
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT,
                                                                    GPIO_BACKLIGHT_PWM_BINARY_MODE).split())
                 # Set PWM Mode on GPIO 18, which controls the backlight and set the brightness
                 # to default if present, or maximum brightness if no default
                 subprocess.call(GPIO_BACKLIGHT_PWM_BINARY_SET.format(GPIO_PWM_BACKLIGHT, initial_value).split())
+                # If STMPE path exists, set it to 0 which seems to relinquish control of the
+                # backlight to PWM
+                if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
+                    subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
             elif cls.method == BacklightMethod.Stmpe:
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(initial_value)])
             elif (cls.method == BacklightMethod.Echo) or (cls.method == BacklightMethod.Echo252):
@@ -361,7 +363,7 @@ class Backlight:
                 new_state = GPIO_BACKLIGHT_HIGH
         # If using soft buttons, we don't want to sleep screen so ignore anything that
         # would turn off backlight is ignored, even if state_sleep is True.
-        if (cls.state_sleep == False or (button is None or button == 0)) and new_state == GPIO_BACKLIGHT_OFF:
+        if (cls.state_sleep is False or (button is None or button == 0)) and new_state == GPIO_BACKLIGHT_OFF:
             return
         Backlight.set_backlight(new_state)
         cls.call_button_press()
@@ -389,7 +391,7 @@ class Backlight:
                 new_state = GPIO_BACKLIGHT_OFF
         # If using soft buttons, we don't want to sleep screen so ignore anything that
         # would turn off backlight is ignored, even if state_sleep is True.
-        if (cls.state_sleep==False or (button is None or button == 0)) and new_state == GPIO_BACKLIGHT_OFF:
+        if (cls.state_sleep is False or (button is None or button == 0)) and new_state == GPIO_BACKLIGHT_OFF:
             return
         Backlight.set_backlight(new_state)
         cls.call_button_press()

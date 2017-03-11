@@ -32,11 +32,11 @@ def random_button_color(menu, button):
         elif button_color is 3:
             button.border_color = Color.Green
         elif button_color is 4:
-            button.border_color = Color.Blue
+            button.border_color = Color.Sky
         elif button_color is 5:
-            button.border_color = Color.Indigo
+            button.border_color = Color.DarkPink
         else:
-            button.border_color = Color.Purple
+            button.border_color = Color.Orchid
         menu.force_refresh = True
 
 
@@ -58,7 +58,7 @@ def random_button_color(menu, button):
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP35RP, global_font="./Fonts/BebasNeue.otf")
+Displays.initialize(DISP28CP, global_font="./Fonts/BebasNeue.otf")
 Defaults.default_headfoot_font_color = Color.Silver
 Defaults.default_text_line_font_color = Color.Silver
 Defaults.default_dialog_font_color = Color.Silver
