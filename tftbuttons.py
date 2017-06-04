@@ -202,7 +202,9 @@ class Backlight:
                     # Maximum amount of steps is the maximum number of backlight settings
                     cls.steps = GPIO_BACKLIGHT_CHANGE_STEPS_MAX
                     # Determine the amount to change the backlight at each step
-                cls.change = GPIO_BACKLIGHT_CHANGE_STEPS_MAX / (float(cls.steps) - 1.0)
+                # noinspection PyTypeChecker
+                cls.change = GPIO_BACKLIGHT_CHANGE_STEPS_MAX / ((float(cls.steps)) - 1.0)
+                # noinspection PyTypeChecker
                 cls.default = int((float(cls.default) - 1) * cls.change)
                 # Make sure default is in the proper range, if not set to off (too low) or (too) high
                 if cls.default < GPIO_BACKLIGHT_OFF:
@@ -468,9 +470,9 @@ class Backlight:
     @classmethod
     def call_button_press(cls):
         if cls.callback is not None:
-            for function in cls.callback:
-                logger.debug("Calling button press function {0}".format(function))
-                function()
+            for callback_function in cls.callback:
+                logger.debug("Calling button press function {0}".format(callback_function))
+                callback_function()
 
 
 ##################################################################################
@@ -525,41 +527,41 @@ class GpioButtons(object):
             logger.debug(actions)
             if not isinstance(actions, list):
                 actions = [actions]
-            for function in actions:
-                if function is not None and isinstance(function, GpioAction):
-                    if function.action == GpioButtonAction.NoAction:
+            for action_function in actions:
+                if action_function is not None and isinstance(action_function, GpioAction):
+                    if action_function.action == GpioButtonAction.NoAction:
                         continue
-                    elif function.action == GpioButtonAction.Display:
-                        tftmenu.Displays.show(function.data, function.render_data)
-                    elif function.action == GpioButtonAction.Exit:
+                    elif action_function.action == GpioButtonAction.Display:
+                        tftmenu.Displays.show(action_function.data, action_function.render_data)
+                    elif action_function.action == GpioButtonAction.Exit:
                         tftmenu.Displays.shutdown(Shutdown.Normal)
-                    elif function.action == GpioButtonAction.Reboot:
+                    elif action_function.action == GpioButtonAction.Reboot:
                         tftmenu.Displays.shutdown(Shutdown.Reboot)
-                    elif function.action == GpioButtonAction.Shutdown:
+                    elif action_function.action == GpioButtonAction.Shutdown:
                         tftmenu.Displays.shutdown(Shutdown.Shutdown)
-                    elif function.action == GpioButtonAction.Function:
-                        if function.data is not None and function.data:
-                            return_val = function.data(tftmenu.Displays.current, channel)
+                    elif action_function.action == GpioButtonAction.Function:
+                        if action_function.data is not None and action_function.data:
+                            return_val = action_function.data(tftmenu.Displays.current, channel)
                             if return_val is not None:
                                 if isinstance(return_val, tftmenu.Display):
-                                    tftmenu.Displays.show(return_val, function.render_data)
-                        function.data(button, channel)
-                    elif function.action == GpioButtonAction.ScreenSleep:
+                                    tftmenu.Displays.show(return_val, action_function.render_data)
+                        action_function.data(button, channel)
+                    elif action_function.action == GpioButtonAction.ScreenSleep:
                         Backlight.screen_sleep(channel)
-                    elif function.action == GpioButtonAction.ScreenWake:
+                    elif action_function.action == GpioButtonAction.ScreenWake:
                         Backlight.screen_wake(channel)
-                    elif function.action == GpioButtonAction.ScreenToggle:
+                    elif action_function.action == GpioButtonAction.ScreenToggle:
                         Backlight.screen_toggle(channel)
-                    elif function.action == GpioButtonAction.BacklightDown:
+                    elif action_function.action == GpioButtonAction.BacklightDown:
                         Backlight.backlight_down(channel)
-                    elif function.action == GpioButtonAction.BacklightUp:
+                    elif action_function.action == GpioButtonAction.BacklightUp:
                         Backlight.backlight_up(channel)
-                    elif function.action == GpioButtonAction.Shell:
+                    elif action_function.action == GpioButtonAction.Shell:
                         tftmenu.Displays.shell()
-                    elif function.action == GpioButtonAction.StartX:
-                        tftmenu.Displays.start_x(function.data)
-                    elif function.action == GpioButtonAction.Execute:
-                        run_cmd(function.data)
+                    elif action_function.action == GpioButtonAction.StartX:
+                        tftmenu.Displays.start_x(action_function.data)
+                    elif action_function.action == GpioButtonAction.Execute:
+                        run_cmd(action_function.data)
 
     ##################################################################################
     # BUTTONS INIT METHOD
