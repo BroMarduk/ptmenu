@@ -140,3 +140,5 @@ In addition, I plan to go back and re-add comments and logging back in.   I stri
 + Make header/footer types and their functionality into tokens that can be used in text.
 + Add images/icons to buttons
 + Move internal text to resources for use with gettext and improve globalization.
++ Add detection for broken libsdl1.2debian version and provide correction script in code
++ Allow for arrorw navigation and selection (only mouse and touch currently supported)

@@ -65,7 +65,6 @@ Defaults.default_dialog_font_color = Color.Silver
 Defaults.default_button_font_color = Color.Silver
 Defaults.default_button_font_size = 24
 
-
 ##################################################################################
 # MENU TEMPLATES
 ##################################################################################
@@ -96,7 +95,7 @@ page2Menu = Menu(border_color=Color.Red, timeout=10, buttons=page2MenuButtons,
                  header=Header(mode=HeadFootType.UserText, text=HeadFootLine(text="Secondary Menu", font_pad=False)))
 Displays.menus["Page2"] = page2Menu
 backlightMenuActions = [Action(DisplayAction.BacklightUp), Action(DisplayAction.ScreenSleep),
-                        Action(DisplayAction.BacklightDown), Action(DisplayAction.Display, "Main")]
+                        Action(DisplayAction.BacklightDown), Action(DisplayAction.Display, "Page2")]
 backlightMenuButtons = get_buttons(ButtonTemplate.HeaderFooter2x2, ButtonDirection.LeftRightTopBottom,
                                    names=["Up", "Sleep", "Down", "Back"], actions=backlightMenuActions,
                                    border_color=[Color.Yellow, Color.Yellow, Color.Yellow, Color.Green])

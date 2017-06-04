@@ -48,6 +48,8 @@ class Displays:
     display_type = None
     initialized = False
     splash_mute_level = None
+    libsdl_version = None
+    libsdl_build = None
 
     ##################################################################################
     # DISPLAYS SHOW METHOD
@@ -278,6 +280,29 @@ class Displays:
         return cls.initial
 
     ##################################################################################
+    # CHECK_LIB_SDL_VERSION
+    ##################################################################################
+    # This method checks to see if libsdl1.2debian is installed and if the version is
+    # correct to enable touch on the Raspberry Pi.
+    ##################################################################################
+    @classmethod
+    def check_lib_sdl_version(cls):
+        full_version = get_package_version(Version.LibSdl)
+        if full_version is None:
+            return False
+        version_info = full_version.split("-")
+        lib_version = version_info[0].lstrip()
+        if len(version_info) > 1:
+            lib_build = version_info[1]
+        else:
+            lib_build = None
+        if lib_version == Version.LibSdlVersion and lib_build == Version.LibSdlBuild:
+            return True
+        cls.libsdl_build = lib_build
+        cls.libsdl_version = lib_version
+        return False
+
+    ##################################################################################
     # DISPLAYS INITIALIZE METHOD
     ##################################################################################
     # Classmethod to initialize Displays class.  Sets any defaults, the mute level of
@@ -288,6 +313,12 @@ class Displays:
                    global_font=None, global_font_size=None, global_font_color=None, global_font_h_padding=None,
                    global_font_v_padding=None, global_font_h_align=None, global_font_v_align=None,
                    splash_mute_level=SplashMuteLevel.NoMute, splash_timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_MEDIUM):
+
+        # If a touch device is specified, make sure the LibSdl version is correct.  If
+        # not, display a warning unless suppressed.
+        if tft_type is not DISP22NT and not cls.check_lib_sdl_version():
+            if cls.libsdl_version is None:
+                return
 
         cls.splash_mute_level = splash_mute_level
         # Set the defaults based on the resolution of the display.  Fonts are scaled
@@ -320,6 +351,18 @@ class Displays:
                 SplashLine("WARNING", Defaults.default_splash_font_size_title),
                 SplashLine("Unspecified Warning.", Defaults.default_splash_font_size)], Color.Orange,
                 timeout=splash_timeout)
+        if not cls.splash_mute_level & SplashMuteLevel.Warning and\
+                (cls.libsdl_version is not None or cls.libsdl_build is not None):
+            # This creates the error screen splash used to indicate a touch version dll warning
+            cls.menus[SplashBuiltIn.Touch] = Splash([
+                SplashLine("WARNING", Defaults.default_splash_font_size_title),
+                SplashLine("Touch may not work due to incompatible version {0}-{1} of libsdl1.2debian package.".format(
+                        cls.libsdl_version, cls.libsdl_build),
+                            Defaults.default_splash_font_size, wrap_text=True),
+                SplashLine("Run downgrade-sdl.sh to repair.", Defaults.default_splash_font_size,
+                           font_color=Color.Black),
+                ], Color.Orange,
+                timeout=10)
         if not cls.splash_mute_level & SplashMuteLevel.Error:
             # This creates the error screen splash used to indicate an error.
             cls.menus[SplashBuiltIn.Error] = Splash([
@@ -383,6 +426,9 @@ class Displays:
             # Show and set initial menu
             Displays.initial = initial_menu
             Displays.show(initial_menu)
+
+            if cls.libsdl_build is not None or cls.libsdl_version is not None:
+                Displays.show(cls.menus[SplashBuiltIn.Touch])
             ##################################################################################
             # Execution Wait Loop
             ##################################################################################
@@ -452,8 +498,8 @@ class Displays:
                     # timeout_function.
                     if Timer.is_expired():
                         if cls.current.timeout_function is not None:
-                            for function in cls.current.timeout_function:
-                                function()
+                            for timeout_function in cls.current.timeout_function:
+                                timeout_function()
                     # If the display has a header attribute, call header update which will take
                     # care of refreshing the header if necessary
                     if hasattr(cls.current, Attributes.Header) and cls.current.header is not None:

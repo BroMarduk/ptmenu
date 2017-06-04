@@ -93,9 +93,23 @@ DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
 # Used to wake the Pi from its own sleep state.
 ##################################################################################
 class Screen:
-    Tty         = "tty{0}".format(run_cmd("fgconsole")[:-1])
-    WakeCommand = "printf \033[13]"
-    WakePipe    = "sudo tee /dev/{0} > /dev/null".format(Tty)
+    Tty            = "tty{0}".format(run_cmd("fgconsole")[:-1])
+    WakeCommand    = "printf \033[13]"
+    WakePipe       = "sudo tee /dev/{0} > /dev/null".format(Tty)
+
+
+##################################################################################
+# VERSION CONSTANTS
+##################################################################################
+# Used to determine the version of a specific package.
+##################################################################################
+class Version:
+    Grep          = "Version:"
+    Command       = "dpkg -s {0}"
+    Pipe          = "grep {0}".format(Grep)
+    LibSdl        = "libsdl1.2debian"
+    LibSdlVersion = "1.2.15"
+    LibSdlBuild   = "4"
 
 
 ##################################################################################
@@ -160,14 +174,14 @@ class Color:
     # Color     R    G    B
     White      = (255, 255, 255)
     Pink       = (255, 192, 203)
-    DarkPink   = (255,105,180)
+    DarkPink   = (255, 105, 180)
     Red        = (255, 0, 0)
     DarkRed    = (139, 0, 0)
     Maroon     = (128, 0, 0)
     Orange     = (255, 128, 0)
     DarkOrange = (255, 69, 0)
     Yellow     = (255, 255, 0)
-    Gold       = (184, 134,11)
+    Gold       = (184, 134, 11)
     Olive      = (128, 128, 0)
     Lime       = (0, 255, 0)
     Green      = (0, 128, 0)
@@ -387,6 +401,7 @@ class SplashBuiltIn:
     Error   = "Error"
     Warning = "Warning"
     Battery = "LowBattery"
+    Touch   = "Touch"
 
 
 ##################################################################################
@@ -732,6 +747,21 @@ class Defaults:
             cls.default_dialog_v_alignt = global_font_v_align
             cls.default_headfoot_v_align = global_font_v_align
             cls.default_button_v_align = global_font_v_align
+
+
+##################################################################################
+# GET_PACKAGE_VERSION
+##################################################################################
+# Returns the string version of the package passed in or None if the package is
+# not shown as installed.
+##################################################################################
+def get_package_version(package):
+    version = None
+    if package is not None:
+        process = subprocess.Popen((Version.Command.format(package)).split(), stdout=subprocess.PIPE)
+        pipe = subprocess.Popen(Version.Pipe.split(), stdin=process.stdout, stdout=subprocess.PIPE)
+        version = pipe.communicate()[0][len(Version.Grep):-1]
+    return version
 
 
 ##################################################################################
