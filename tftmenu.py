@@ -316,9 +316,8 @@ class Displays:
 
         # If a touch device is specified, make sure the LibSdl version is correct.  If
         # not, display a warning unless suppressed.
-        if tft_type is not DISP22NT and not cls.check_lib_sdl_version():
-            if cls.libsdl_version is None:
-                return
+        if tft_type is not DISP22NT:
+            cls.check_lib_sdl_version()
 
         cls.splash_mute_level = splash_mute_level
         # Set the defaults based on the resolution of the display.  Fonts are scaled

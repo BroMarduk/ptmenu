@@ -109,7 +109,7 @@ class Version:
     Pipe          = "grep {0}".format(Grep)
     LibSdl        = "libsdl1.2debian"
     LibSdlVersion = "1.2.15"
-    LibSdlBuild   = "4"
+    LibSdlBuild   = "5"
 
 
 ##################################################################################
