@@ -19,10 +19,10 @@ There are a few different menu systems out there for the different TFT Displays.
 2. [Jeremy Blythe's Blog](https://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
   
    Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
-3. [pygame Documentation and Examples](https://www.pygame.org/docs/)
+3. [pygame Documentation and Examples](https://www.pygame.org/docs)
   
    Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
-4. [Adafruit Learning System](https://learn.adafruit.com/)
+4. [Adafruit Learning System](https://learn.adafruit.com)
 
    It's one thing to support the products you sell and another to provide explicit tutorials on just about everything you make.  Adafruit may not be the only site that does this ([Sparkfun](http://learn.sparkfun.com) comes to mind), but I think they do it better than anyone else.  I referenced their documentation above.  Also a special thanks to the customer service department at Adafruit for replacing my 3.5" PiTFT which I didn't notice it had a small crack in the screen until I took it out of the box six months later.  Without that gesture, I would not have 3.5" support (or at least not TESTED 3.5" support).
 
