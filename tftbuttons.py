@@ -163,6 +163,23 @@ class Backlight:
     state_sleep = False
 
     ##################################################################################
+    # CHECK_GPIO
+    ##################################################################################
+    # This method checks to see if libsdl1.2debian is installed and if the version is
+    # correct to enable touch on the Raspberry Pi.
+    ##################################################################################
+    @classmethod
+    def check_wiringpi(cls):
+        status = get_package_status(Package.PkgWiringPi).strip()
+        statuses = status.split()
+        if len(statuses) != Package.StatusCount:
+            return False
+        if statuses[Package.StatusPosFlag] != Package.StatusFlagOK \
+            or statuses[Package.StatusPosFlag] != Package.StatusFlagOK:
+            return False
+        return True
+
+    ##################################################################################
     # BACKLIGHT INITIALIZE METHOD
     ##################################################################################
     # Method for initializing the Backlight class.  Checks if already initialized and
@@ -190,8 +207,11 @@ class Backlight:
             cls.default = DEFAULT_BACKLIGHT_STEPS
         if cls.default > cls.steps:
             cls.default = cls.steps
-        subprocess.call(GPIO_BACKLIGHT_PWMC_SET.format(GPIO_BACKLIGHT_PWM_FREQUENCY).split())
+        if cls.method is not BacklightMethod.NoBacklight and not cls.check_wiringpi():
+            logger.warning("WiringPi package is not installed.  Backlight functionality will be disabled.")
+            cls.method = BacklightMethod.NoBacklight
         if cls.method != BacklightMethod.NoBacklight:
+            subprocess.call(GPIO_BACKLIGHT_PWMC_SET.format(GPIO_BACKLIGHT_PWM_FREQUENCY).split())
             # If using PWM non-binary method, we need to get exact backlight values
             if cls.method == BacklightMethod.Pwm:
                 # Determine the number of steps for the backlight_up/BacklightDown buttons

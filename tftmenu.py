@@ -287,7 +287,7 @@ class Displays:
     ##################################################################################
     @classmethod
     def check_lib_sdl_version(cls):
-        full_version = get_package_version(Version.LibSdl)
+        full_version = get_package_version(Package.PkgLibSdl)
         if full_version is None:
             return False
         version_info = full_version.split("-")
@@ -296,7 +296,7 @@ class Displays:
             lib_build = version_info[1]
         else:
             lib_build = None
-        if lib_version == Version.LibSdlVersion and lib_build == Version.LibSdlBuild:
+        if lib_version == Package.LibSdlVersion and lib_build == Package.LibSdlBuild:
             return True
         cls.libsdl_build = lib_build
         cls.libsdl_version = lib_version

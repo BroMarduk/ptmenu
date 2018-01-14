@@ -99,17 +99,26 @@ class Screen:
 
 
 ##################################################################################
-# VERSION CONSTANTS
+# PACKAGE CONSTANTS
 ##################################################################################
-# Used to determine the version of a specific package.
+# Used to determine the version and installed status of a specific package.
 ##################################################################################
-class Version:
-    Grep          = "Version:"
-    Command       = "dpkg -s {0}"
-    Pipe          = "grep {0}".format(Grep)
-    LibSdl        = "libsdl1.2debian"
-    LibSdlVersion = "1.2.15"
-    LibSdlBuild   = "5"
+class Package:
+    GrepVersion          = "Version:"
+    GrepStatus           = "Status:"
+    StatusCount          = 3
+    Command              = "dpkg -s {0}"
+    PipeVersion          = "grep {0}".format(GrepVersion)
+    PipeStatus           = "grep {0}".format(GrepStatus)
+    PkgWiringPi          = "wiringpi"
+    PkgLibSdl            = "libsdl1.2debian"
+    LibSdlVersion        = "1.2.15"
+    LibSdlBuild          = "5"
+    StatusPosSelection   = 0
+    StatusPosFlag        = 1
+    StatusState          = 2
+    StatusStateInstalled = "installed"
+    StatusFlagOK         = "ok"
 
 
 ##################################################################################
@@ -758,10 +767,25 @@ class Defaults:
 def get_package_version(package):
     version = None
     if package is not None:
-        process = subprocess.Popen((Version.Command.format(package)).split(), stdout=subprocess.PIPE)
-        pipe = subprocess.Popen(Version.Pipe.split(), stdin=process.stdout, stdout=subprocess.PIPE)
-        version = pipe.communicate()[0][len(Version.Grep):-1]
+        process = subprocess.Popen((Package.Command.format(package)).split(), stdout=subprocess.PIPE)
+        pipe = subprocess.Popen(Package.PipeVersion.split(), stdin=process.stdout, stdout=subprocess.PIPE)
+        version = pipe.communicate()[0][len(Package.GrepVersion):-1]
     return version
+
+
+##################################################################################
+# GET_PACKAGE_STATUS
+##################################################################################
+# Returns the string version of the package passed in or None if the package is
+# not shown as installed.
+##################################################################################
+def get_package_status(package):
+    status = None
+    if package is not None:
+        process = subprocess.Popen((Package.Command.format(package)).split(), stdout=subprocess.PIPE)
+        pipe = subprocess.Popen(Package.PipeStatus.split(), stdin=process.stdout, stdout=subprocess.PIPE)
+        status = pipe.communicate()[0][len(Package.GrepStatus):-1]
+    return status
 
 
 ##################################################################################

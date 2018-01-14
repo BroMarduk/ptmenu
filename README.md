@@ -16,10 +16,10 @@ There are a few different menu systems out there for the different TFT Displays.
 1. [garthvh's pitftmenu](https://github.com/garthvh/pitftmenu)
 
    Along with [Re4son's fork](https://github.com/Re4son/pitftmenu) this project provided me a starting point for what functionality I needed as a base.  My menu design used this menu systems button coordinates as a starting point.  I also used it as a basis to learn how to execute commands in Python, start X and to implement code to handle system shutdown on a low battery.
-2. [Jeremy Blythe's Blog](http://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
+2. [Jeremy Blythe's Blog](https://jeremyblythe.blogspot.com/2014/09/raspberry-pi-pygame-ui-basics.html)
   
    Great resource for learning how to use pygame with a TFT.  Bridges the gap between the Adafruit documentation for the PiTFT and the pygame docs.
-3. [pygame Documentation and Examples](http://www.pygame.org/docs/)
+3. [pygame Documentation and Examples](https://www.pygame.org/docs/)
   
    Learning a new library is always a challenge and even more so when the documentation is lacking.  With pygame, this is not the case.  Don't get me wrong, there is a learning curve learning the library, but the documentation and examples make almost all challenges solvable.
 4. [Adafruit Learning System](https://learn.adafruit.com/)
@@ -36,9 +36,9 @@ In order to use the PTMenu, the following requirements are necessary:
 2. An Adafruit PiTFT plugged into the header on the Raspberry Pi.
   
    All Adafruit PiTFTs are supported, but note that the 2.2" PiTFT is non-touch and would require a mouse to use.
-3. Raspian Jessie or Wheezy installed.   
+3. Raspian Stretch, Jessie or Wheezy installed.   
   
-   Other flavors that support the Adafruit PiTFTs, such as Kali, should also work, although I have not tested on anything but Jessie.
+   Other flavors that support the Adafruit PiTFTs, such as Kali, should also work, although I have not tested on anything but Jessie & Stretch.   You can use one of the Adafruit PiTFT images or use the available PiTFT Helper scripts (or manual instructions) from Adafruit to install.   If the display loads the console on boot, things should be working. 
 4. Python 2.7 installed as a package.
 
    Python 2.7 should be installed on most Raspberry Pi's by default.  If for some reason it was not or was removed that it will need to be reinstalled. 
@@ -51,7 +51,13 @@ In order to use the PTMenu, the following requirements are necessary:
    <b>sudo apt-get install python-pygame</b>
 6. libsdl1.2-15-5
 
-  If running Jessie on the Raspberry Pi, the touch screen support in libsdl 1.2 has been broken for pygame.  To make it work, you need to revert to the last version from Wheezy (libsdl1.2-15-5).  Instructions to do this can be found on the [pitftmenu site](https://github.com/garthvh/pitftmenu).  Instructions and a script can be found on the [Adafruit site](https://learn.adafruit.com/adafruit-pitft-28-inch-resistive-touchscreen-display-raspberry-pi/pitft-pygame-tips).  I could get mine working by using the Adafruit script, but it does seem to need to be run again after doing an upgrade to the Raspberry Pi.
+   If running Stretch or Jessie on the Raspberry Pi, the touch screen support in libsdl 1.2 has been broken for pygame.  To make it work, you need to revert to the last version from Wheezy (libsdl1.2-15-5).  Instructions to do this can be found on the [pitftmenu site](https://github.com/garthvh/pitftmenu).  Instructions and a script can be found on the [Adafruit site](https://learn.adafruit.com/adafruit-pitft-28-inch-resistive-touchscreen-display-raspberry-pi/pitft-pygame-tips).  I could get mine working by using the Adafruit script, but it does seem to need to be run again after doing an upgrade to the Raspberry Pi.
+   
+7. wiringpi (Optional)
+
+   If backlight and/or GPIO support is desired, the wiringpi library will need to be installed.  If not it can beinstalled using the following command:
+   
+   <b>sudo apt-get install wiringpi</b>
 
 ## Features
 
@@ -133,12 +139,15 @@ While I have been writing code for a while, this is my first Python project.  I'
 
 In addition, I plan to go back and re-add comments and logging back in.   I stripped most of these areas out so I could get the project posted until I could go back and address my overly cryptic comments and logging into something that someone could possibly understand.
 
-+ Re-add understandable comments to source code.
-+ Add more (configurable) splash items for warnings, errors, information etc.
-+ Add more logging for operation and debugging
-+ Move the GPIO Buttons into a template similar to the Display Buttons templates.
++ [DONE] Re-add understandable comments to source code.
++ [DONE] Add more (configurable) splash items for warnings, errors, information etc.
++ [DONE] Add more logging for operation and debugging
++ [DONE] Move the GPIO Buttons into a template similar to the Display Buttons templates.
 + Make header/footer types and their functionality into tokens that can be used in text.
 + Add images/icons to buttons
++ Add support for launching Start X
 + Move internal text to resources for use with gettext and improve globalization.
-+ Add detection for broken libsdl1.2debian version and provide correction script in code
++ [DONE] Add detection for broken libsdl1.2debian version and provide correction script in code
 + Allow for arrow navigation and selection (only mouse and touch currently supported)
++ Support for Pimoroni HyperPixel (480x800 pixel display)
++ Add an installation script for all packages and to download respository.
