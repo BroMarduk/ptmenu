@@ -96,6 +96,8 @@ class Screen:
     Tty            = "tty{0}".format(run_cmd("fgconsole")[:-1])
     WakeCommand    = "printf \033[13]"
     WakePipe       = "sudo tee /dev/{0} > /dev/null".format(Tty)
+    FrameBuffHdmi  = "fb0"
+    FrameBuffTft   = "fb1"
 
 
 ##################################################################################
@@ -129,8 +131,8 @@ class Package:
 class Command:
     Shutdown   = "sudo shutdown -h now"
     Reboot     = "sudo shutdown -r now"
-    StartXHdmi = "FRAMEBUFFER=/dev/fb0 startx"
-    StartXTft  = "FRAMEBUFFER=/dev/fb1 startx"
+    StartXHdmi = "FRAMEBUFFER=/dev/{0} startx".format(Screen.FrameBuffHdmi)
+    StartXTft  = "FRAMEBUFFER=/dev/{0} startx".format(Screen.FrameBuffTft)
 
 
 ##################################################################################
