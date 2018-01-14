@@ -134,7 +134,7 @@ if header_date_custom is not None:
     header_date_custom[len(header_date_custom) - 1].action = Action(DisplayAction.Display, "Main")
     menu_header_date_custom = Menu(timeout=90, buttons=header_date_custom,
                                    header=Header(mode=HeadFootType.DateTimeCustom,
-                                                 data="%-I:%M:%S %p",
+                                                 data="Time: %-I:%M:%S %p",
                                                  refresh=DisplayHeaderRefresh.Second))
     Displays.menus["menuDateCustom"] = menu_header_date_custom
 header_host_name = get_buttons(ButtonTemplate.Header2x3, border_color=Color.Purple)

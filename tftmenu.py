@@ -1415,10 +1415,7 @@ class Header(object):
             self.text.text = time.strftime("%x %R")
         elif self.mode == HeadFootType.DateTimeCustom:
             if self.data is not None:
-                if self.text.text:
-                    self.text.text = self.text.text.format(time.strftime(self.data))
-                else:
-                    self.text.text = time.strftime(self.data)
+                self.text.text = time.strftime(self.data)
         elif self.mode == HeadFootType.HostName:
             host_name = run_cmd("hostname")
             if self.text.text:
