@@ -25,7 +25,7 @@ from tfttemplates import *
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP28CP)
+Displays.initialize(DISP35RP)
 
 
 ##################################################################################

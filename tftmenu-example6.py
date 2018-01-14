@@ -11,38 +11,70 @@ from tfttemplates import *
 from tftvantage import Vantage
 
 
-##################################################################################
-# GET WEATHER FUNCTION
-##################################################################################
-# Example of a button call back function.  The menu and button parameters are
-# passed in and can be changed.  The function can return a new Display object
-# if a new menu should be loaded or returning None.  The menu.force_refresh is set
-# to force a menu to redraw (useful if graphic elements have changed and need to
-# be re-rendered.  By default if the same menu is reloaded more than once in a row,
-# it is not rendered on subsequent shows.
-def get_current_weather():
-    vantage_wx = Vantage(**{"type": "serial", "port": "/dev/ttyUSB0", "baudrate": "19200", "wait_before_retry": 1.2, 
-                            "command_delay": 1, "timeout": 6})
-    loop_item = vantage_wx.getLatestWeatherLoop()
+class Weather:
+    weather_data = None
+    current_wx_last_update = None
 
-    if not loop_item:
-        print ("No weather data was retrieved.")
-    else:
-        print ("Outside Temperature", loop_item['outTemp'])
-        print ("Outside Humidity", loop_item['outHumidity'])
-        print ("Inside Temperature", loop_item['inTemp'])
-        print ("Inside Humidity", loop_item['inHumidity'])
-        print ("Wind Direction", loop_item['windDir'])
-        print ("Wind Speed", loop_item['windSpeed'])
-        print ("Barometric Pressure", loop_item['barometer'])
-        print ("Barometric Trend", loop_item['barometricTrend'])
-        print ("Daily Rain", loop_item['dayRain'])
-        print ("Rain Rate", loop_item['rainRate'])
-        print ("Forecast", loop_item['forecastIcon'])
-        print ("Forecast Rule", tftvantage.forecastRules[loop_item['forecastRule']])
-        print ("Sunrise", time.strftime("%I:%M%P", time.localtime(loop_item['sunrise'])))
-        print ("Sunset", time.strftime("%I:%M%P", time.localtime(loop_item['sunset'])))
+    ##################################################################################
+    # GET WEATHER FUNCTION
+    ##################################################################################
+    # Function to get the current weather conditions from the current weather loop on
+    # the Davis Vantage console.
+    ##################################################################################
+    @classmethod
+    def get_current_weather(cls):
+        try:
+            vantage_wx = Vantage(
+                **{"type": "serial", "port": "/dev/ttyUSB0", "baudrate": "19200", "wait_before_retry": 1.2,
+                   "command_delay": 0.5, "timeout": 0.5, "max_tries": 1})
+            cls.weather_data = vantage_wx.getLatestWeatherLoop()
+        except Exception, ex:
+            logger.debug("Error getting weather from Vantage: {0}".format(unicode(ex)))
+            return False
+        return True
 
+    @classmethod
+    def get_weather_details(cls):
+        if not cls.weather_data:
+            print ("No weather data was retrieved.")
+        else:
+            print ("Outside Temperature", cls.weather_data['outTemp'])
+            print ("Outside Humidity", cls.weather_data['outHumidity'])
+            print ("Inside Temperature", cls.weather_data['inTemp'])
+            print ("Inside Humidity", cls.weather_data['inHumidity'])
+            print ("Wind Direction", cls.weather_data['windDir'])
+            print ("Wind Speed", cls.weather_data['windSpeed'])
+            print ("Barometric Pressure", cls.weather_data['barometer'])
+            print ("Barometric Trend", cls.weather_data['barometricTrend'])
+            print ("Daily Rain", cls.weather_data['dayRain'])
+            print ("Rain Rate", cls.weather_data['rainRate'])
+            print ("Forecast", cls.weather_data['forecastIcon'])
+            print ("Forecast Rule", tftvantage.forecastRules[cls.weather_data['forecastRule']])
+            print ("Sunrise", time.strftime("%I:%M%P", time.localtime(cls.weather_data['sunrise'])))
+            print ("Sunset", time.strftime("%I:%M%P", time.localtime(cls.weather_data['sunset'])))
+
+    @classmethod
+    def draw_current_weather(cls, screen, display):
+        if screen is None or display is None:
+            return
+        cur_time = int(time.time())
+        if cls.current_wx_last_update is not None:
+            if cls.current_wx_last_update + 60 > cur_time:
+                return
+        if cls.get_current_weather():
+            cls.get_weather_details()
+            cls.current_wx_last_update = cur_time
+
+        if DisplayResolution is DisplayResolution.Small320x240:
+            newrect = draw_true_rect(Displays.screen, Color.Green, display.border_width - 1, display.border_width - 1,
+                                     Defaults.tft_width - display.border_width,
+                                     Defaults.tft_height - display.border_width, 0)
+            pygame.display.update(newrect)
+        else:
+            newrect = draw_true_rect(Displays.screen, Color.Green, display.border_width - 1, display.border_width - 1,
+                                     Defaults.tft_width - (display.border_width * 2),
+                                     Defaults.tft_height - (display.border_width * 2), 0)
+            pygame.display.update(newrect)
 
 ##################################################################################
 # DISPLAY INITIALIZATION
@@ -62,7 +94,7 @@ def get_current_weather():
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP28CP, global_font="./Fonts/BebasNeue.otf")
+Displays.initialize(DISP35RP, global_font="./Fonts/BebasNeue.otf")
 Defaults.default_headfoot_font_color = Color.Silver
 Defaults.default_text_line_font_color = Color.Silver
 Defaults.default_dialog_font_color = Color.Silver
@@ -104,7 +136,8 @@ Displays.menus["ConfirmExit"] = dialogConfirmExit
 dialogCurrentWxText = [DialogLine("", font_size=30, font_pad=False)]
 dialogCurrentWxActions = [Action(DisplayAction.Back)]
 dialogCurrentWx = Dialog(dialogCurrentWxText, DialogStyle.FullScreenOk, Color.Black, Color.Blue,
-                         actions=dialogCurrentWxActions, use_menu_timeout=True)
+                         actions=dialogCurrentWxActions, use_menu_timeout=True,
+                         draw_callback=Weather.draw_current_weather)
 Displays.menus["CurrentWx"] = dialogCurrentWx
 
 # Forecast Weather Dialog
@@ -118,7 +151,7 @@ Displays.menus["ForecastWx"] = dialogForecastWx
 dialogDetailedWxText = [DialogLine("", font_size=30, font_pad=False)]
 dialogDetailedWxActions = [Action(DisplayAction.Back)]
 dialogDetailedWx = Dialog(dialogDetailedWxText, DialogStyle.FullScreenOk, Color.Black, Color.Green,
-                        actions=dialogDetailedWxActions, use_menu_timeout=True)
+                          actions=dialogDetailedWxActions, use_menu_timeout=True)
 Displays.menus["DetailedWx"] = dialogDetailedWx
 
 # Radar Weather Dialog

@@ -185,7 +185,7 @@ Buttons1x1Bottom = {DisplayResolution.Small320x240:
 Buttons1x1BottomLeft = {DisplayResolution.Small320x240:
                         {ButtonTuple.Columns: 1,
                          ButtonTuple.Rows: 1,
-                         ButtonTuple.ColumnsStart: 164,
+                         ButtonTuple.ColumnsStart: 11,
                          ButtonTuple.RowsStart: 175,
                          ButtonTuple.ColumnsSpacing: 0,
                          ButtonTuple.RowsSpacing: 0,
@@ -194,7 +194,7 @@ Buttons1x1BottomLeft = {DisplayResolution.Small320x240:
                         DisplayResolution.Large480x320:
                         {ButtonTuple.Columns: 1,
                          ButtonTuple.Rows: 1,
-                         ButtonTuple.ColumnsStart: 244,
+                         ButtonTuple.ColumnsStart: 14,
                          ButtonTuple.RowsStart: 231,
                          ButtonTuple.ColumnsSpacing: 0,
                          ButtonTuple.RowsSpacing: 0,

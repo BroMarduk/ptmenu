@@ -505,6 +505,7 @@ class Displays:
                         cls.current.header.update(cls.current)
                     if hasattr(cls.current, Attributes.Footer) and cls.current.footer is not None:
                         cls.current.footer.update(cls.current)
+                    cls.current.draw()
                 else:
                     for event in pygame.event.get():
                         # Mouse up or release on screen
@@ -848,6 +849,7 @@ class Display(object):
     actions = []
     timeout = 0
     timeout_function = None
+    draw_callback = []
     last = None
     force_refresh = False
     is_core = False
@@ -859,7 +861,8 @@ class Display(object):
     ##################################################################################
     def __init__(self, background_color=Defaults.default_background_color,
                  border_color=Defaults.default_border_color, border_width=None,
-                 buttons=None, actions=None, timeout=Defaults.default_timeout, timeout_function=None):
+                 buttons=None, actions=None, timeout=Defaults.default_timeout, timeout_function=None,
+                 draw_callback=None):
         self.background_color = background_color
         self.border_color = border_color
         self.border_width = border_width
@@ -869,6 +872,7 @@ class Display(object):
         self.timeout_function = merge(Displays.timeout_sleep, timeout_function)
         if self.border_width is None:
             self.border_width = Defaults.default_border_width
+        self.draw_callback = array_single_none(draw_callback)
         self.is_core = True
 
     ##################################################################################
@@ -1032,6 +1036,18 @@ class Display(object):
             logger.warning("Unknown soft button action ({0}).  Nothing done.".format(action))
         return new_menu, action_render_data
 
+    ##################################################################################
+    # DISPLAYS DRAW METHOD
+    ##################################################################################
+    # Method that loops through a list of call back functions that can be used to
+    # manually draw text or images or graphics on a menu.
+    ##################################################################################
+    def draw(self):
+        if self.draw_callback is not None:
+            for draw_function in self.draw_callback:
+                logger.debug("Calling draw function {0}".format(draw_function))
+                draw_function(Displays.screen, self)
+
 
 ##################################################################################
 # TFTMENU MENU CLASS
@@ -1051,10 +1067,10 @@ class Menu(Display):
     ##################################################################################
     def __init__(self, background_color=Defaults.default_background_color,
                  border_color=Defaults.default_border_color, border_width=None, buttons=None, actions=None,
-                 timeout=Defaults.default_timeout, timeout_function=None, header=None, footer=None):
+                 timeout=Defaults.default_timeout, timeout_function=None, header=None, footer=None, draw_callback=None):
         super(Menu, self).__init__(background_color=background_color, border_color=border_color,
                                    border_width=border_width, buttons=buttons, actions=actions, timeout=timeout,
-                                   timeout_function=timeout_function)
+                                   timeout_function=timeout_function, draw_callback=draw_callback)
         if self.border_width is None:
             self.border_width = Defaults.default_border_width
         if header is None:
@@ -1085,9 +1101,10 @@ class Splash(Display):
     # to use the timeout_close function instead of the timeout_sleep function.
     ##################################################################################
     def __init__(self, text=None, background_color=Defaults.default_splash_background_color,
-                 timeout=Defaults.default_splash_timeout, timeout_function=None):
+                 timeout=Defaults.default_splash_timeout, timeout_function=None, draw_callback=None):
         super(Splash, self).__init__(background_color=background_color, border_color=None, border_width=None,
-                                     buttons=None, actions=None, timeout=timeout, timeout_function=None)
+                                     buttons=None, actions=None, timeout=timeout, timeout_function=None,
+                                     draw_callback=draw_callback)
         self.text = array_single_none(text)
         self.timeout_function = merge([Displays.timeout_close], timeout_function)
         self.is_core = False
@@ -1176,12 +1193,13 @@ class Dialog(Display):
     ##################################################################################
     def __init__(self, text=None, dialog_type=DialogStyle.Ok, background_color=Defaults.default_dialog_background_color,
                  border_color=Defaults.default_dialog_border_color, border_width=None, actions=None, buttons=None,
-                 timeout=Defaults.default_dialog_timeout, timeout_function=None, use_menu_timeout=False,
-                 use_menu_colors=False):
+                 timeout=Defaults.default_dialog_timeout, timeout_function=None, draw_callback=None,
+                 use_menu_timeout=False, use_menu_colors=False):
 
         super(Dialog, self).__init__(background_color=background_color, border_color=border_color,
                                      border_width=border_width, buttons=buttons, actions=actions, timeout=timeout,
-                                     timeout_function=merge(Displays.timeout_sleep, timeout_function))
+                                     timeout_function=merge(Displays.timeout_sleep, timeout_function),
+                                     draw_callback=draw_callback)
 
         self.text = array_single_none(text)
         self.dialog_type = dialog_type
@@ -1508,6 +1526,7 @@ class Header(object):
         else:
             logger.warning("Unknown header refresh value ({0}).  Unable to set header refresh.".format(self.refresh))
             return
+        # TODO fix issue with wrap around on seconds
         if use_two_second_range is not None:
             if use_two_second_range:
                 if self.last_update == cur_time or self.last_update == cur_time - 1:

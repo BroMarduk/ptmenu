@@ -263,9 +263,9 @@ class CommunicationBase (object):
                 _resp = self.read(2)
                 if _resp == '\n\r':
                     return
-                print "Unable to wake up console... sleeping"
+                # print "Unable to wake up console... sleeping"
                 time.sleep(self.wait_before_retry)
-                print "Unable to wake up console... retrying"
+                # print "Unable to wake up console... retrying"
             except DeviceIOError:
                 pass
 
