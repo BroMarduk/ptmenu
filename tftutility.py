@@ -791,6 +791,23 @@ def get_package_status(package):
 
 
 ##################################################################################
+# IS_PACKAGE_INSTALLED
+##################################################################################
+# Returns a boolean indicating if the package name passed in is installed on the
+# current system and appears valid
+##################################################################################
+def is_package_installed(package):
+    status = get_package_status(package).strip()
+    statuses = status.split()
+    if len(statuses) != Package.StatusCount:
+        return False
+    if statuses[Package.StatusPosFlag] != Package.StatusFlagOK \
+            or statuses[Package.StatusPosFlag] != Package.StatusFlagOK:
+        return False
+    return True
+
+
+##################################################################################
 # MERGE METHOD
 ##################################################################################
 # Method that unions the contents of two lists together.  Duplicate items are

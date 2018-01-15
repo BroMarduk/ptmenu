@@ -25,8 +25,8 @@ class Weather:
     def get_current_weather(cls):
         try:
             vantage_wx = Vantage(
-                **{"type": "serial", "port": "/dev/ttyUSB0", "baudrate": "19200", "wait_before_retry": 1.2,
-                   "command_delay": 0.5, "timeout": 0.5, "max_tries": 1})
+                **dict(type="serial", port="/dev/ttyUSB0", baudrate="19200", wait_before_retry=1.2, command_delay=0.5,
+                       timeout=0.5, max_tries=1))
             cls.weather_data = vantage_wx.getLatestWeatherLoop()
         except Exception, ex:
             logger.debug("Error getting weather from Vantage: {0}".format(unicode(ex)))
@@ -76,6 +76,7 @@ class Weather:
                                      Defaults.tft_height - (display.border_width * 2), 0)
             pygame.display.update(newrect)
 
+
 ##################################################################################
 # DISPLAY INITIALIZATION
 ##################################################################################
@@ -94,12 +95,13 @@ class Weather:
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP35RP, global_font="./Fonts/BebasNeue.otf")
+Displays.initialize(DISP28CP, global_font="./Fonts/BebasNeue.otf")
 Defaults.default_headfoot_font_color = Color.Silver
 Defaults.default_text_line_font_color = Color.Silver
 Defaults.default_dialog_font_color = Color.Silver
 Defaults.default_button_font_color = Color.Silver
 Defaults.default_button_font_size = 24
+
 
 ##################################################################################
 # MENU TEMPLATES

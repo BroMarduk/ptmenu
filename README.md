@@ -133,6 +133,12 @@ Supported Display Identifiers (any Method or the Value will work):
 ## Advanced Display Features
 [Coming Soon]
 
+## Button Actions
+[Coming Soon]
+
+## Button Templates
+[Coming Soon]
+
 ## Planned Enhancements
 
 While I have been writing code for a while, this is my first Python project.  I'm sure there are lots of places where my old C# habits kicked in that would make a Pythonista cringe.  For that I am sorry.  If anyone using this finds any of those snippets, feel free to point those places out to me and once I understand the underlying reasons, I'll happily improve them.  Especially for a performance boost.  That said, there is also additional functionally in the planning stages that is documented below.  This list is somewhat prioritized, but subject to change based on any feedback I get.
@@ -143,11 +149,11 @@ In addition, I plan to go back and re-add comments and logging back in.   I stri
 + [DONE] Add more (configurable) splash items for warnings, errors, information etc.
 + [DONE] Add more logging for operation and debugging
 + [DONE] Move the GPIO Buttons into a template similar to the Display Buttons templates.
-+ Make header/footer types and their functionality into tokens that can be used in text.
-+ Add images/icons to buttons
-+ Add support for launching Start X
-+ Move internal text to resources for use with gettext and improve globalization.
 + [DONE] Add detection for broken libsdl1.2debian version and provide correction script in code
++ [DONE] Add support for launching StartX as an action
++ Make header/footer types and their functionality into tokens that can be used in text.
++ Add images/icons to buttons/headers/footers
++ Move internal text to resources for use with gettext and improve globalization.
 + Allow for arrow navigation and selection (only mouse and touch currently supported)
 + Support for Pimoroni HyperPixel (480x800 pixel display)
 + Add an installation script for all packages and to download respository.

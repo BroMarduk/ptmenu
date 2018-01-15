@@ -96,13 +96,13 @@ if buttons_3x3_header is not None:
                            header=Header(mode=HeadFootType.UserText,
                                          text=HeadFootLine(font_size=20, text="3 Col by 3 Row with Header")))
     Displays.menus["menu3x3Header"] = menu_3x3_header
-buttons_3x2_headfoot = get_buttons(ButtonTemplate.HeaderFooter2x2, border_color=Color.Red)
+buttons_3x2_headfoot = get_buttons(ButtonTemplate.HeaderFooter3x2, border_color=Color.Red)
 if buttons_3x2_headfoot is not None:
     buttons_3x2_headfoot[-1].text = "Back"
     buttons_3x2_headfoot[-1].action = Action(DisplayAction.Display, "Main")
     menu_3x2_headfoot = Menu(timeout=90, buttons=buttons_3x2_headfoot,
                              header=Header(mode=HeadFootType.UserText,
-                                           text=HeadFootLine(font_size=20, text="2 Col by 3 Row with Head/Foot")),
+                                           text=HeadFootLine(font_size=20, text="3 Col by 2 Row with Head/Foot")),
                              footer=Footer(mode=HeadFootType.DateTime12)
                              )
     Displays.menus["menu3x2HeaderFooter"] = menu_3x2_headfoot
