@@ -23,6 +23,8 @@ class Weather:
     ##################################################################################
     @classmethod
     def get_current_weather(cls):
+        result = True
+        vantage_wx = None
         try:
             vantage_wx = Vantage(
                 **dict(type="serial", port="/dev/ttyUSB0", baudrate="19200", wait_before_retry=1.2, command_delay=0.5,
@@ -30,8 +32,11 @@ class Weather:
             cls.weather_data = vantage_wx.getLatestWeatherLoop()
         except Exception, ex:
             logger.debug("Error getting weather from Vantage: {0}".format(unicode(ex)))
-            return False
-        return True
+            result = False
+        finally:
+            if vantage_wx is not None:
+                vantage_wx.closePort()
+            return result
 
     @classmethod
     def get_weather_details(cls):

@@ -119,70 +119,70 @@ def to_int(x):
     return int(x) if x is not None else None
 
 
-def CtoF(x):
+def c_to_f(x):
     return x * 1.8 + 32.0
 
 
-def FtoC(x):
+def f_to_c(x):
     return (x - 32.0) * 5.0 / 9.0
 
 
-def dewpointF(T, R):
-    if T is None or R is None:
+def dewpoint_f(t, r):
+    if t is None or r is None:
         return None
 
-    TdC = dewpointC(FtoC(T), R)
+    td_c = dewpoint_c(f_to_c(t), r)
 
-    return CtoF(TdC) if TdC is not None else None
+    return c_to_f(td_c) if td_c is not None else None
 
 
-def dewpointC(T, R):
-    if T is None or R is None:
+def dewpoint_c(t, r):
+    if t is None or r is None:
         return None
 
-    R = R / 100.0
+    r = r / 100.0
 
     try:
-        _gamma = 17.27 * T / (237.7 + T) + math.log(R)
-        TdC = 237.7 * _gamma / (17.27 - _gamma)
+        _gamma = 17.27 * t / (237.7 + t) + math.log(r)
+        td_c = 237.7 * _gamma / (17.27 - _gamma)
 
     except (ValueError, OverflowError):
-        TdC = None
+        td_c = None
 
-    return TdC
+    return td_c
 
 
-def windchillF(T_F, V_mph):
-    if T_F is None or V_mph is None:
+def windchill_f(t_f, v_mph):
+    if t_f is None or v_mph is None:
         return None
 
     # only valid for temperatures below 50F and wind speeds over 3.0 mph
-    if T_F >= 50.0 or V_mph <= 3.0:
-        return T_F
+    if t_f >= 50.0 or v_mph <= 3.0:
+        return t_f
 
-    WcF = 35.74 + 0.6215 * T_F + (-35.75 + 0.4275 * T_F) * math.pow(V_mph, 0.16)
+    wc_f = 35.74 + 0.6215 * t_f + (-35.75 + 0.4275 * t_f) * math.pow(v_mph, 0.16)
 
-    return WcF
+    return wc_f
 
 
-def heatindexF(T, R):
-    if T is None or R is None:
+def heatindex_f(t, r):
+    if t is None or r is None:
         return None
 
     # Formula only valid for temperatures over 80F:
-    if T < 80.0 or R < 40.0:
-        return T
+    if t < 80.0 or r < 40.0:
+        return t
 
-    hi_F = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R - 6.83783e-3 * T ** 2 \
-           - 5.481717e-2 * R ** 2 + 1.22874e-3 * T ** 2 * R + 8.5282e-4 * T * R ** 2 - 1.99e-6 * T ** 2 * R ** 2
+    hi_f = -42.379 + 2.04901523 * t + 10.14333127 * r - 0.22475541 * t * r - 6.83783e-3 * t ** 2 \
+           - 5.481717e-2 * r ** 2 + 1.22874e-3 * t ** 2 * r + 8.5282e-4 * t * r ** 2 - 1.99e-6 * t ** 2 * r ** 2
 
-    if hi_F < T:
-        hi_F = T
+    if hi_f < t:
+        hi_f = t
 
-    return hi_F
+    return hi_f
 
 
-def startOfDay(time_ts):
+def start_of_day(time_ts):
     _time_tt = time.localtime(time_ts)
     _bod_ts = time.mktime((_time_tt.tm_year,
                            _time_tt.tm_mon,
@@ -441,7 +441,7 @@ class SerialWrapper(CommunicationBase):
         try:
             _buffer = self.serial_port.read(chars)
         except serial.serialutil.SerialException, e:
-            # Reraise as an error I/O error:
+            # Re-raise as an error I/O error:
             raise DeviceIOError(e)
         N = len(_buffer)
         if N != chars:
@@ -453,7 +453,7 @@ class SerialWrapper(CommunicationBase):
         try:
             N = self.serial_port.write(data)
         except serial.serialutil.SerialException, e:
-            # Reraise as an error I/O error:
+            # Re-raise as an error I/O error:
             raise DeviceIOError(e)
         # Python version 2.5 and earlier returns 'None', so it cannot be used to test for completion.
         if N is not None and N != len(data):
@@ -496,7 +496,7 @@ class EthernetWrapper(CommunicationBase):
             self.socket.settimeout(self.timeout)
             self.socket.connect((self.host, self.port))
         except (socket.error, socket.timeout, socket.herror), ex:
-            # Reraise as an I/O error:
+            # Re-raise as an I/O error:
             raise DeviceIOError(ex)
         except:
             raise
@@ -555,7 +555,7 @@ class EthernetWrapper(CommunicationBase):
             try:
                 _recv = self.socket.recv(_N)
             except (socket.timeout, socket.error), ex:
-                # Reraise as an I/O error:
+                # Re-raise as an I/O error:
                 raise DeviceIOError(ex)
             _nread = len(_recv)
             if _nread == 0:
@@ -573,7 +573,7 @@ class EthernetWrapper(CommunicationBase):
             # Note: a delay of 0.5 s is required for wee_device --logger=logger_info
             time.sleep(self.tcp_send_delay)
         except (socket.timeout, socket.error), ex:
-            # Reraise as an I/O error:
+            # Re-raise as an I/O error:
             raise DeviceIOError(ex)
 
 
@@ -828,13 +828,13 @@ class Vantage():
                 # engine pipeline, we have to add these important software derived
                 # variables here.
                 try:
-                    T = _record['outTemp']
-                    R = _record['outHumidity']
-                    W = _record['windSpeed']
+                    t = _record['outTemp']
+                    r = _record['outHumidity']
+                    w = _record['windSpeed']
 
-                    _record['dewpoint'] = dewpointF(T, R)
-                    _record['heatindex'] = heatindexF(T, R)
-                    _record['windchill'] = windchillF(T, W)
+                    _record['dewpoint'] = dewpoint_f(t, r)
+                    _record['heatindex'] = heatindex_f(t, r)
+                    _record['windchill'] = windchill_f(t, w)
                 except KeyError:
                     pass
 
@@ -1204,9 +1204,9 @@ class Vantage():
                 loop_packet[_type] = func(raw_loop_packet[_type])
 
         # Adjust sunrise and sunset:
-        start_of_day = startOfDay(loop_packet['dateTime'])
-        loop_packet['sunrise'] += start_of_day
-        loop_packet['sunset'] += start_of_day
+        day_start = start_of_day(loop_packet['dateTime'])
+        loop_packet['sunrise'] += day_start
+        loop_packet['sunset'] += day_start
 
         # Because the Davis stations do not offer bucket tips in LOOP data, we
         # must calculate it by looking for changes in rain totals. This won't
