@@ -782,7 +782,7 @@ class Vantage():
                     return
 
                 # Unpack the archive packet from the string buffer:
-                _record = self._unpackArchivePacket(_record_string)
+                _record = self._unpack_archive_packet(_record_string)
 
                 # Check to see if the time stamps are declining, which would
                 # signal that we are done.
@@ -822,7 +822,7 @@ class Vantage():
                     # This record has never been used. Skip it
                     continue
                 # Unpack the raw archive packet:
-                _record = self._unpackArchivePacket(_record_string)
+                _record = self._unpack_archive_packet(_record_string)
 
                 # Because the dump command does not go through the normal
                 # engine pipeline, we have to add these important software derived
@@ -1087,11 +1087,11 @@ class Vantage():
         if self.rain_bucket_type == 1:
             _archive_map['rain'] = _archive_map['rainRate'] = _loop_map['stormRain'] = _loop_map['dayRain'] = \
                 _loop_map['monthRain'] = _loop_map['yearRain'] = _bucket_1
-            _loop_map['rainRate'] = _bucket_1_None
+            _loop_map['rainRate'] = _bucket_1_none
         elif self.rain_bucket_type == 2:
             _archive_map['rain'] = _archive_map['rainRate'] = _loop_map['stormRain'] = _loop_map['dayRain'] = \
                 _loop_map['monthRain'] = _loop_map['yearRain'] = _bucket_2
-            _loop_map['rainRate'] = _bucket_2_None
+            _loop_map['rainRate'] = _bucket_2_none
         else:
             _archive_map['rain'] = _archive_map['rainRate'] = _loop_map['stormRain'] = _loop_map['dayRain'] = \
                 _loop_map['monthRain'] = _loop_map['yearRain'] = _val100
@@ -1216,7 +1216,8 @@ class Vantage():
         else:
             delta = loop_packet['monthRain'] - self.save_monthRain
             # If the difference is negative, we're at the beginning of a month.
-            if delta < 0: delta = None
+            if delta < 0:
+                delta = None
         loop_packet['rain'] = delta
         self.save_monthRain = loop_packet['monthRain']
 
@@ -1225,7 +1226,7 @@ class Vantage():
 
         return loop_packet
 
-    def _unpackArchivePacket(self, raw_archive_string):
+    def _unpack_archive_packet(self, raw_archive_string):
         """Decode a Davis archive packet, returning the results as a dictionary.
 
         raw_archive_string: The archive packet data buffer, passed in as a string. This will be unpacked and
@@ -1237,17 +1238,17 @@ class Vantage():
         if packet_type == 0xff:
             # Rev A packet type:
             archive_format = rec_fmt_A
-            dataTypes = rec_types_A
+            data_types = rec_types_A
         elif packet_type == 0x00:
             # Rev B packet type:
             archive_format = rec_fmt_B
-            dataTypes = rec_types_B
+            data_types = rec_types_B
         else:
             raise UnknownArchiveType("Unknown archive type = 0x%x" % (packet_type,))
 
         data_tuple = archive_format.unpack(raw_archive_string)
 
-        raw_archive_packet = dict(zip(dataTypes, data_tuple))
+        raw_archive_packet = dict(zip(data_types, data_tuple))
 
         archive_packet = {
             'dateTime': _archive_datetime(raw_archive_packet['date_stamp'], raw_archive_packet['time_stamp']),
@@ -1358,7 +1359,7 @@ def _val1000(v):
     return float(v) / 1000.0
 
 
-def _val1000Zero(v):
+def _val1000_zero(v):
     return float(v) / 1000.0 if v != 0 else None
 
 
@@ -1386,7 +1387,7 @@ def _null_int(v):
     return int(v)
 
 
-def _windDir(v):
+def _wind_dir(v):
     return float(v) * 22.5 if v != 0x00ff else None
 
 
@@ -1395,7 +1396,7 @@ def _bucket_1(v):
     return float(v) * 0.00787401575
 
 
-def _bucket_1_None(v):
+def _bucket_1_none(v):
     return float(v) * 0.00787401575 if v != 0xffff else None
 
 
@@ -1404,7 +1405,7 @@ def _bucket_2(v):
     return float(v) * 0.00393700787
 
 
-def _bucket_2_None(v):
+def _bucket_2_none(v):
     return float(v) * 0.00393700787 if v != 0xffff else None
 
 
@@ -1489,7 +1490,7 @@ rec_fmt_B = struct.Struct('<' + ''.join(fmt_B))
 # decode a sensor value held in the LOOP packet in the internal, Davis form into US
 # units and return it.
 _loop_map = {'barometricTrend': _null,
-             'barometer': _val1000Zero,
+             'barometer': _val1000_zero,
              'inTemp': _big_val10,
              'inHumidity': _little_val,
              'outTemp': _big_val10,
@@ -1567,7 +1568,7 @@ _loop_map = {'barometricTrend': _null,
 # This dictionary maps a type key to a function. The function should be able to
 # decode a sensor value held in the archive packet in the internal, Davis form into US
 # units and return it.
-_archive_map = {'barometer': _val1000Zero,
+_archive_map = {'barometer': _val1000_zero,
                 'inTemp': _big_val10,
                 'outTemp': _big_val10,
                 'highOutTemp': lambda v: float(v / 10.0) if v != -32768 else None,
@@ -1575,9 +1576,9 @@ _archive_map = {'barometer': _val1000Zero,
                 'inHumidity': _little_val,
                 'outHumidity': _little_val,
                 'windSpeed': _little_val,
-                'windDir': _windDir,
+                'windDir': _wind_dir,
                 'windGust': _null_float,
-                'windGustDir': _windDir,
+                'windGustDir': _wind_dir,
                 'rain': _val100,
                 'rainRate': _val100,
                 'ET': _val1000,
