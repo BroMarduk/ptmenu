@@ -29,13 +29,13 @@ class Weather:
             vantage_wx = Vantage(
                 **dict(type="serial", port="/dev/ttyUSB0", baudrate="19200", wait_before_retry=1.2, command_delay=0.5,
                        timeout=0.5, max_tries=1))
-            cls.weather_data = vantage_wx.getLatestWeatherLoop()
+            cls.weather_data = vantage_wx.get_latest_weather_loop()
         except Exception, ex:
             logger.debug("Error getting weather from Vantage: {0}".format(unicode(ex)))
             result = False
         finally:
             if vantage_wx is not None:
-                vantage_wx.closePort()
+                vantage_wx.close_port()
             return result
 
     @classmethod

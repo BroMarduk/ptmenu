@@ -213,7 +213,7 @@ def start_of_day(time_ts):
 
 class ValueTuple(tuple):
     def __new__(cls, *args):
-        return tuple.__new__(cls, args)
+        return tuple.__new__(cls)
 
     @property
     def value(self):
@@ -402,12 +402,15 @@ def guard_termios(fn):
     # exceptions. This catches them and converts them to our exceptions.
     try:
         import termios
+
         def guarded_fn(*args, **kwargs):
             try:
                 return fn(*args, **kwargs)
             except termios.error, e:
                 raise DeviceIOError(e)
     except ImportError:
+        import termios
+
         def guarded_fn(*args, **kwargs):
             return fn(*args, **kwargs)
     return guarded_fn
@@ -423,6 +426,7 @@ class SerialWrapper(CommunicationBase):
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
+        self.serial_port = None
 
     @guard_termios
     def flush_input(self):
@@ -443,32 +447,32 @@ class SerialWrapper(CommunicationBase):
         except serial.serialutil.SerialException, e:
             # Re-raise as an error I/O error:
             raise DeviceIOError(e)
-        N = len(_buffer)
-        if N != chars:
-            raise DeviceIOError("Expected to read %d chars; got %d instead" % (chars, N))
+        n = len(_buffer)
+        if n != chars:
+            raise DeviceIOError("Expected to read %d chars; got %d instead" % (chars, n))
         return _buffer
 
     def write(self, data):
         import serial
         try:
-            N = self.serial_port.write(data)
+            n = self.serial_port.write(data)
         except serial.serialutil.SerialException, e:
             # Re-raise as an error I/O error:
             raise DeviceIOError(e)
         # Python version 2.5 and earlier returns 'None', so it cannot be used to test for completion.
-        if N is not None and N != len(data):
-            raise DeviceIOError("Expected to write %d chars; sent %d instead" % (len(data), N))
+        if n is not None and n != len(data):
+            raise DeviceIOError("Expected to write %d chars; sent %d instead" % (len(data), n))
 
-    def openPort(self):
+    def open_port(self):
         import serial
         # Open up the port and store it
         self.serial_port = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
 
-    def closePort(self):
+    def close_port(self):
         try:
             # This will cancel any pending loop:
             self.write('\n')
-        except:
+        except (HardwareError, UnsupportedFeature, DeviceIOError):
             pass
         self.serial_port.close()
 
@@ -488,8 +492,9 @@ class EthernetWrapper(CommunicationBase):
         self.port = port
         self.timeout = timeout
         self.tcp_send_delay = tcp_send_delay
+        self.socket = None
 
-    def openPort(self):
+    def open_port(self):
         import socket
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -498,15 +503,15 @@ class EthernetWrapper(CommunicationBase):
         except (socket.error, socket.timeout, socket.herror), ex:
             # Re-raise as an I/O error:
             raise DeviceIOError(ex)
-        except:
+        except StandardError:
             raise
 
-    def closePort(self):
+    def close_port(self):
         import socket
         try:
             # This will cancel any pending loop:
             self.write('\n')
-        except:
+        except (HardwareError, UnsupportedFeature, DeviceIOError):
             pass
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
@@ -551,15 +556,15 @@ class EthernetWrapper(CommunicationBase):
         _buffer = ''
         _remaining = chars
         while _remaining:
-            _N = min(4096, _remaining)
+            _num = min(4096, _remaining)
             try:
-                _recv = self.socket.recv(_N)
+                _recv = self.socket.recv(_num)
             except (socket.timeout, socket.error), ex:
                 # Re-raise as an I/O error:
                 raise DeviceIOError(ex)
             _nread = len(_recv)
             if _nread == 0:
-                raise DeviceIOError("vantage: Expected %d characters; got zero instead" % (_N,))
+                raise DeviceIOError("vantage: Expected %d characters; got zero instead" % (_num,))
             _buffer += _recv
             _remaining -= _nread
         return _buffer
@@ -580,7 +585,7 @@ class EthernetWrapper(CommunicationBase):
 # ===============================================================================
 #                           class Vantage
 # ===============================================================================
-class Vantage():
+class Vantage:
     """Class that represents a connection to a Davis Vantage console.
 
     The connection to the console will be open after initialization"""
@@ -596,6 +601,7 @@ class Vantage():
     transmitter_type_dict = {0: 'iss', 1: 'temp', 2: 'hum', 3: 'temp_hum', 4: 'wind',
                              5: 'rain', 6: 'leaf', 7: 'soil', 8: 'leaf_soil',
                              9: 'sensorlink', 10: 'none'}
+    hardware_type = None
 
     def __init__(self, **vp_dict):
         """Initialize an object of type Vantage.
@@ -607,20 +613,24 @@ class Vantage():
         host: The Vantage network host [Required if Ethernet communication]
         baudrate: Baudrate of the port. [Optional. Default 19200]
         tcp_port: TCP port to connect to [Optional. Default 22222]
-        tcp_send_delay: Block after sending data to WeatherLinkIP to allow it to process the command [Optional. Default is 0.5]
+        tcp_send_delay: After sending data to WeatherLinkIP how long to process the command [Optional. Default is 0.5]
         timeout: How long to wait before giving up on a response from the serial port. [Optional. Default is 4]
         wait_before_retry: How long to wait before retrying. [Optional. Default is 1.2 seconds]
-        command_delay: How long to wait after sending a command before looking for acknowledgement. [Optional. Default is 0.5 seconds]
+        command_delay: How long to wait after sending a command before looking for ack. [Optional. Default= 0.5]
         max_tries: How many times to try again before giving up. [Optional. Default is 4]
         iss_id: The station number of the ISS [Optional. Default is 1]
+        model_type: Vantage Pro model type. 1 := Vantage Pro; 2 := Vantage Pro2 [Optional. Default is 2]
         """
 
-        # TODO: These values should really be retrieved dynamically from the VP:
-        self.model_type = 2  # = 1 for original VantagePro, = 2 for VP2
+        self.hardware_type = None
 
         # These come from the configuration dictionary:
         self.max_tries = int(vp_dict.get('max_tries', 4))
         self.iss_id = to_int(vp_dict.get('iss_id'))
+        self.model_type = int(vp_dict.get('model_type', 2))
+
+        if self.model_type not in range(1, 3):
+            raise UnsupportedFeature("Unknown model_type (%d)" % self.model_type)
 
         self.save_monthRain = None
         self.max_dst_jump = 7200
@@ -629,48 +639,48 @@ class Vantage():
         self.port = Vantage._port_factory(vp_dict)
 
         # Open it up:
-        self.port.openPort()
+        self.port.open_port()
 
         # Read the EEPROM and fill in properties in this instance
         self._setup()
 
     def __del__(self):
-        self.closePort()
+        self.close_port()
 
-    def openPort(self):
+    def open_port(self):
         """Open up the connection to the console"""
-        self.port.openPort()
+        self.port.open_port()
 
-    def closePort(self):
+    def close_port(self):
         """Close the connection to the console. """
-        self.port.closePort()
+        self.port.close_port()
 
-    def getWeatherLoop(self, numLoops=1):
+    def get_weather_loop(self, num_loops=1):
 
         try:
-            loop_gen = self.genDavisLoopPackets(numLoops)
+            loop_gen = self.gen_davis_loop_packets(num_loops)
             list_loop = []
 
             for loop_item in loop_gen:
                 list_loop.append(loop_item)
 
-        except:
+        except (HardwareError, UnsupportedFeature, DeviceIOError):
             list_loop = None
 
         return list_loop
 
-    def getLatestWeatherLoop(self):
+    def get_latest_weather_loop(self):
 
         try:
-            loop_gen = self.genDavisLoopPackets(1)
+            loop_gen = self.gen_davis_loop_packets(1)
             loop_item = next(loop_gen)
 
-        except:
+        except (HardwareError, UnsupportedFeature, DeviceIOError):
             loop_item = None
 
         return loop_item
 
-    def genLoopPackets(self):
+    def gen_loop_packets(self):
         """Generator function that returns loop packets"""
 
         for count in range(self.max_tries):
@@ -679,37 +689,37 @@ class Vantage():
                     # Get LOOP packets in big batches This is necessary because there is
                     # an undocumented limit to how many LOOP records you can request
                     # on the VP (somewhere around 220).
-                    for _loop_packet in self.genDavisLoopPackets(200):
+                    for _loop_packet in self.gen_davis_loop_packets(200):
                         yield _loop_packet
-                except DeviceIOError, e:
+                except DeviceIOError:
                     break
 
         raise RetriesExceeded("Max tries exceeded while getting LOOP data.")
 
-    def genDavisLoopPackets(self, N=1):
-        """Generator function to return N loop packets from a Vantage console
+    def gen_davis_loop_packets(self, n=1):
+        """Generator function to return n loop packets from a Vantage console
 
-        N: The number of packets to generate [default is 1]
-        yields: up to N loop packets (could be less in the event of a read or CRC error).
+        n: The number of packets to generate [default is 1]
+        yields: up to n loop packets (could be less in the event of a read or CRC error).
         """
 
         self.port.wakeup_console(self.max_tries)
 
-        # Request N packets:
-        self.port.send_data("LOOP %d\n" % N)
+        # Request n packets:
+        self.port.send_data("LOOP %d\n" % n)
 
-        for loop in range(N):  # @UnusedVariable
+        for loop in range(n):  # @UnusedVariable
             # Fetch a packet...
             _buffer = self.port.read(99)
             # ... see if it passes the CRC test ...
             if crc16(_buffer):
                 raise CRCError("LOOP buffer failed CRC check")
             # ... decode it ...
-            loop_packet = self._unpackLoopPacket(_buffer[:95])
+            loop_packet = self._unpack_loop_packet(_buffer[:95])
             # .. then yield it
             yield loop_packet
 
-    def genArchiveRecords(self, since_ts):
+    def gen_archive_records(self, since_ts):
         """A generator function to return archive packets from a Davis Vantage station.
 
         since_ts: A timestamp. All data since (but not including) this time will be returned.
@@ -720,20 +730,20 @@ class Vantage():
         count = 0
         while count < self.max_tries:
             try:
-                for _record in self.genDavisArchiveRecords(since_ts):
+                for _record in self.gen_davis_archive_records(since_ts):
                     # Successfully retrieved record. Set count back to zero.
                     count = 0
                     since_ts = _record['dateTime']
                     yield _record
                 # The generator loop exited. We're done.
                 return
-            except DeviceIOError, e:
+            except DeviceIOError:
                 # Problem. Increment retry count
                 count += 1
 
         raise RetriesExceeded("Max tries exceeded while getting archive data.")
 
-    def genDavisArchiveRecords(self, since_ts):
+    def gen_davis_archive_records(self, since_ts):
         """A generator function to return archive records from a Davis Vantage station.
 
         This version does not catch any exceptions."""
@@ -796,7 +806,7 @@ class Vantage():
             # The starting index for pages other than the first is always zero
             _start_index = 0
 
-    def genArchiveDump(self):
+    def gen_archive_dump(self):
         """A generator function to return all archive packets in the memory of a Davis Vantage station.
 
         yields: a sequence of dictionaries containing the data
@@ -840,7 +850,7 @@ class Vantage():
 
                 yield _record
 
-    def genLoggerSummary(self):
+    def gen_logger_summary(self):
         """A generator function to return a summary of each page in the logger.
 
         yields: A 8-way tuple containing (page, index, year, month, day, hour, minute, timestamp)
@@ -876,13 +886,13 @@ class Vantage():
                     mn = timestamp % 100  # minute
                 yield (_ipage, _index, y, mo, d, h, mn, time_ts)
 
-    def getTime(self):
+    def get_time(self):
         """Get the current time from the console, returning it as timestamp"""
 
-        time_dt = self.getConsoleTime()
+        time_dt = self.get_console_time()
         return time.mktime(time_dt.timetuple())
 
-    def getConsoleTime(self):
+    def get_console_time(self):
         """Return the raw time on the console, uncorrected for DST or timezone."""
 
         # Try up to max_tries times:
@@ -903,7 +913,7 @@ class Vantage():
                 continue
         raise RetriesExceeded("While getting console time")
 
-    def getRX(self):
+    def get_rx(self):
         """Returns reception statistics from the console.
 
         Returns a tuple with 5 values: (# of packets, # of missed packets,
@@ -918,7 +928,7 @@ class Vantage():
         rx_list = tuple(int(x) for x in rx_list_str)
         return rx_list
 
-    def getBarData(self):
+    def get_bar_data(self):
         """Gets barometer calibration data. Returns as a 9 element list."""
         _bardata = self.port.send_command("BARDATA\n")
         _barometer = float(_bardata[0].split()[1]) / 1000.0
@@ -931,36 +941,36 @@ class Vantage():
         _gain = float(_bardata[7].split()[1])
         _offset = float(_bardata[8].split()[1])
 
-        return (_barometer, _altitude, _dewpoint, _virt_temp, _c, _r, _barcal, _gain, _offset)
+        return _barometer, _altitude, _dewpoint, _virt_temp, _c, _r, _barcal, _gain, _offset
 
-    def getFirmwareDate(self):
+    def get_firmware_date(self):
         """Return the firmware date as a string. """
         return self.port.send_command('VER\n')[0]
 
-    def getFirmwareVersion(self):
+    def get_firmware_version(self):
         """Return the firmware version as a string."""
         return self.port.send_command('NVER\n')[0]
 
-    def getStnInfo(self):
+    def get_station_info(self):
         """Return lat / lon, time zone, etc."""
 
-        (stnlat, stnlon) = self._getEEPROM_value(0x0B, "<2h")
+        (stnlat, stnlon) = self._get_eeprom_value(0x0B, "<2h")
         stnlat /= 10.0
         stnlon /= 10.0
-        man_or_auto = "MANUAL" if self._getEEPROM_value(0x12)[0] else "AUTO"
-        dst = "ON" if self._getEEPROM_value(0x13)[0] else "OFF"
-        gmt_or_zone = "GMT_OFFSET" if self._getEEPROM_value(0x16)[0] else "ZONE_CODE"
-        zone_code = self._getEEPROM_value(0x11)[0]
-        gmt_offset = self._getEEPROM_value(0x14, "<h")[0] / 100.0
+        man_or_auto = "MANUAL" if self._get_eeprom_value(0x12)[0] else "AUTO"
+        dst = "ON" if self._get_eeprom_value(0x13)[0] else "OFF"
+        gmt_or_zone = "GMT_OFFSET" if self._get_eeprom_value(0x16)[0] else "ZONE_CODE"
+        zone_code = self._get_eeprom_value(0x11)[0]
+        gmt_offset = self._get_eeprom_value(0x14, "<h")[0] / 100.0
 
-        return (stnlat, stnlon, man_or_auto, dst, gmt_or_zone, zone_code, gmt_offset)
+        return stnlat, stnlon, man_or_auto, dst, gmt_or_zone, zone_code, gmt_offset
 
-    def getStnTransmitters(self):
+    def get_station_transmitters(self):
         """ Get the types of transmitters on the eight channels."""
 
         transmitters = []
-        use_tx = self._getEEPROM_value(0x17)[0]
-        transmitter_data = self._getEEPROM_value(0x19, "16B")
+        use_tx = self._get_eeprom_value(0x17)[0]
+        transmitter_data = self._get_eeprom_value(0x19, "16B")
 
         for transmitter_id in range(8):
             transmitter_type = Vantage.transmitter_type_dict[transmitter_data[transmitter_id * 2] & 0x0F]
@@ -974,14 +984,14 @@ class Vantage():
             transmitters.append(transmitter)
         return transmitters
 
-    def getStnCalibration(self):
+    def get_station_calibration(self):
         """ Get the temperature/humidity/wind calibrations built into the console. """
         (inTemp, inTempComp, outTemp,
          extraTemp1, extraTemp2, extraTemp3, extraTemp4, extraTemp5, extraTemp6, extraTemp7,
          soilTemp1, soilTemp2, soilTemp3, soilTemp4, leafTemp1, leafTemp2, leafTemp3, leafTemp4,
          inHumid,
          outHumid, extraHumid1, extraHumid2, extraHumid3, extraHumid4, extraHumid5, extraHumid6, extraHumid7,
-         wind) = self._getEEPROM_value(0x32, "<27bh")
+         wind) = self._get_eeprom_value(0x32, "<27bh")
         # inTempComp is 1's complement of inTemp.
         if inTemp + inTempComp != -1:
             return None
@@ -1016,10 +1026,10 @@ class Vantage():
             "wind": wind
         }
 
-    def startLogger(self):
+    def start_logger(self):
         self.port.send_command("START\n")
 
-    def stopLogger(self):
+    def stop_logger(self):
         self.port.send_command('STOP\n')
 
     # ===========================================================================
@@ -1059,11 +1069,11 @@ class Vantage():
         self.hardware_type = self.determine_hardware()
 
         """Retrieve the EEPROM data block from a VP2 and use it to set various properties"""
-        unit_bits = self._getEEPROM_value(0x29)[0]
-        setup_bits = self._getEEPROM_value(0x2B)[0]
-        self.rain_year_start = self._getEEPROM_value(0x2C)[0]
-        self.archive_interval_ = self._getEEPROM_value(0x2D)[0] * 60
-        self.altitude = self._getEEPROM_value(0x0F, "<h")[0]
+        unit_bits = self._get_eeprom_value(0x29)[0]
+        setup_bits = self._get_eeprom_value(0x2B)[0]
+        self.rain_year_start = self._get_eeprom_value(0x2C)[0]
+        self.archive_interval_ = self._get_eeprom_value(0x2D)[0] * 60
+        self.altitude = self._get_eeprom_value(0x0F, "<h")[0]
         self.altitude_vt = ValueTuple(self.altitude, "foot", "group_altitude")
 
         barometer_unit_code = unit_bits & 0x03
@@ -1099,8 +1109,8 @@ class Vantage():
 
         # Try to guess the ISS ID for gauging reception strength.
         if self.iss_id is None:
-            stations = self.getStnTransmitters()
-            # Wind retransmitter is best candidate.
+            stations = self.get_station_transmitters()
+            # Wind re-transmitter is best candidate.
             for station_id in range(0, 8):
                 if stations[station_id]['transmitter_type'] == 'wind':
                     self.iss_id = station_id + 1  # Origin 1.
@@ -1120,7 +1130,7 @@ class Vantage():
                     else:
                         self.iss_id = 1  # Pick a reasonable default.
 
-    def _getEEPROM_value(self, offset, v_format="B"):
+    def _get_eeprom_value(self, offset, v_format="B"):
         """Return a list of values from the EEPROM starting at a specified offset, using a specified format"""
 
         nbytes = struct.calcsize(v_format)
@@ -1166,7 +1176,7 @@ class Vantage():
             return EthernetWrapper(hostname, tcp_port, timeout, tcp_send_delay, wait_before_retry, command_delay)
         raise UnsupportedFeature(vp_dict['type'])
 
-    def _unpackLoopPacket(self, raw_loop_string):
+    def _unpack_loop_packet(self, raw_loop_string):
         """Decode a raw Davis LOOP packet, returning the results as a dictionary in physical units.
 
         raw_loop_string: The loop packet data buffer, passed in as a string.
