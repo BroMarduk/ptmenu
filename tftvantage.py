@@ -251,6 +251,18 @@ class CommunicationBase(object):
         self.wait_before_retry = wait_before_retry
         self.command_delay = command_delay
 
+    def read(self, chars=1):
+        raise NotImplementedError()
+
+    def write(self, data):
+        raise NotImplementedError()
+
+    def flush_input(self):
+        raise NotImplementedError()
+
+    def queued_bytes(self):
+        raise NotImplementedError()
+
     def wakeup_console(self, max_tries=MAX_RETRIES):
         """Wake up a Davis Vantage console.
 
@@ -444,7 +456,7 @@ class SerialWrapper(CommunicationBase):
         import serial
         try:
             _buffer = self.serial_port.read(chars)
-        except serial.serialutil.SerialException, e:
+        except serial.SerialException, e:
             # Re-raise as an error I/O error:
             raise DeviceIOError(e)
         n = len(_buffer)
@@ -456,7 +468,7 @@ class SerialWrapper(CommunicationBase):
         import serial
         try:
             n = self.serial_port.write(data)
-        except serial.serialutil.SerialException, e:
+        except serial.SerialException, e:
             # Re-raise as an error I/O error:
             raise DeviceIOError(e)
         # Python version 2.5 and earlier returns 'None', so it cannot be used to test for completion.
