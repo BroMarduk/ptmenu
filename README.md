@@ -55,7 +55,7 @@ In order to use the PTMenu, the following requirements are necessary:
    
 7. wiringpi (Optional)
 
-   If backlight and/or GPIO support is desired, the wiringpi library will need to be installed.  If not it can beinstalled using the following command:
+   If backlight and/or GPIO support is desired, the wiringpi library will need to be installed.  It can be installed using the following command:
    
    <b>sudo apt-get install wiringpi</b>
 
@@ -70,7 +70,8 @@ While the main functionality of the application is to display a screen with butt
 + Controllable backlight support for PWM, ECHO and STMPE methods
 + Support for PiTFT's with hardware buttons
 + Adjustable dimming when using PWM for backlight
-+ On/Off backlight support when using PWM for sound playback
++ On/Off (no dimming) backlight support when using PWM for sound playback
++ Support for old and new GPIO initialization methods
 + Support for Adafruit's Power Button GPIO with detection
 + Built in soft button templates for 13 soft button configurations
 + Displays built on a 320x480 screen will work on a 240x320 screen and vice-versa.
@@ -126,18 +127,20 @@ Supported Display Identifiers (any Method or the Value will work):
 + <b>sudo python tftmenu-example5.py</b>
 
   Demonstrates some of the possible menu headers (can also be used in footers) that can be displayed.  In addition to the built-in headers, a custom function can also be provided.  This example uses a function called display_pi_temp(), which will show the current temperature of the pi, color coded to be green if below 60 degrees Celsius, Yellow if between 60 and 70 degrees Celsius, and Red if over 70 degrees.  (Also uses Blue if below 0 degrees Celsius, just in case it’s winter and you have the Pi outside).  These temps are based on the operating temperature of the LAN port, which seems to be the smallest range of specified operating temperatures I could find.
+
+In addition to setting the
  
 ## Creating First Display
-[Coming Soon]
+\[Coming Soon\]
 
 ## Advanced Display Features
-[Coming Soon]
+\[Coming Soon\]
 
 ## Button Actions
-[Coming Soon]
+\[Coming Soon\]
 
 ## Button Templates
-[Coming Soon]
+\[Coming Soon\]
 
 ## Planned Enhancements
 
@@ -145,12 +148,12 @@ While I have been writing code for a while, this is my first Python project.  I'
 
 In addition, I plan to go back and re-add comments and logging back in.   I stripped most of these areas out so I could get the project posted until I could go back and address my overly cryptic comments and logging into something that someone could possibly understand.
 
-+ [DONE] Re-add understandable comments to source code.
-+ [DONE] Add more (configurable) splash items for warnings, errors, information etc.
-+ [DONE] Add more logging for operation and debugging
-+ [DONE] Move the GPIO Buttons into a template similar to the Display Buttons templates.
-+ [DONE] Add detection for broken libsdl1.2debian version and provide correction script in code
-+ [DONE] Add support for launching StartX as an action
++ \[DONE\] Re-add understandable comments to source code.
++ \[DONE\] Add more (configurable) splash items for warnings, errors, information etc.
++ \[DONE\] Add more logging for operation and debugging
++ \[DONE\] Move the GPIO Buttons into a template similar to the Display Buttons templates.
++ \[DONE\] Add detection for broken libsdl1.2debian version and provide correction script in code
++ \[DONE\] Add support for launching StartX as an action
 + Make header/footer types and their functionality into tokens that can be used in text.
 + Add images/icons to buttons/headers/footers
 + Move internal text to resources for use with gettext and improve globalization.

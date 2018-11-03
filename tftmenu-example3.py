@@ -25,8 +25,8 @@ from tfttemplates import *
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP35RP)
-
+Displays.initialize(DISP28RP)
+use_old_pwm = False
 
 ##################################################################################
 # MENU TEMPLATES
@@ -103,4 +103,4 @@ if buttons_btrl is not None:
     buttons_btrl[len(buttons_btrl) - 1].action = Action(DisplayAction.Display, "Main")
     menu_btrl = Menu(timeout=90, buttons=buttons_btrl, header=Header(mode=HeadFootType.NoDisplay))
     Displays.menus["menuBTRL"] = menu_btrl
-Displays.start(initial_menu=Displays.menus["Main"], backlight_method=BacklightMethod.Pwm)
+Displays.start(initial_menu=Displays.menus["Main"], backlight_method=BacklightMethod.Pwm, use_old_pwm=use_old_pwm)

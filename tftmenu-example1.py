@@ -25,8 +25,8 @@ from tfttemplates import *
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP35RP)
-
+Displays.initialize(DISP28RP)
+use_old_pwm = False
 
 ##################################################################################
 # MENU TEMPLATES
@@ -55,4 +55,4 @@ Displays.menus["Main"] = mainMenu
 # menu called "Main".  Start can also be called with the menu object itself
 # (mainMenu) as an alternative.  Creating a menu with an existing name will
 # replace the previous menu with the new one.  Execution will continue on the
-Displays.start("Main")
+Displays.start("Main", use_old_pwm=use_old_pwm)

@@ -44,9 +44,11 @@ GPIO_PWM_BACKLIGHT      = 18
 ##################################################################################
 # BACKLIGHT STATE CONSTANTS
 ##################################################################################
-GPIO_BACKLIGHT_OFF      = 0
-GPIO_BACKLIGHT_ON       = 1
-GPIO_BACKLIGHT_HIGH     = 1023
+GPIO_BACKLIGHT_OFF         = 0
+GPIO_BACKLIGHT_ON          = 1
+GPIO_BACKLIGHT_PWM_ON      = GPIO_BACKLIGHT_ON
+GPIO_BACKLIGHT_PWM_ON_OLD  = GPIO_BACKLIGHT_OFF
+GPIO_BACKLIGHT_HIGH        = 1023
 
 
 ##################################################################################
@@ -79,6 +81,7 @@ GPIO_BACKLIGHT_CHANGE_STEPS_MAX = GPIO_BACKLIGHT_HIGH
 # TIMER CLASS
 ##################################################################################
 class Timer:
+
     __timeout      = 0
     __alarmed      = False
     __triggered    = False
@@ -151,6 +154,7 @@ class Timer:
 # sleeping and waking of the device.
 ##################################################################################
 class Backlight:
+
     method       = 0
     steps        = None
     restore_last = False
@@ -161,6 +165,7 @@ class Backlight:
     change      = 0.0
     initialized = False
     state_sleep = False
+    pwm_on      = GPIO_BACKLIGHT_PWM_ON
 
     ##################################################################################
     # BACKLIGHT INITIALIZE METHOD
@@ -170,7 +175,7 @@ class Backlight:
     # set the backlight method and tweak options based on the backlight method.
     ##################################################################################
     @classmethod
-    def initialize(cls, method=None, steps=None, restore_last=False, state_sleep=False, default=None, callback=None):
+    def initialize(cls, method=None, steps=None, restore_last=False, state_sleep=False, default=None, use_old_pwm=False, callback=None):
         if cls.initialized:
             logger.error("Backlight Class has already been initialized.")
             raise AlreadyInitializedException("Backlight Class has already been initialized.")
@@ -182,6 +187,8 @@ class Backlight:
         cls.state_sleep = state_sleep
         cls.default = default
         cls.callback = merge(Timer.reset, callback)
+        if use_old_pwm is True:
+            cls.pwm_on = GPIO_BACKLIGHT_PWM_ON_OLD
         if cls.method is None:
             cls.method = BacklightMethod.NoBacklight
         if cls.steps is None:
@@ -243,7 +250,7 @@ class Backlight:
                 # If STMPE path exists, set it to 0 which seems to relinquish control of the
                 # backlight to PWM
                 if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
-                    subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
+                    subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(cls.pwm_on)])
             elif cls.method == BacklightMethod.PwmBinary:
                 subprocess.call(GPIO_BACKLIGHT_PWM_MODE_SET.format(GPIO_PWM_BACKLIGHT,
                                                                    GPIO_BACKLIGHT_PWM_BINARY_MODE).split())
@@ -253,7 +260,7 @@ class Backlight:
                 # If STMPE path exists, set it to 0 which seems to relinquish control of the
                 # backlight to PWM
                 if os.path.isdir(GPIO_BACKLIGHT_STMPE_PATH):
-                    subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(GPIO_BACKLIGHT_OFF)])
+                    subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(cls.pwm_on)])
             elif cls.method == BacklightMethod.Stmpe:
                 subprocess.call(GPIO_SUDO_SHELL + [GPIO_BACKLIGHT_STMPE_COMMAND.format(initial_value)])
             elif (cls.method == BacklightMethod.Echo) or (cls.method == BacklightMethod.Echo252):
@@ -575,7 +582,7 @@ class GpioButtons(object):
     ##################################################################################
     def __init__(self, tft_type, buttons=None, actions=None,  backlight_method=BacklightMethod.NoBacklight,
                  backlight_steps=None, backlight_default=None, backlight_restore_last=False,
-                 backlight_state_sleep=False, backlight_auto=False,
+                 backlight_state_sleep=False, backlight_auto=False, use_old_pwm=False,
                  button_callback=None, power_gpio=None, battery_gpio=None):
         if GpioButtons.gpio_initialized:
             logger.error("TftButtons Class has already been initialized.")
@@ -599,7 +606,7 @@ class GpioButtons(object):
                  backlight_method != BacklightMethod.NoBacklight and backlight_method is not None):
             backlight_method = BacklightMethod.PwmBinary
         Backlight.initialize(backlight_method, backlight_steps, backlight_restore_last, backlight_state_sleep,
-                             backlight_default, button_callback)
+                             backlight_default, use_old_pwm, button_callback)
         # Set GPIO if not passed in based on device
         if self.buttons is None and backlight_auto:
             if tft_type == DISP22NT:
