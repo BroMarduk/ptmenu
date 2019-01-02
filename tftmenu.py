@@ -9,6 +9,7 @@ import pygame.display
 import pygame.freetype
 from pygame.locals import *
 
+import tftpigame
 import tfttemplates
 from tftbuttons import *
 from tftutility import *
@@ -168,6 +169,8 @@ class Displays:
                 Displays.show(SplashBuiltIn.Blank)
             pygame.display.flip()
         pygame.quit()
+        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+            tftpigame.stop()
         cls.started = False
         if method is Shutdown.Shutdown:
             subprocess.call(Command.Shutdown.split())
@@ -378,11 +381,17 @@ class Displays:
         if Defaults.tft_type is not DISP22NT:
             logger.debug("Initializing Touchscreen Drivers")
             os.environ["SDL_FBDEV"] = "/dev/fb1"
-            os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
-            os.environ["SDL_MOUSEDRV"] = "TSLIB"
+            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+                os.environ["SDL_MOUSEDEV"] = "/dev/null"
+                os.environ["SDL_MOUSEDRV"] = "Dummy"
+            else:
+                os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
+                os.environ["SDL_MOUSEDRV"] = "TSLIB"
         # Initialize pygame and hide mouse if not using a non-touch display
         logger.debug("Initializing pygame")
         pygame.init()
+        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+            tftpigame.init()
         if Defaults.tft_type is not DISP22NT:
             pygame.mouse.set_visible(False)
         logger.info("Initialization complete")
@@ -427,11 +436,14 @@ class Displays:
             Displays.show(initial_menu)
 
             if cls.libsdl_build is not None or cls.libsdl_version is not None:
-                Displays.show(cls.menus[SplashBuiltIn.Touch])
+                if Defaults.tft_type is not DISP28CP and Defaults.tft_type is not DISP28C:
+                    Displays.show(cls.menus[SplashBuiltIn.Touch])
             ##################################################################################
             # Execution Wait Loop
             ##################################################################################
             while cls.loop:
+                if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+                    tftpigame.run()
                 if not cls.loop_mode_shelled:
                     # Scan touchscreen and keyboard events
                     for event in pygame.event.get():

@@ -7,7 +7,6 @@ import logging
 import os
 import socket
 import subprocess
-
 import pygame
 import pygame.freetype
 
