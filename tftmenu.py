@@ -3,14 +3,14 @@
 # IMPORTS
 ##################################################################################
 import fcntl
-import sys
 
 import pygame.display
 import pygame.freetype
-from pygame.locals import *
 
-import tftpigame
+#import tftpigame
+
 import tfttemplates
+from tftevdev import *
 from tftbuttons import *
 from tftutility import *
 
@@ -19,7 +19,7 @@ START_X_FILE = "/usr/bin/startx"
 # Make sure application is running as root.
 if not is_root():
     logger.critical("Application must be run as root (with sudo)")
-    sys.exit()
+    sys.exit(-1)
 # Write out file with lock to ensure only one instance of application can run
 lock_file = 'tftmenu.lock'
 file_open = open(lock_file, 'w')
@@ -27,7 +27,7 @@ try:
     fcntl.lockf(file_open, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except IOError:
     logger.critical("Only one instance of the application can run at a time.")
-    sys.exit()
+    sys.exit(-1)
 
 
 ##################################################################################
@@ -51,6 +51,7 @@ class Displays:
     splash_mute_level = None
     libsdl_version = None
     libsdl_build = None
+    event_device = None
 
     ##################################################################################
     # DISPLAYS SHOW METHOD
@@ -169,15 +170,15 @@ class Displays:
                 Displays.show(SplashBuiltIn.Blank)
             pygame.display.flip()
         pygame.quit()
-        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
-            tftpigame.stop()
+        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+            cls.event_device.stop()
         cls.started = False
         if method is Shutdown.Shutdown:
             subprocess.call(Command.Shutdown.split())
         elif method is Shutdown.Reboot:
             subprocess.call(Command.Reboot.split())
         logger.debug("Exiting application.")
-        sys.exit()
+        sys.exit(0)
 
     ##################################################################################
     # DISPLAYS SHELL METHOD
@@ -381,7 +382,7 @@ class Displays:
         if Defaults.tft_type is not DISP22NT:
             logger.debug("Initializing Touchscreen Drivers")
             os.environ["SDL_FBDEV"] = "/dev/fb1"
-            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
                 os.environ["SDL_MOUSEDEV"] = "/dev/null"
                 os.environ["SDL_MOUSEDRV"] = "Dummy"
             else:
@@ -390,8 +391,9 @@ class Displays:
         # Initialize pygame and hide mouse if not using a non-touch display
         logger.debug("Initializing pygame")
         pygame.init()
-        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
-            tftpigame.init()
+        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+            cls.event_device = TftCapacitiveEvHandler()
+            cls.event_device.start(90)
         if Defaults.tft_type is not DISP22NT:
             pygame.mouse.set_visible(False)
         logger.info("Initialization complete")
@@ -442,8 +444,8 @@ class Displays:
             # Execution Wait Loop
             ##################################################################################
             while cls.loop:
-                if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
-                    tftpigame.run()
+                if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+                    cls.event_device.run()
                 if not cls.loop_mode_shelled:
                     # Scan touchscreen and keyboard events
                     for event in pygame.event.get():
@@ -536,6 +538,9 @@ class Displays:
         except KeyboardInterrupt:
             # Keeps error from displaying when CTL-C is pressed
             print(""),
+        except ShutdownInterrupt:
+            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+                cls.event_device.stop()
         # Catch other Error
         except Exception, ex:
             # If we have an error,
@@ -545,6 +550,15 @@ class Displays:
                            SplashLine(error_message, Defaults.default_splash_font_size, wrap_text=True)]
             logger.error(error_message, exc_info=True)
             cls.shutdown(Shutdown.Error, exit_splash, splash_data)
+
+
+##################################################################################
+# SHUTDOWNINTERUPT CLASS
+##################################################################################
+# Custom exception class used for killing threads.
+##################################################################################
+class ShutdownInterrupt(Exception):
+    pass
 
 
 ##################################################################################
