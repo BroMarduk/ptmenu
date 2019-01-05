@@ -3,7 +3,7 @@
 # IMPORTS
 ##################################################################################
 import fcntl
-
+import sys
 import pygame.display
 import pygame.freetype
 
