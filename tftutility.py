@@ -92,11 +92,17 @@ DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
 # Used to wake the Pi from its own sleep state.
 ##################################################################################
 class Screen:
-    Tty            = "tty{0}".format(run_cmd("fgconsole")[:-1])
-    WakeCommand    = "printf \033[13]"
-    WakePipe       = "sudo tee /dev/{0} > /dev/null".format(Tty)
-    FrameBuffHdmi  = "fb0"
-    FrameBuffTft   = "fb1"
+    Tty              = "tty{0}".format(run_cmd("fgconsole")[:-1])
+    WakeCommand      = "printf \033[13]"
+    WakePipe         = "sudo tee /dev/{0} > /dev/null".format(Tty)
+    FrameBuffHdmi    = "fb0"
+    FrameBuffTft     = "fb1"
+    FrameBuffDevHdmi = "/dev/{0}".format(FrameBuffHdmi)
+    FrameBuffDevTft  = "/dev/{0}".format(FrameBuffTft)
+    TouchscreenInput = "/dev/input/touchscreen"
+    NullInput        = "/dev/null"
+    TouchDrvTslib    = "TSLIB"
+    TouchDrvDummy    = "Dummy"
 
 
 ##################################################################################

@@ -169,9 +169,9 @@ class Displays:
             if not not_muted:
                 Displays.show(SplashBuiltIn.Blank)
             pygame.display.flip()
-        pygame.quit()
-        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
             cls.event_device.stop()
+        pygame.quit()
         cls.started = False
         if method is Shutdown.Shutdown:
             subprocess.call(Command.Shutdown.split())
@@ -381,17 +381,17 @@ class Displays:
         # Initialize touchscreen drivers
         if Defaults.tft_type is not DISP22NT:
             logger.debug("Initializing Touchscreen Drivers")
-            os.environ["SDL_FBDEV"] = "/dev/fb1"
-            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
-                os.environ["SDL_MOUSEDEV"] = "/dev/null"
-                os.environ["SDL_MOUSEDRV"] = "Dummy"
+            os.environ["SDL_FBDEV"] = Screen.FrameBuffDevTft
+            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+                os.environ["SDL_MOUSEDEV"] = Screen.NullInput
+                os.environ["SDL_MOUSEDRV"] = Screen.TouchDrvDummy
             else:
-                os.environ["SDL_MOUSEDEV"] = "/dev/input/touchscreen"
-                os.environ["SDL_MOUSEDRV"] = "TSLIB"
+                os.environ["SDL_MOUSEDEV"] = Screen.TouchscreenInput
+                os.environ["SDL_MOUSEDRV"] = Screen.TouchDrvTslib
         # Initialize pygame and hide mouse if not using a non-touch display
         logger.debug("Initializing pygame")
         pygame.init()
-        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
             cls.event_device = TftCapacitiveEvHandler()
             cls.event_device.start(90)
         if Defaults.tft_type is not DISP22NT:
@@ -444,7 +444,7 @@ class Displays:
             # Execution Wait Loop
             ##################################################################################
             while cls.loop:
-                if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+                if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
                     cls.event_device.run()
                 if not cls.loop_mode_shelled:
                     # Scan touchscreen and keyboard events
@@ -539,7 +539,7 @@ class Displays:
             # Keeps error from displaying when CTL-C is pressed
             print(""),
         except ShutdownInterrupt:
-            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP or Defaults.tft_type is DISP35RP:
+            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
                 cls.event_device.stop()
         # Catch other Error
         except Exception, ex:

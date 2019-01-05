@@ -7,7 +7,8 @@ import pygame
 import Queue
 import threading
 from pygame.locals import *
-from tftutility import logger
+from tftutility import logger, Screen
+
 
 # Class for handling events from piTFT
 class TftTouchscreen(threading.Thread):
@@ -44,11 +45,13 @@ class TftTouchscreen(threading.Thread):
         except Exception, ex:
             message = "Unable to load device {0} due to a {1} exception with message: {2}.".format(
                 self.device_path, type(ex).__name__, str(ex))
+            logger.error(message)
             raise OSError(message)
         finally:
             if device is None:
                 self.shutdown.set()
 
+        logger.debug("Loaded device {} successfully.".format(self.device_path))
         event = {'time': None, 'id': None, 'x': None, 'y': None, 'touch': None}
         while True:
             for inputEvent in device.read_loop():
@@ -88,7 +91,7 @@ class TftTouchscreen(threading.Thread):
 
 
 class TftEvHandler(object):
-    pitft = TftTouchscreen()
+    pitft = TftTouchscreen(Screen.TouchscreenInput)
     pitft.pigameevs = []
 
     def start(self, rotation = 90):
@@ -123,6 +126,7 @@ class TftCapacitiveEvHandler(TftEvHandler):
                     d["button"] = 1
                     d["pos"] = (e["x"], e["y"])
                     self.pitft.pigameevs.append(r["id"])
+                    print "Down: ", d
                     pygame.mouse.set_pos(e["x"], e["y"])
                 elif t == MOUSEBUTTONUP:
                     l = []
@@ -132,10 +136,12 @@ class TftCapacitiveEvHandler(TftEvHandler):
                             self.pitft.pigameevs = l
                     d["button"] = 1
                     d["pos"] = (e["x"], e["y"])
+                    print "Up:   ", d
                 else:
                     d["buttons"] = (True, False, False)
                     d["rel"] = (0, 0)
                     d["pos"] = (e["x"], e["y"])
+                    print d
                     pygame.mouse.set_pos(e["x"], e["y"])
                 pe = pygame.event.Event(t, d)
                 pygame.event.post(pe)
