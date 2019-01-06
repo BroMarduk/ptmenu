@@ -4,24 +4,24 @@
 ##################################################################################
 import evdev
 import pygame
-import Queue
-import threading
+from Queue import Queue
+from threading import Thread, Event
 from pygame.locals import *
 from tftutility import logger, Screen
 
 
 # Class for handling events from piTFT
-class TftTouchscreen(threading.Thread):
+class TftTouchscreen(Thread):
     def __init__(self, device_path="/dev/input/touchscreen"):
         super(TftTouchscreen, self).__init__()
         self.device_path = device_path
-        self.events = Queue.Queue()
-        self.shutdown = threading.Event()
+        self.events = Queue()
+        self.shutdown = Event()
         self.rotation = 0
 
     def run(self):
 
-        thread_process = threading.Thread(target=self.process_device)
+        thread_process = Thread(target=self.process_device)
         thread_process.daemon = True
         thread_process.start()
         self.shutdown.wait()
@@ -39,10 +39,9 @@ class TftTouchscreen(threading.Thread):
     def process_device(self):
 
         device = None
-
         try:
             device = evdev.InputDevice(self.device_path)
-        except Exception, ex:
+        except Exception as ex:
             message = "Unable to load device {0} due to a {1} exception with message: {2}.".format(
                 self.device_path, type(ex).__name__, str(ex))
             logger.error(message)
