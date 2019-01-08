@@ -58,8 +58,8 @@ def random_button_color(menu, button):
 # DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
 # DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
 # DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-Displays.initialize(DISP35RP, global_font="./Fonts/BebasNeue.otf")
-use_old_pwm = True
+Displays.initialize(DISP28CP, global_font="./Fonts/BebasNeue.otf")
+use_old_pwm = False
 Defaults.default_headfoot_font_color = Color.Silver
 Defaults.default_text_line_font_color = Color.Silver
 Defaults.default_dialog_font_color = Color.Silver

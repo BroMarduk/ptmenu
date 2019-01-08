@@ -53,26 +53,27 @@ class TftTouchscreen(Thread):
         logger.debug("Loaded device {} successfully.".format(self.device_path))
         event = {'time': None, 'id': None, 'x': None, 'y': None, 'touch': None}
         while True:
-            for inputEvent in device.read_loop():
-                if inputEvent.type == evdev.ecodes.EV_ABS:
-                    if inputEvent.code == evdev.ecodes.ABS_X:
-                        event['x'] = inputEvent.value
-                    elif inputEvent.code == evdev.ecodes.ABS_Y:
-                        event['y'] = inputEvent.value
-                    elif inputEvent.code == evdev.ecodes.ABS_MT_TRACKING_ID:
-                        event['id'] = inputEvent.value
-                        if inputEvent.value == -1:
+            for input_event in device.read_loop():
+                if input_event.type == evdev.ecodes.EV_ABS:
+                    if input_event.code == evdev.ecodes.ABS_X:
+                        event['x'] = input_event.value
+                    elif input_event.code == evdev.ecodes.ABS_Y:
+                        event['y'] = input_event.value
+                    elif input_event.code == evdev.ecodes.ABS_MT_TRACKING_ID:
+                        event['id'] = input_event.value
+                        if input_event.value == -1:
                             event['x'] = None
                             event['y'] = None
                             event['touch'] = None
-                    elif inputEvent.code == evdev.ecodes.ABS_MT_POSITION_X:
+                    elif input_event.code == evdev.ecodes.ABS_MT_POSITION_X:
                         pass
-                    elif inputEvent.code == evdev.ecodes.ABS_MT_POSITION_Y:
+                    elif input_event.code == evdev.ecodes.ABS_MT_POSITION_Y:
                         pass
-                elif inputEvent.type == evdev.ecodes.EV_KEY:
-                    event['touch'] = inputEvent.value
-                elif inputEvent.type == evdev.ecodes.SYN_REPORT:
-                    event['time'] = inputEvent.timestamp()
+                elif input_event.type == evdev.ecodes.EV_KEY:
+                    event['touch'] = input_event.value
+                elif input_event.type == evdev.ecodes.SYN_REPORT:
+                    event['time'] = input_event.timestamp()
+                    print("{}".format(event))
                     self.events.put(event)
                     e = event
                     event = {'x': e['x'], 'y': e['y']}
@@ -90,8 +91,10 @@ class TftTouchscreen(Thread):
 
 
 class TftEvHandler(object):
+
     pitft = TftTouchscreen(Screen.TouchscreenInput)
-    pitft.pigameevs = []
+    prev_loc = {'x': False, 'y': False}
+    event_state = 0
 
     def start(self, rotation = 90):
 
@@ -109,38 +112,37 @@ class TftCapacitiveEvHandler(TftEvHandler):
 
     def run(self):
         while not self.pitft.queue_empty():
-            for r in self.pitft.get_event():
-                e = {"y": (r["x"] if r["x"] else pygame.mouse.get_pos()[0]),
-                     "x": (r["y"] if r["y"] else pygame.mouse.get_pos()[1])}
+            for ts_event in self.pitft.get_event():
+                pg_event = {'y': self.prev_loc['y'], 'x': self.prev_loc['x']}
+                if ts_event['x'] is not None:
+                    pg_event['y'] = ts_event['x']
+                if ts_event['y'] is not None:
+                    pg_event['x'] = ts_event['y']
+                if  pg_event['x'] is None or pg_event['y'] is None:
+                    break
+                self.prev_loc = {'y': pg_event['y'], 'x': pg_event['x']}
                 if self.pitft.rotation == 90:
-                    e = {"x": e["x"], "y": 240 - e["y"]}
+                    pg_event = {'x': pg_event['x'], 'y': 240 - pg_event['y']}
                 elif self.pitft.rotation == 270:
-                    e = {"x": 320 - e["x"], "y": e["y"]}
+                    pg_event = {'x': 320 - pg_event['x'], 'y': pg_event['y']}
                 else:
-                    raise (Exception("PiTft rotation is unsupported"))
-                d = {}
-                t = MOUSEBUTTONUP if r["touch"] == 0 else (
-                    MOUSEMOTION if r["id"] in self.pitft.pigameevs else MOUSEBUTTONDOWN)
-                if t == MOUSEBUTTONDOWN:
-                    d["button"] = 1
-                    d["pos"] = (e["x"], e["y"])
-                    self.pitft.pigameevs.append(r["id"])
-                    print "Down: ", d
-                    pygame.mouse.set_pos(e["x"], e["y"])
-                elif t == MOUSEBUTTONUP:
-                    l = []
-                    for x in self.pitft.pigameevs:
-                        if x != r["id"]:
-                            l.append(x)
-                            self.pitft.pigameevs = l
-                    d["button"] = 1
-                    d["pos"] = (e["x"], e["y"])
-                    print "Up:   ", d
+                    raise (Exception("Unsupported display rotation"))
+                pg_dict = {}
+                pg_event_type = MOUSEBUTTONUP if ts_event['touch'] == 0 else (
+                    MOUSEBUTTONDOWN if self.event_state == 0 else MOUSEMOTION)
+                if pg_event_type == MOUSEBUTTONDOWN:
+                    self.event_state = 1
+                    pg_dict['button'] = 1
+                    pg_dict['pos'] = (pg_event['x'], pg_event['y'])
+                    pygame.mouse.set_pos(pg_event['x'], pg_event['y'])
+                elif pg_event_type == MOUSEBUTTONUP:
+                    self.event_state = 0
+                    pg_dict['button'] = 1
+                    pg_dict['pos'] = (pg_event['x'], pg_event['y'])
                 else:
-                    d["buttons"] = (True, False, False)
-                    d["rel"] = (0, 0)
-                    d["pos"] = (e["x"], e["y"])
-                    print d
-                    pygame.mouse.set_pos(e["x"], e["y"])
-                pe = pygame.event.Event(t, d)
+                    pg_dict['buttons'] = (True, False, False)
+                    pg_dict['rel'] = (0, 0)
+                    pg_dict['pos'] = (pg_event['x'], pg_event['y'])
+                    pygame.mouse.set_pos(pg_event['x'], pg_event['y'])
+                pe = pygame.event.Event(pg_event_type, pg_dict)
                 pygame.event.post(pe)
