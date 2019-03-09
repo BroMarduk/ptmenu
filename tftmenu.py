@@ -153,7 +153,7 @@ class Displays:
                      format(method, exit_splash, splash_data))
         if cls.loop_mode_shelled:
             logger.debug("Shutting down while in shelled mode.")
-            if Defaults.tft_type is not DISP22NT:
+            if Defaults.tft_type is not DISP22NT and Defaults.tft_type is not DISP40NTHP:
                 pygame.mouse.set_visible(False)
             Displays.screen = pygame.display.set_mode(Defaults.tft_size)
         if method == Shutdown.Terminate:
@@ -169,7 +169,7 @@ class Displays:
             if not not_muted:
                 Displays.show(SplashBuiltIn.Blank)
             pygame.display.flip()
-        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+        if Defaults.tft_type in Screen.EvDisplays:
             cls.event_device.stop()
         pygame.quit()
         cls.started = False
@@ -189,7 +189,7 @@ class Displays:
     ##################################################################################
     @classmethod
     def shell(cls):
-        if Defaults.tft_type is DISP22NT:
+        if Defaults.tft_type is DISP22NT or Defaults.tft_type is DISP40NTHP:
             logger.warning("Attempting shell on a non-touch display.  Ignoring request.")
             render_data = [SplashLine("WARNING", Defaults.default_splash_font_size_title),
                            SplashLine("Shell not permitted on non-touch display", wrap_text=True)]
@@ -241,7 +241,7 @@ class Displays:
     def restore(cls):
         logger.debug("Restoring back from shell.")
         send_wake_command()
-        if Defaults.tft_type is not DISP22NT:
+        if Defaults.tft_type is not DISP22NT and Defaults.tft_type is not DISP40NTHP:
             pygame.mouse.set_visible(False)
         Displays.screen = pygame.display.set_mode(Defaults.tft_size)
         return_display = cls.get_last_core_display(Displays.shelled)
@@ -320,7 +320,7 @@ class Displays:
 
         # If a touch device is specified, make sure the LibSdl version is correct.  If
         # not, display a warning unless suppressed.
-        if tft_type is not DISP22NT:
+        if tft_type is not DISP22NT and tft_type is not DISP40NTHP:
             cls.check_lib_sdl_version()
 
         cls.splash_mute_level = splash_mute_level
@@ -379,10 +379,10 @@ class Displays:
                 SplashLine("System will shut down shortly.", Defaults.default_splash_font_size, Color.Black)],
                 Color.Yellow, timeout=Defaults.DEFAULT_SPLASH_TIMEOUT_LONG)
         # Initialize touchscreen drivers
-        if Defaults.tft_type is not DISP22NT:
+        if Defaults.tft_type is not DISP22NT and Defaults.tft_type is not DISP40NTHP:
             logger.debug("Initializing Touchscreen Drivers")
             os.environ["SDL_FBDEV"] = Screen.FrameBuffDevTft
-            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+            if Defaults.tft_type in Screen.EvDisplays:
                 os.environ["SDL_MOUSEDEV"] = Screen.NullInput
                 os.environ["SDL_MOUSEDRV"] = Screen.TouchDrvDummy
             else:
@@ -391,10 +391,20 @@ class Displays:
         # Initialize pygame and hide mouse if not using a non-touch display
         logger.debug("Initializing pygame")
         pygame.init()
-        if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
-            cls.event_device = TftCapacitiveEvHandler()
-            cls.event_device.start(90)
-        if Defaults.tft_type is not DISP22NT:
+        if Defaults.tft_type in Screen.EvDisplays:
+            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+                cls.event_device = TftCapacitiveEvHandler()
+                cls.event_device.start(Orientation.Landscape, Resolution.SmallPortrait)
+            elif Defaults.tft_type is DISP35CHP or Defaults.tft_type is DISP40CHP:
+                cls.event_device = TftCapacitiveEvHandler()
+                cls.event_device.start(Orientation.Portrait, Resolution.LargePortrait)
+            elif Defaults.tft_type is DISP35R or Defaults.tft_type is DISP35RP:
+                cls.event_device = TftResistiveEvHandler()
+                cls.event_device.start(Orientation.Landscape_Inverted, Resolution.MediumPortrait, [137, 3947, 97, 3870])
+            elif Defaults.tft_type is DISP28R or Defaults.tft_type is DISP28RP:
+                cls.event_device = TftResistiveEvHandler()
+                cls.event_device.start(Orientation.Landscape_Inverted, Resolution.SmallPortrait, [159, 3819, 168, 3813])
+        if Defaults.tft_type is not DISP22NT and Defaults.tft_type is not DISP40NTHP:
             pygame.mouse.set_visible(False)
         logger.info("Initialization complete")
         cls.initialized = True
@@ -438,13 +448,13 @@ class Displays:
             Displays.show(initial_menu)
 
             if cls.libsdl_build is not None or cls.libsdl_version is not None:
-                if Defaults.tft_type is not DISP28CP and Defaults.tft_type is not DISP28C:
+                if Defaults.tft_type not in Screen.EvDisplays:
                     Displays.show(cls.menus[SplashBuiltIn.Touch])
             ##################################################################################
             # Execution Wait Loop
             ##################################################################################
             while cls.loop:
-                if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+                if Defaults.tft_type in Screen.EvDisplays:
                     cls.event_device.run()
                 if not cls.loop_mode_shelled:
                     # Scan touchscreen and keyboard events
@@ -539,7 +549,7 @@ class Displays:
             # Keeps error from displaying when CTL-C is pressed
             print(""),
         except ShutdownInterrupt:
-            if Defaults.tft_type is DISP28C or Defaults.tft_type is DISP28CP:
+            if Defaults.tft_type in Screen.EvDisplays:
                 cls.event_device.stop()
         # Catch other Error
         except Exception, ex:
@@ -644,7 +654,7 @@ class BaseLine(object):
                     elif self.font_h_align == TextHAlign.Right:
                         left = surface_width - 1 - int(wrapped_text[2][index])
                     else:
-                        left = (surface_width / 2) - (int(wrapped_text[2][index]) / 2)
+                        left = (surface_width // 2) - (int(wrapped_text[2][index]) // 2)
                     try:
                         self.font.render_to(text_surface, (left, top), wrapped_text[0][index], fgcolor=self.font_color)
                     except Exception, ex:
@@ -1182,7 +1192,7 @@ class Splash(Display):
                 elif text_line[TextTuple.HAlign] == TextHAlign.Right:
                     text_left = Defaults.tft_width - text_line[TextTuple.Width] - text_line[TextTuple.HPadding]
                 else:
-                    text_left = (Defaults.tft_width - text_line[TextTuple.Width]) / 2
+                    text_left = (Defaults.tft_width - text_line[TextTuple.Width]) // 2
                 # Handle vertical alignment
                 if text_v_align == TextVAlign.Top:
                     text_top = text_line[TextTuple.VPadding] + splash_text_offset
@@ -1190,7 +1200,7 @@ class Splash(Display):
                     text_top = (Defaults.tft_height - 1) - splash_text_height - text_line[TextTuple.VPadding] +\
                                splash_text_offset
                 else:
-                    text_top = ((Defaults.tft_height - splash_text_height) / 2) + splash_text_offset
+                    text_top = ((Defaults.tft_height - splash_text_height) // 2) + splash_text_offset
                 splash_top_rect = text_line[TextTuple.Surface].get_rect(left=text_left, top=text_top)
                 Displays.screen.blit(text_line[TextTuple.Surface], splash_top_rect)
                 splash_text_offset += text_line[TextTuple.Height] + text_line[TextTuple.VPadding]
@@ -1349,7 +1359,7 @@ class Dialog(Display):
                     text_left = Defaults.tft_width - text_line[TextTuple.Width] - \
                                text_line[TextTuple.HPadding] - display_border_width
                 else:
-                    text_left = (Defaults.tft_width - text_line[TextTuple.Width]) / 2
+                    text_left = (Defaults.tft_width - text_line[TextTuple.Width]) // 2
                 # Handle vertical alignment
                 if text_v_align == TextVAlign.Top:
                     text_top = display_border_width + text_line[TextTuple.VPadding] + dialog_text_offset
@@ -1357,7 +1367,7 @@ class Dialog(Display):
                     text_top = dialog_text_area_height - dialog_text_height - text_line[TextTuple.VPadding] +\
                                dialog_text_offset
                 else:
-                    text_top = ((dialog_text_area_height - dialog_text_height) / 2) +\
+                    text_top = ((dialog_text_area_height - dialog_text_height) // 2) +\
                                dialog_text_offset + display_border_width
                 dialog_top_rect = text_line[TextTuple.Surface].get_rect(left=text_left, top=text_top)
                 Displays.screen.blit(text_line[TextTuple.Surface], dialog_top_rect)
@@ -1493,7 +1503,7 @@ class Header(object):
             headfoot_text_left = Defaults.tft_width - headfoot_text_width - display.border_width - \
                                self.text.font_h_padding
         else:
-            headfoot_text_left = (Defaults.tft_width - headfoot_text_width) / 2
+            headfoot_text_left = (Defaults.tft_width - headfoot_text_width) // 2
         # Handle vertical alignment
         if self.text.font_v_align == TextVAlign.Top:
             headfoot_text_top = headfoot_offset + self.text.font_v_padding
@@ -1501,7 +1511,7 @@ class Header(object):
             headfoot_text_top = (true_headfoot_height + headfoot_offset) - headfoot_text_height -\
                               self.text.font_v_padding
         else:
-            headfoot_text_top = (((true_headfoot_height / 2) - (headfoot_text_height / 2)) + headfoot_offset)
+            headfoot_text_top = (((true_headfoot_height // 2) - (headfoot_text_height // 2)) + headfoot_offset)
 
         headfoot_text_rect = headfoot_surface.get_rect(left=headfoot_text_left, top=headfoot_text_top)
         headfoot_background_rect = None
@@ -1659,14 +1669,14 @@ class Button(object):
         elif self.text.font_h_align == TextHAlign.Right:
             button_text_left = (self.x + self.width) - self.border_width - button_text_width - self.text.font_h_padding
         else:
-            button_text_left = (self.x + (self.width / 2)) - (button_text_width / 2)
+            button_text_left = (self.x + (self.width // 2)) - (button_text_width // 2)
         # Handle vertical alignment
         if self.text.font_v_align == TextVAlign.Top:
             button_text_top = self.y + self.border_width + self.text.font_v_padding
         elif self.text.font_v_align == TextVAlign.Bottom:
             button_text_top = (self.y + self.height) - self.border_width - button_text_height - self.text.font_v_padding
         else:
-            button_text_top = (self.y + (self.height / 2)) - (button_text_height / 2)
+            button_text_top = (self.y + (self.height // 2)) - (button_text_height // 2)
         button_text_rect = button_surface.get_rect(left=button_text_left, top=button_text_top)
         # Block transfer the text on the screen
         Displays.screen.blit(button_surface, button_text_rect)

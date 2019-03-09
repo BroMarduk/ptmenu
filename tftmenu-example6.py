@@ -70,7 +70,7 @@ class Weather:
             cls.get_weather_details()
             cls.current_wx_last_update = cur_time
 
-        if DisplayResolution is DisplayResolution.Small320x240:
+        if DisplayResolution is DisplayResolution.Small240x320:
             newrect = draw_true_rect(Displays.screen, Color.Green, display.border_width - 1, display.border_width - 1,
                                      Defaults.tft_width - display.border_width,
                                      Defaults.tft_height - display.border_width, 0)

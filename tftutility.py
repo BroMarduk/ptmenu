@@ -75,16 +75,18 @@ def is_root():
 ##################################################################################
 # TFT TYPE CONSTANTS
 ##################################################################################
-DISP22NT   = AF_2315 = NONE22 = 1  # GPIOs 17,22,23,27,(18)
-DISP24R    = AF_2455 = RES24  = 2  # GPIOs 16,13,12,6,5,(18)
-DISP28R    = AF_1601 = RES28  = 3  # GPIOs 23,22,21/27,18,(None)
-DISP28C    = AF_1983 = CAP28  = 4  # GPIOs 23,22,21/27,17,(18)
-DISP28RP   = AF_2298 = RES28P = 5  # GPIOs 17,22,23,27,(18)
-DISP28CP   = AF_2423 = CAP28P = 6  # GPIOs 17,22,23,27,(18)
-DISP32RP   = AF_2626 = RES32P = 7  # GPIOs 22,23,17,27,(18)
-DISP35R    = AF_2097 = RES35  = 8  # GPIOs (18)
-DISP35RP   = AF_2441 = RES35P = 9  # GPIOs (18)
-
+DISP22NT   = AF_2315 = NOT22   = 1  # GPIOs 17,22,23,27,(18)
+DISP24R    = AF_2455 = RES24   = 2  # GPIOs 16,13,12,6,5,(18)
+DISP28R    = AF_1601 = RES28   = 3  # GPIOs 23,22,21/27,18,(None)
+DISP28C    = AF_1983 = CAP28   = 4  # GPIOs 23,22,21/27,17,(18)
+DISP28RP   = AF_2298 = RES28P  = 5  # GPIOs 17,22,23,27,(18)
+DISP28CP   = AF_2423 = CAP28P  = 6  # GPIOs 17,22,23,27,(18)
+DISP32RP   = AF_2626 = RES32P  = 7  # GPIOs 22,23,17,27,(18)
+DISP35R    = AF_2097 = RES35   = 8  # GPIOs (18)
+DISP35RP   = AF_2441 = RES35P  = 9  # GPIOs (18)
+DISP35CHP  = PIM_297 = RES35HP = 10 #
+DISP40NTHP = PIM_370 = NOT40HP = 11
+DISP40CHP  = PIM_369 = CAP40HP = 12
 
 ##################################################################################
 # SCREEN CONSTANTS
@@ -103,6 +105,7 @@ class Screen:
     NullInput        = "/dev/null"
     TouchDrvTslib    = "TSLIB"
     TouchDrvDummy    = "Dummy"
+    EvDisplays       = [DISP28C, DISP28CP, DISP35R, DISP35RP, DISP28RP, DISP28R, DISP32RP, DISP24R, DISP40CHP, DISP35CHP]
 
 
 ##################################################################################
@@ -179,6 +182,32 @@ class DialogButtonText:
 class Attributes:
     Header = "header"
     Footer = "footer"
+
+
+##################################################################################
+# ORIENTATION CLASS CONSTANTS
+##################################################################################
+# Display orientations
+##################################################################################
+class Orientation:
+    Portrait = 0
+    Landscape = 90
+    Portrait_Inverted = 180
+    Landscape_Inverted = 270
+
+
+##################################################################################
+# ORIENTATION CLASS CONSTANTS
+##################################################################################
+# Display Resolutions
+##################################################################################
+class Resolution:
+    SmallPortrait = [240, 320]
+    SmallLandscape = [320, 240]
+    MediumPortrait = [320, 480]
+    MediumLandscape = [480, 320]
+    LargePortrait = [480, 800]
+    LargeLandscape = [800, 480]
 
 
 ##################################################################################
@@ -310,8 +339,9 @@ class BacklightMethod:
 # two resolutions.
 ##################################################################################
 class DisplayResolution:
-    Small320x240 = 0
-    Large480x320 = 1
+    Small240x320 = 0
+    Medium320x480 = 1
+    Large480x800 = 2
 
 
 ##################################################################################
@@ -621,6 +651,32 @@ class Defaults:
     DEFAULT_HEIGHT_480x320 = 320
     DEFAULT_FONT_RESOLUTION_480x320 = 108
 
+
+    ##################################################################################
+    # DEFAULTS DEFAULT 800x480 CONSTANTS
+    ##################################################################################
+    # Default constants for the 480x320 resolution
+    ##################################################################################
+    DEFAULT_BORDER_WIDTH_800x480 = 6
+    DEFAULT_TEXT_LINE_FONT_H_PADDING_800x480 = 7
+    DEFAULT_TEXT_LINE_FONT_V_PADDING_800x480 = 7
+    DEFAULT_SPLASH_BORDER_WIDTH_800x480 = 6
+    DEFAULT_SPLASH_FONT_H_PADDING_800x480 = 6
+    DEFAULT_SPLASH_FONT_V_PADDING_800x480 = 8
+    DEFAULT_DIALOG_BORDER_WIDTH_800x480 = 6
+    DEFAULT_DIALOG_FONT_H_PADDING_800x480 = 6
+    DEFAULT_DIALOG_FONT_V_PADDING_800x480 = 6
+    DEFAULT_HEADFOOT_FONT_H_PADDDING_800x480 = 6
+    DEFAULT_HEADFOOT_FONT_V_PADDING_800x480 = 6
+    DEFAULT_BUTTON_FONT_H_PADDING_800x480 = 3
+    DEFAULT_BUTTON_FONT_V_PADDING_800x480 = 3
+    DEFAULT_BUTTON_BORDER_WIDTH_800x480 = 6
+    DEFAULT_BUTTON_WIDTH_800x480 = 225
+    DEFAULT_BUTTON_HEIGHT_800x480 = 72
+    DEFAULT_WIDTH_800x480 = 800
+    DEFAULT_HEIGHT_800x480 = 480
+    DEFAULT_FONT_RESOLUTION_800x480 = 108
+    
     ##################################################################################
     # DEFAULTS DEFAULT PROPERTIES
     ##################################################################################
@@ -649,11 +705,11 @@ class Defaults:
     default_dialog_font_size          = DEFAULT_DIALOG_FONT_SIZE
     default_dialog_font_h_align       = DEFAULT_TEXT_LINE_FONT_ALIGN
     default_dialog_font_v_align       = DEFAULT_TEXT_LINE_FONT_VALIGN
-    default_headfoot_font_color         = DEFAULT_HEADFOOT_FONT_COLOR
-    default_headfoot_font               = DEFAULT_HEADFOOT_FONT
-    default_headfoot_font_size          = DEFAULT_HEADFOOT_FONT_SIZE
-    default_headfoot_font_h_align       = DEFAULT_HEADFOOT_FONT_ALIGN
-    default_headfoot_font_v_align       = DEFAULT_HEADFOOT_FONT_VALIGN
+    default_headfoot_font_color       = DEFAULT_HEADFOOT_FONT_COLOR
+    default_headfoot_font             = DEFAULT_HEADFOOT_FONT
+    default_headfoot_font_size        = DEFAULT_HEADFOOT_FONT_SIZE
+    default_headfoot_font_h_align     = DEFAULT_HEADFOOT_FONT_ALIGN
+    default_headfoot_font_v_align     = DEFAULT_HEADFOOT_FONT_VALIGN
     default_button_border_color       = DEFAULT_BUTTON_BORDER_COLOR
     default_button_font_color         = DEFAULT_BUTTON_FONT_COLOR
     default_button_font               = DEFAULT_BUTTON_FONT
@@ -669,8 +725,8 @@ class Defaults:
     default_dialog_border_width       = DEFAULT_DIALOG_BORDER_WIDTH_320x240
     default_dialog_font_h_padding     = DEFAULT_DIALOG_FONT_H_PADDING_320x240
     default_dialog_font_v_padding     = DEFAULT_DIALOG_FONT_V_PADDING_320x240
-    default_headfoot_font_h_padding     = DEFAULT_HEADFOOT_FONT_H_PADDING_320x240
-    default_headfoot_font_v_padding     = DEFAULT_HEADFOOT_FONT_V_PADDING_320x240
+    default_headfoot_font_h_padding   = DEFAULT_HEADFOOT_FONT_H_PADDING_320x240
+    default_headfoot_font_v_padding   = DEFAULT_HEADFOOT_FONT_V_PADDING_320x240
     default_button_font_h_padding     = DEFAULT_BUTTON_FONT_H_PADDING_320x240
     default_button_font_v_padding     = DEFAULT_BUTTON_FONT_V_PADDING_320x240
     default_button_border_width       = DEFAULT_BUTTON_BORDER_WIDTH_320x240
@@ -678,7 +734,7 @@ class Defaults:
     default_button_height             = DEFAULT_BUTTON_HEIGHT_320x240
     default_border_width              = DEFAULT_BORDER_WIDTH_320x240
     default_font_resolution           = DEFAULT_FONT_RESOLUTION_320x240
-    tft_resolution                    = DisplayResolution.Small320x240
+    tft_resolution                    = DisplayResolution.Small240x320
     tft_size = tft_width, tft_height  = DEFAULT_WIDTH_320x240, DEFAULT_HEIGHT_320x240
 
     @classmethod
@@ -687,7 +743,7 @@ class Defaults:
                      global_font_h_padding=None, global_font_v_padding=None,
                      global_font_h_align=None, global_font_v_align=None):
         cls.tft_type = tft_type
-        if (tft_type == DISP35R) or (tft_type == DISP35RP):
+        if tft_type == DISP35R or tft_type == DISP35RP:
             cls.default_border_width              = Defaults.DEFAULT_BORDER_WIDTH_480x320
             cls.default_text_line_font_h_padding  = Defaults.DEFAULT_TEXT_LINE_FONT_H_PADDING_480x320
             cls.default_text_line_font_v_padding  = Defaults.DEFAULT_TEXT_LINE_FONT_V_PADDING_480x320
@@ -697,18 +753,40 @@ class Defaults:
             cls.default_dialog_border_width       = Defaults.DEFAULT_DIALOG_BORDER_WIDTH_480x320
             cls.default_dialog_font_h_padding     = Defaults.DEFAULT_DIALOG_FONT_H_PADDING_480x320
             cls.default_dialog_font_v_padding     = Defaults.DEFAULT_DIALOG_FONT_V_PADDING_480x320
-            cls.default_headfoot_font_h_padding     = Defaults.DEFAULT_HEADFOOT_FONT_H_PADDDING_480x320
-            cls.default_headfoot_font_v_padding     = Defaults.DEFAULT_HEADFOOT_FONT_V_PADDING_480x320
+            cls.default_headfoot_font_h_padding   = Defaults.DEFAULT_HEADFOOT_FONT_H_PADDDING_480x320
+            cls.default_headfoot_font_v_padding   = Defaults.DEFAULT_HEADFOOT_FONT_V_PADDING_480x320
             cls.default_button_font_h_padding     = Defaults.DEFAULT_BUTTON_FONT_H_PADDING_480x320
             cls.default_button_font_v_padding     = Defaults.DEFAULT_BUTTON_FONT_V_PADDING_480x320
             cls.default_button_border_width       = Defaults.DEFAULT_BUTTON_BORDER_WIDTH_480x320
             cls.default_button_width              = Defaults.DEFAULT_BUTTON_WIDTH_480x320
             cls.default_button_height             = Defaults.DEFAULT_BUTTON_HEIGHT_480x320
             cls.default_font_resolution           = Defaults.DEFAULT_FONT_RESOLUTION_480x320
-            cls.tft_resolution                    = DisplayResolution.Large480x320
+            cls.tft_resolution                    = DisplayResolution.Medium320x480
             cls.tft_width                         = Defaults.DEFAULT_WIDTH_480x320
             cls.tft_height                        = Defaults.DEFAULT_HEIGHT_480x320
             cls.tft_size                          = (cls.tft_width, cls.tft_height)
+        elif tft_type == DISP35CHP or tft_type == DISP40CHP or tft_type == DISP40NTHP:
+            cls.default_border_width = Defaults.DEFAULT_BORDER_WIDTH_800x480
+            cls.default_text_line_font_h_padding = Defaults.DEFAULT_TEXT_LINE_FONT_H_PADDING_800x480
+            cls.default_text_line_font_v_padding = Defaults.DEFAULT_TEXT_LINE_FONT_V_PADDING_800x480
+            cls.default_splash_border_width = Defaults.DEFAULT_SPLASH_BORDER_WIDTH_800x480
+            cls.default_splash_font_h_padding = Defaults.DEFAULT_SPLASH_FONT_H_PADDING_800x480
+            cls.default_splash_font_v_padding = Defaults.DEFAULT_SPLASH_FONT_V_PADDING_800x480
+            cls.default_dialog_border_width = Defaults.DEFAULT_DIALOG_BORDER_WIDTH_800x480
+            cls.default_dialog_font_h_padding = Defaults.DEFAULT_DIALOG_FONT_H_PADDING_800x480
+            cls.default_dialog_font_v_padding = Defaults.DEFAULT_DIALOG_FONT_V_PADDING_800x480
+            cls.default_headfoot_font_h_padding = Defaults.DEFAULT_HEADFOOT_FONT_H_PADDDING_800x480
+            cls.default_headfoot_font_v_padding = Defaults.DEFAULT_HEADFOOT_FONT_V_PADDING_800x480
+            cls.default_button_font_h_padding = Defaults.DEFAULT_BUTTON_FONT_H_PADDING_800x480
+            cls.default_button_font_v_padding = Defaults.DEFAULT_BUTTON_FONT_V_PADDING_800x480
+            cls.default_button_border_width = Defaults.DEFAULT_BUTTON_BORDER_WIDTH_800x480
+            cls.default_button_width = Defaults.DEFAULT_BUTTON_WIDTH_800x480
+            cls.default_button_height = Defaults.DEFAULT_BUTTON_HEIGHT_800x480
+            cls.default_font_resolution = Defaults.DEFAULT_FONT_RESOLUTION_800x480
+            cls.tft_resolution = DisplayResolution.Medium320x480
+            cls.tft_width = Defaults.DEFAULT_WIDTH_800x480
+            cls.tft_height = Defaults.DEFAULT_HEIGHT_800x480
+            cls.tft_size = (cls.tft_width, cls.tft_height)
         if global_background_color is not None:
             cls.default_background_color = global_background_color
             cls.default_splash_background_color = global_background_color

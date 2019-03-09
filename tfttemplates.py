@@ -17,7 +17,7 @@ BUTTON_STEP_DOWN = -1
 # Button Templates
 ##################################################################################
 # Buttons2x3Headers is a 2 column x 3 row grid of buttons under a header for text
-Buttons2x3Headers = {DisplayResolution.Small320x240:
+Buttons2x3Headers = {DisplayResolution.Small240x320:
                      {ButtonTuple.Columns: 2,
                       ButtonTuple.Rows: 3,
                       ButtonTuple.ColumnsStart: 10,
@@ -26,7 +26,7 @@ Buttons2x3Headers = {DisplayResolution.Small320x240:
                       ButtonTuple.RowsSpacing: 6,
                       ButtonTuple.Width: 147,
                       ButtonTuple.Height: 54},
-                     DisplayResolution.Large480x320:
+                    DisplayResolution.Medium320x480:
                      {ButtonTuple.Columns: 2,
                       ButtonTuple.Rows: 3,
                       ButtonTuple.ColumnsStart: 14,
@@ -37,7 +37,7 @@ Buttons2x3Headers = {DisplayResolution.Small320x240:
                       ButtonTuple.Height: 75}
                      }
 
-Buttons2x2HeaderFooter = {DisplayResolution.Small320x240:
+Buttons2x2HeaderFooter = {DisplayResolution.Small240x320:
                           {ButtonTuple.Columns: 2,
                            ButtonTuple.Rows: 2,
                            ButtonTuple.ColumnsStart: 10,
@@ -46,7 +46,7 @@ Buttons2x2HeaderFooter = {DisplayResolution.Small320x240:
                            ButtonTuple.RowsSpacing: 6,
                            ButtonTuple.Width: 147,
                            ButtonTuple.Height: 54},
-                          DisplayResolution.Large480x320:
+                          DisplayResolution.Medium320x480:
                           {ButtonTuple.Columns: 2,
                            ButtonTuple.Rows: 2,
                            ButtonTuple.ColumnsStart: 14,
@@ -58,7 +58,7 @@ Buttons2x2HeaderFooter = {DisplayResolution.Small320x240:
                           }
 
 # Buttons3x3Headers is a 3 column x 3 row grid of buttons under a header for text
-Buttons3x3Headers = {DisplayResolution.Small320x240:
+Buttons3x3Headers = {DisplayResolution.Small240x320:
                      {ButtonTuple.Columns: 3,
                       ButtonTuple.Rows: 3,
                       ButtonTuple.ColumnsStart: 11,
@@ -67,7 +67,7 @@ Buttons3x3Headers = {DisplayResolution.Small320x240:
                       ButtonTuple.RowsSpacing: 6,
                       ButtonTuple.Width: 96,
                       ButtonTuple.Height: 54},
-                     DisplayResolution.Large480x320:
+                     DisplayResolution.Medium320x480:
                      {ButtonTuple.Columns: 3,
                       ButtonTuple.Rows: 3,
                       ButtonTuple.ColumnsStart: 14,
@@ -78,7 +78,7 @@ Buttons3x3Headers = {DisplayResolution.Small320x240:
                       ButtonTuple.Height: 75}
                      }
 
-Buttons3x2HeaderFooter = {DisplayResolution.Small320x240:
+Buttons3x2HeaderFooter = {DisplayResolution.Small240x320:
                           {ButtonTuple.Columns: 3,
                            ButtonTuple.Rows: 2,
                            ButtonTuple.ColumnsStart: 11,
@@ -87,7 +87,7 @@ Buttons3x2HeaderFooter = {DisplayResolution.Small320x240:
                            ButtonTuple.RowsSpacing: 6,
                            ButtonTuple.Width: 96,
                            ButtonTuple.Height: 54},
-                          DisplayResolution.Large480x320:
+                          DisplayResolution.Medium320x480:
                           {ButtonTuple.Columns: 3,
                            ButtonTuple.Rows: 2,
                            ButtonTuple.ColumnsStart: 14,
@@ -99,7 +99,7 @@ Buttons3x2HeaderFooter = {DisplayResolution.Small320x240:
                           }
 
 # Buttons2x4FullScreen is a full screen, 2 column x 4 row grid of buttons
-Buttons2x4FullScreen = {DisplayResolution.Small320x240:
+Buttons2x4FullScreen = {DisplayResolution.Small240x320:
                         {ButtonTuple.Columns: 2,
                          ButtonTuple.Rows: 4,
                          ButtonTuple.ColumnsStart: 11,
@@ -108,7 +108,7 @@ Buttons2x4FullScreen = {DisplayResolution.Small320x240:
                          ButtonTuple.RowsSpacing: 6,
                          ButtonTuple.Width: 145,
                          ButtonTuple.Height: 50},
-                        DisplayResolution.Large480x320:
+                        DisplayResolution.Medium320x480:
                         {ButtonTuple.Columns: 2,
                          ButtonTuple.Rows: 4,
                          ButtonTuple.ColumnsStart: 14,
@@ -120,7 +120,7 @@ Buttons2x4FullScreen = {DisplayResolution.Small320x240:
                         }
 
 # Buttons3x4FullScreen is a full screen, 3 column x 4 row grid of buttons
-Buttons3x4FullScreen = {DisplayResolution.Small320x240:
+Buttons3x4FullScreen = {DisplayResolution.Small240x320:
                         {ButtonTuple.Columns: 3,
                          ButtonTuple.Rows: 4,
                          ButtonTuple.ColumnsStart: 11,
@@ -129,7 +129,7 @@ Buttons3x4FullScreen = {DisplayResolution.Small320x240:
                          ButtonTuple.RowsSpacing: 6,
                          ButtonTuple.Width: 94,
                          ButtonTuple.Height: 50},
-                        DisplayResolution.Large480x320:
+                        DisplayResolution.Medium320x480:
                         {ButtonTuple.Columns: 3,
                          ButtonTuple.Rows: 4,
                          ButtonTuple.ColumnsStart: 14,
@@ -141,7 +141,7 @@ Buttons3x4FullScreen = {DisplayResolution.Small320x240:
                         }
 
 # Buttons4x4FullScreen is a full screen, 4 column x 4 row grid of buttons
-Buttons4x4FullScreen = {DisplayResolution.Small320x240:
+Buttons4x4FullScreen = {DisplayResolution.Small240x320:
                         {ButtonTuple.Columns: 4,
                          ButtonTuple.Rows: 4,
                          ButtonTuple.ColumnsStart: 11,
@@ -150,7 +150,7 @@ Buttons4x4FullScreen = {DisplayResolution.Small320x240:
                          ButtonTuple.RowsSpacing: 6,
                          ButtonTuple.Width: 70,
                          ButtonTuple.Height: 50},
-                        DisplayResolution.Large480x320:
+                        DisplayResolution.Medium320x480:
                         {ButtonTuple.Columns: 4,
                          ButtonTuple.Rows: 4,
                          ButtonTuple.ColumnsStart: 14,
@@ -162,7 +162,7 @@ Buttons4x4FullScreen = {DisplayResolution.Small320x240:
                         }
 
 # Buttons2x1Bottom is a 2 column x 1 row grid of buttons located at the bottom
-Buttons1x1Bottom = {DisplayResolution.Small320x240:
+Buttons1x1Bottom = {DisplayResolution.Small240x320:
                     {ButtonTuple.Columns: 1,
                      ButtonTuple.Rows: 1,
                      ButtonTuple.ColumnsStart: 87,
@@ -171,7 +171,7 @@ Buttons1x1Bottom = {DisplayResolution.Small320x240:
                      ButtonTuple.RowsSpacing: 0,
                      ButtonTuple.Width: 146,
                      ButtonTuple.Height: 54},
-                    DisplayResolution.Large480x320:
+                    DisplayResolution.Medium320x480:
                     {ButtonTuple.Columns: 1,
                      ButtonTuple.Rows: 1,
                      ButtonTuple.ColumnsStart: 129,
@@ -182,7 +182,7 @@ Buttons1x1Bottom = {DisplayResolution.Small320x240:
                      ButtonTuple.Height: 75}
                     }
 
-Buttons1x1BottomLeft = {DisplayResolution.Small320x240:
+Buttons1x1BottomLeft = {DisplayResolution.Small240x320:
                         {ButtonTuple.Columns: 1,
                          ButtonTuple.Rows: 1,
                          ButtonTuple.ColumnsStart: 11,
@@ -191,7 +191,7 @@ Buttons1x1BottomLeft = {DisplayResolution.Small320x240:
                          ButtonTuple.RowsSpacing: 0,
                          ButtonTuple.Width: 145,
                          ButtonTuple.Height: 54},
-                        DisplayResolution.Large480x320:
+                        DisplayResolution.Medium320x480:
                         {ButtonTuple.Columns: 1,
                          ButtonTuple.Rows: 1,
                          ButtonTuple.ColumnsStart: 14,
@@ -202,7 +202,7 @@ Buttons1x1BottomLeft = {DisplayResolution.Small320x240:
                          ButtonTuple.Height: 75}
                         }
 
-Buttons1x1BottomRight = {DisplayResolution.Small320x240:
+Buttons1x1BottomRight = {DisplayResolution.Small240x320:
                          {ButtonTuple.Columns: 1,
                           ButtonTuple.Rows: 1,
                           ButtonTuple.ColumnsStart: 11,
@@ -211,7 +211,7 @@ Buttons1x1BottomRight = {DisplayResolution.Small320x240:
                           ButtonTuple.RowsSpacing: 0,
                           ButtonTuple.Width: 145,
                           ButtonTuple.Height: 54},
-                         DisplayResolution.Large480x320:
+                         DisplayResolution.Medium320x480:
                          {ButtonTuple.Columns: 1,
                           ButtonTuple.Rows: 1,
                           ButtonTuple.ColumnsStart: 247,
@@ -222,7 +222,7 @@ Buttons1x1BottomRight = {DisplayResolution.Small320x240:
                           ButtonTuple.Height: 75}
                          }
 
-Buttons1x1BottomFullWidth = {DisplayResolution.Small320x240:
+Buttons1x1BottomFullWidth = {DisplayResolution.Small240x320:
                              {ButtonTuple.Columns: 1,
                               ButtonTuple.Rows: 1,
                               ButtonTuple.ColumnsStart: 11,
@@ -231,7 +231,7 @@ Buttons1x1BottomFullWidth = {DisplayResolution.Small320x240:
                               ButtonTuple.RowsSpacing: 0,
                               ButtonTuple.Width: 298,
                               ButtonTuple.Height: 54},
-                             DisplayResolution.Large480x320:
+                             DisplayResolution.Medium320x480:
                              {ButtonTuple.Columns: 1,
                               ButtonTuple.Rows: 1,
                               ButtonTuple.ColumnsStart: 14,
@@ -243,7 +243,7 @@ Buttons1x1BottomFullWidth = {DisplayResolution.Small320x240:
                              }
 
 # Buttons2x1Bottom is a 2 column x 1 row grid of buttons located at the bottom
-Buttons2x1Bottom = {DisplayResolution.Small320x240:
+Buttons2x1Bottom = {DisplayResolution.Small240x320:
                     {ButtonTuple.Columns: 2,
                      ButtonTuple.Rows: 1,
                      ButtonTuple.ColumnsStart: 11,
@@ -252,7 +252,7 @@ Buttons2x1Bottom = {DisplayResolution.Small320x240:
                      ButtonTuple.RowsSpacing: 6,
                      ButtonTuple.Width: 145,
                      ButtonTuple.Height: 54},
-                    DisplayResolution.Large480x320:
+                    DisplayResolution.Medium320x480:
                     {ButtonTuple.Columns: 2,
                      ButtonTuple.Rows: 1,
                      ButtonTuple.ColumnsStart: 14,
@@ -264,7 +264,7 @@ Buttons2x1Bottom = {DisplayResolution.Small320x240:
                     }
 
 # Buttons2x1Bottom is a 3 column x 1 row grid of buttons located at the bottom
-Buttons3x1Bottom = {DisplayResolution.Small320x240:
+Buttons3x1Bottom = {DisplayResolution.Small240x320:
                     {ButtonTuple.Columns: 3,
                      ButtonTuple.Rows: 1,
                      ButtonTuple.ColumnsStart: 11,
@@ -273,7 +273,7 @@ Buttons3x1Bottom = {DisplayResolution.Small320x240:
                      ButtonTuple.RowsSpacing: 6,
                      ButtonTuple.Width: 94,
                      ButtonTuple.Height: 54},
-                    DisplayResolution.Large480x320:
+                    DisplayResolution.Medium320x480:
                     {ButtonTuple.Columns: 3,
                      ButtonTuple.Rows: 1,
                      ButtonTuple.ColumnsStart: 14,
@@ -284,7 +284,7 @@ Buttons3x1Bottom = {DisplayResolution.Small320x240:
                      ButtonTuple.Height: 75}
                     }
 
-ButtonsFullScreen = {DisplayResolution.Small320x240:
+ButtonsFullScreen = {DisplayResolution.Small240x320:
                      {ButtonTuple.Columns: 1,
                       ButtonTuple.Rows: 1,
                       ButtonTuple.ColumnsStart: 0,
@@ -293,7 +293,7 @@ ButtonsFullScreen = {DisplayResolution.Small320x240:
                       ButtonTuple.RowsSpacing: 0,
                       ButtonTuple.Width: 320,
                       ButtonTuple.Height: 240},
-                     DisplayResolution.Large480x320:
+                     DisplayResolution.Medium320x480:
                      {ButtonTuple.Columns: 1,
                       ButtonTuple.Rows: 1,
                       ButtonTuple.ColumnsStart: 0,

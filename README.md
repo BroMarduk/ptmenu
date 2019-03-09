@@ -154,6 +154,8 @@ In addition, I plan to go back and re-add comments and logging back in.   I stri
 + \[DONE\] Move the GPIO Buttons into a template similar to the Display Buttons templates.
 + \[DONE\] Add detection for broken libsdl1.2debian version and provide correction script in code
 + \[DONE\] Add support for launching StartX as an action
++ \[DONE\] Add support for capacitive touch screens on stretch
++ Support evdev fully for event mapptint pygame (elminates the need to downgrade sdl)
 + Make header/footer types and their functionality into tokens that can be used in text.
 + Add images/icons to buttons/headers/footers
 + Move internal text to resources for use with gettext and improve globalization.

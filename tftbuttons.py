@@ -66,6 +66,7 @@ GPIO_BACKLIGHT_ECHO_LINK = "echo {{0}} > {0}export".format(GPIO_BACKLIGHT_ECHO_P
 GPIO_BACKLIGHT_ECHO_SET = "echo '{{0}}' > {0}gpio{{1}}/value".format(GPIO_BACKLIGHT_ECHO_PATH)
 GPIO_BACKLIGHT_STMPE_PATH = "/sys/class/backlight/soc:backlight"
 GPIO_BACKLIGHT_STMPE_COMMAND = "echo '{0}' > /sys/class/backlight/soc\:backlight/brightness"
+GPIO_BACKLIGHT_HYPERPX_COMMAND = "echo '{0}' > /sys/class/backlight/rpi_backlight/brightness"
 GPIO_BACKLIGHT_PWM_MODE        = "pwm"
 GPIO_BACKLIGHT_PWM_BINARY_MODE = "out"
 GPIO_BACKLIGHT_PWM_FREQUENCY   = "1000"
@@ -623,7 +624,7 @@ class GpioButtons(object):
                 self.buttons = [17, 22, 23, 27]
             elif tft_type == DISP32RP:
                 self.buttons = [22, 23, 17, 27]
-            else:  # No buttons PiTft buttons for 3.5" Displays (yet)
+            else:  # No buttons PiTft buttons for 3.5" or HyperPixel Displays (yet)
                 self.buttons = []
         else:
             self.buttons = []
